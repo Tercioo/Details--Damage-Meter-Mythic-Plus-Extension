@@ -1,0 +1,12 @@
+## Interface: 110007
+## Title: Details! Damage Meter Mythic Plus
+## Notes: Add Mythic Plus stuff on Details!
+## SavedVariables: Details_MythicPlusDB
+## SavedVariablesPerCharacter: Details_MythicPlus_CharacterDB
+## RequiredDeps: Details
+## Version: #@project-version@
+
+start.lua
+parser.lua
+scoreboard.lua
+events.lua
