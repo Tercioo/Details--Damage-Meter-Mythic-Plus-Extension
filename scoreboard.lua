@@ -389,9 +389,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                 dispels = 0,
                 ccCasts = mythicPlusOverallSegment:GetCCCastAmount(actorObject.nome),
                 unitId = unitId,
-                OpenDamageBreakdown = function ()
-                    Details:OpenBreakdownWindow(Details:GetInstance(1), actorObject)
-                end,
+                combatUid = mythicPlusOverallSegment:GetCombatUID(),
             }
 
             if (thisPlayerData.role == "NONE") then
@@ -511,7 +509,8 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             playerCcCasts:SetText(math.floor(playerData.ccCasts))
             playerEmptyField:SetText("")
 
-            playerDps.OpenBreakdown = playerData.OpenDamageBreakdown
+            playerDps:SetPlayerData(playerData)
+            playerHps:SetPlayerData(playerData)
 
             --colors
             local classColor = RAID_CLASS_COLORS[playerData.class]
@@ -570,10 +569,13 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
 end
 
-local function OpenLineBreakdown(self)
-    if (self.MyObject.OpenBreakdown) then
-        self.MyObject.OpenBreakdown()
+local function OpenLineBreakdown(self, mainAttribute, subAttribute)
+    local playerData = self.MyObject:GetPlayerData()
+    if (not playerData or not playerData.name or not playerData.combatUid) then
+        return
     end
+
+    Details:OpenSpecificBreakdownWindow(Details:GetCombatByUID(playerData.combatUid), playerData.name, mainAttribute, subAttribute)
 end
 
 local function OnEnterLineBreakdownButton(self)
@@ -583,6 +585,25 @@ end
 
 local function OnLeaveLineBreakdownButton(self)
     self.MyObject.button.text:SetTextColor(unpack(self.MyObject.button.text.inactiveColor))
+end
+
+local function CreateBreakdownButton(line, mainAttribute,  subAttribute)
+    local button = detailsFramework:CreateButton(line, function (self)
+        OpenLineBreakdown(self, mainAttribute, subAttribute)
+    end, 60, 20, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
+
+    button:SetHook("OnEnter", OnEnterLineBreakdownButton)
+    button:SetHook("OnLeave", OnLeaveLineBreakdownButton)
+
+    function button.SetPlayerData(self, playerData)
+        self.PlayerData = playerData
+    end
+
+    function button.GetPlayerData(self)
+        return self.PlayerData
+    end
+
+    return button
 end
 
 function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFrame, index)
@@ -626,12 +647,10 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     local playerDamageTaken = line:CreateFontString(nil, "overlay", "GameFontNormal")
 
     --fontstring for the player dps
-    local playerDpsButton = detailsFramework:CreateButton(line, OpenLineBreakdown, 60, 20, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
-    playerDpsButton:SetHook("OnEnter", OnEnterLineBreakdownButton)
-    playerDpsButton:SetHook("OnLeave", OnLeaveLineBreakdownButton)
+    local playerDpsButton = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS)
 
     --fontstring for the player hps
-    local playerHps = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    local playerHps = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HPS)
 
     --fontstring for the player interrupts
     local playerInterrupts = line:CreateFontString(nil, "overlay", "GameFontNormal")
