@@ -1,7 +1,7 @@
 
 --[[
     This file show a frame at the end of a mythic+ run with a breakdown of the players performance.
-    It shows the player name, the score, deaths, damage taken, dps, hps, interrupts, dispels and cc casts.    
+    It shows the player name, the score, deaths, damage taken, dps, hps, interrupts, dispels and cc casts.
 ]]
 
 ---@type details
@@ -121,6 +121,12 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     --detailsFramework:ApplyStandardBackdrop(readyFrame)
     detailsFramework:MakeDraggable(readyFrame)
+
+    local closeButton = detailsFramework:CreateCloseButton(readyFrame, "$parentCloseButton")
+    closeButton:SetScript("OnClick", function()
+        readyFrame:Hide()
+    end)
+    closeButton:SetPoint("topright", readyFrame, "topright", -5, -5)
 
     --title string
     local titleString = readyFrame:CreateFontString("$parentTitle", "overlay", "GameFontNormalLarge")
