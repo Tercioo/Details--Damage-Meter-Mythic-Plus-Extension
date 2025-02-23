@@ -643,7 +643,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(Details:Format(math.floor(playerData.damageTaken)))
     end)
 
-    local playerDpsButton = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS, function(self, playerData)
+    local playerDps = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS, function(self, playerData)
         self:SetText(Details:Format(math.floor(playerData.dps)))
     end)
 
@@ -672,7 +672,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     line:AddFrameToHeaderAlignment(playerScore)
     line:AddFrameToHeaderAlignment(playerDeaths)
     line:AddFrameToHeaderAlignment(playerDamageTaken)
-    line:AddFrameToHeaderAlignment(playerDpsButton)
+    line:AddFrameToHeaderAlignment(playerDps)
     line:AddFrameToHeaderAlignment(playerHps)
     line:AddFrameToHeaderAlignment(playerInterrupts)
     line:AddFrameToHeaderAlignment(playerDispels)
