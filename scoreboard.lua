@@ -528,8 +528,15 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             if (not color) then
                 color = _G["HIGHLIGHT_FONT_COLOR"]
             end
-            local textToFormat = "%d"
-            mainFrame.RantingLabel:SetText(color:WrapTextInColorCode(textToFormat:format(Details.LastMythicPlusData.NewDungeonScore or 0)))
+            local text = ""
+            if (gainedScore >= 1) then
+                local textToFormat = "%d (+%d)"
+                text = textToFormat:format(Details.LastMythicPlusData.NewDungeonScore, gainedScore)
+            else
+                local textToFormat = "%d"
+                text = textToFormat:format(Details.LastMythicPlusData.NewDungeonScore)
+            end
+            mainFrame.RantingLabel:SetText(color:WrapTextInColorCode(text))
             mainFrame.RantingLabel:SetTextColor(detailsFramework:ParseColors("limegreen"))
         else
             mainFrame.RantingLabel:SetText(playerRatingScore)
