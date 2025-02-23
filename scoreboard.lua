@@ -445,15 +445,16 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         local playerData = data[i]
 
         --reset the line contents
-        for j = 1, 11 do
+        for j = 1, #frames do
             local frame = frames[j]
             if (frame:GetObjectType() == "FontString") then
                 frame:SetText("")
 
             elseif (frame:GetObjectType() == "Button") then
                 frame:SetText("")
-                frame.OpenBreakdown = nil
-
+                if (playerData and frame.SetPlayerData) then
+                    frame:SetPlayerData(playerData)
+                end
             elseif (frame:GetObjectType() == "Texture") then
                 frame:SetTexture(nil)
             end
@@ -467,9 +468,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             local playerName = frames[3]
             local playerScore = frames[4]
             local playerDeaths = frames[5]
-            local playerDamageTaken = frames[6]
-            local playerDps = frames[7]
-            local playerHps = frames[8]
             local playerInterrupts = frames[9]
             local playerDispels = frames[10]
             local playerCcCasts = frames[11]
@@ -495,22 +493,17 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                 playerPortrait.RoleIcon:Hide()
             end
 
+            -- manually setting the labels, buttons are set through SetPlayerData
             specIcon:SetTexture(select(4, GetSpecializationInfoByID(playerData.spec)))
             playerName:SetText(detailsFramework:RemoveRealmName(playerData.name))
             playerScore:SetText(playerData.score)
             playerScore:SetTextColor(playerData.scoreColor.r, playerData.scoreColor.g, playerData.scoreColor.b)
             playerDeaths:SetText(playerData.deaths)
-            playerDamageTaken:SetText(Details:Format(math.floor(playerData.damageTaken)))
-            playerDps:SetText(Details:Format(math.floor(playerData.dps)))
-            playerHps:SetText(Details:Format(math.floor(playerData.hps)))
             playerInterrupts:SetText(math.floor(playerData.interrupts))
             playerInterrupts.InterruptCasts:SetText("/ " .. math.floor(playerData.interruptCasts))
             playerDispels:SetText(math.floor(playerData.dispels))
             playerCcCasts:SetText(math.floor(playerData.ccCasts))
             playerEmptyField:SetText("")
-
-            playerDps:SetPlayerData(playerData)
-            playerHps:SetPlayerData(playerData)
 
             --colors
             local classColor = RAID_CLASS_COLORS[playerData.class]
@@ -587,16 +580,19 @@ local function OnLeaveLineBreakdownButton(self)
     self.MyObject.button.text:SetTextColor(unpack(self.MyObject.button.text.inactiveColor))
 end
 
-local function CreateBreakdownButton(line, mainAttribute,  subAttribute)
+local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPlayerData)
     local button = detailsFramework:CreateButton(line, function (self)
         OpenLineBreakdown(self, mainAttribute, subAttribute)
-    end, 60, 20, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
+    end, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
 
     button:SetHook("OnEnter", OnEnterLineBreakdownButton)
     button:SetHook("OnLeave", OnLeaveLineBreakdownButton)
+    button.button.text:ClearAllPoints("left", button.button, "left")
+    button.button.text:SetPoint("left", button.button, "left")
 
     function button.SetPlayerData(self, playerData)
         self.PlayerData = playerData
+        onSetPlayerData(self, playerData)
     end
 
     function button.GetPlayerData(self)
@@ -643,14 +639,17 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     --fontstring for the player deaths
     local playerDeaths = line:CreateFontString(nil, "overlay", "GameFontNormal")
 
-    --fontstring for the player damage taken
-    local playerDamageTaken = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    local playerDamageTaken = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGETAKEN, function(self, playerData)
+        self:SetText(Details:Format(math.floor(playerData.damageTaken)))
+    end)
 
-    --fontstring for the player dps
-    local playerDpsButton = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS)
+    local playerDpsButton = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS, function(self, playerData)
+        self:SetText(Details:Format(math.floor(playerData.dps)))
+    end)
 
-    --fontstring for the player hps
-    local playerHps = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HPS)
+    local playerHps = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HPS, function(self, playerData)
+        self:SetText(Details:Format(math.floor(playerData.hps)))
+    end)
 
     --fontstring for the player interrupts
     local playerInterrupts = line:CreateFontString(nil, "overlay", "GameFontNormal")
