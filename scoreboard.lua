@@ -451,24 +451,30 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
     local playerRatingScore = 0
 
+    local topScores = {
+        [6] = {key = "damageTaken", line = 0, best = 0},
+        [7] = {key = "dps", line = 0, best = 0},
+        [8] = {key = "hps", line = 0, best = 0},
+        [9] = {key = "interrupts", line = 0, best = 0},
+        [10] = {key = "dispels", line = 0, best = 0},
+        [11] = {key = "ccCasts", line = 0, best = 0},
+    }
+
     for i = 1, lineAmount do
         local line = lines[i]
         local frames = line:GetFramesFromHeaderAlignment()
         local playerData = data[i]
 
-        --reset the line contents
+        --(re)set the line contents
         for j = 1, #frames do
             local frame = frames[j]
-            if (frame:GetObjectType() == "FontString") then
+            if (frame:GetObjectType() == "FontString" or frame:GetObjectType() == "Button") then
                 frame:SetText("")
-
-            elseif (frame:GetObjectType() == "Button") then
-                frame:SetText("")
-                if (playerData and frame.SetPlayerData) then
-                    frame:SetPlayerData(playerData)
-                end
             elseif (frame:GetObjectType() == "Texture") then
                 frame:SetTexture(nil)
+            end
+            if (playerData and frame.SetPlayerData) then
+                frame:SetPlayerData(playerData)
             end
         end
 
@@ -477,13 +483,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             --dumpt(playerData)
             local playerPortrait = frames[1]
             local specIcon = frames[2]
-            local playerName = frames[3]
             local playerScore = frames[4]
-            local playerDeaths = frames[5]
-            local playerInterrupts = frames[9]
-            local playerDispels = frames[10]
-            local playerCcCasts = frames[11]
-            local playerEmptyField = frames[12]
 
             if (GetUnitName("player", true) == playerData.name) then
                 playerRatingScore = playerData.score
@@ -507,19 +507,21 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
             -- manually setting the labels, buttons are set through SetPlayerData
             specIcon:SetTexture(select(4, GetSpecializationInfoByID(playerData.spec)))
-            playerName:SetText(detailsFramework:RemoveRealmName(playerData.name))
-            playerScore:SetText(playerData.score)
             playerScore:SetTextColor(playerData.scoreColor.r, playerData.scoreColor.g, playerData.scoreColor.b)
-            playerDeaths:SetText(playerData.deaths)
-            playerInterrupts:SetText(math.floor(playerData.interrupts))
-            playerInterrupts.InterruptCasts:SetText("/ " .. math.floor(playerData.interruptCasts))
-            playerDispels:SetText(math.floor(playerData.dispels))
-            playerCcCasts:SetText(math.floor(playerData.ccCasts))
-            playerEmptyField:SetText("")
 
-            --colors
-            local classColor = RAID_CLASS_COLORS[playerData.class]
-            playerName:SetTextColor(classColor.r, classColor.g, classColor.b)
+            for _, value in pairs(topScores) do
+                if (value.best < playerData[value.key]) then
+                    value.best = playerData[value.key]
+                    value.line = i
+                end
+            end
+        end
+    end
+
+    for frameId, value in pairs(topScores) do
+        local frames = lines[value.line] and lines[value.line]:GetFramesFromHeaderAlignment() or {}
+        if (frames[frameId] and frames[frameId].MarkTop) then
+            frames[frameId]:MarkTop()
         end
     end
 
@@ -583,6 +585,8 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
     Details:OpenSpecificBreakdownWindow(Details:GetCombatByUID(playerData.combatUid), playerData.name, mainAttribute, subAttribute)
 end
 
+local topColor = {0/255, 204/255, 255/255, 1}
+
 local function OnEnterLineBreakdownButton(self)
     self.MyObject.button.text.inactiveColor = {self.MyObject.button.text:GetTextColor()}
     self.MyObject.button.text:SetTextColor(1, 1, 1, 1)
@@ -601,14 +605,18 @@ local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPl
     button:SetHook("OnLeave", OnLeaveLineBreakdownButton)
     button.button.text:ClearAllPoints("left", button.button, "left")
     button.button.text:SetPoint("left", button.button, "left")
+    button.button.text.originalColor = {button.button.text:GetTextColor()}
 
     function button.SetPlayerData(self, playerData)
         self.PlayerData = playerData
+        self.button.text:SetTextColor(unpack(self.button.text.originalColor))
         onSetPlayerData(self, playerData)
     end
-
     function button.GetPlayerData(self)
         return self.PlayerData
+    end
+    function button.MarkTop(self)
+        self.button.text:SetTextColor(unpack(topColor))
     end
 
     return button
@@ -642,6 +650,27 @@ function mythicPlusBreakdown.SetFontSettings()
     end
 end
 
+local function CreateBreakdownLabel(line, onSetPlayerData)
+    local label = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    label.originalColor = {label:GetTextColor()}
+
+    function label.SetPlayerData(self, playerData)
+        self.PlayerData = playerData
+        if (onSetPlayerData) then
+            self:SetTextColor(unpack(self.originalColor))
+            onSetPlayerData(self, playerData)
+        end
+    end
+    function label.GetPlayerData(self)
+        return self.PlayerData
+    end
+    function label.MarkTop(self)
+        self:SetTextColor(unpack(topColor))
+    end
+
+    return label
+end
+
 function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFrame, index)
     ---@type details_mythicbreakdown_line
     local line = CreateFrame("button", "$parentLine" .. index, mainFrame, "BackdropTemplate")
@@ -671,14 +700,19 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     local specIcon = line:CreateTexture(nil, "overlay")
     specIcon:SetSize(20, 20)
 
-    --fontstring for the player name
-    local playerName = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    local playerName = CreateBreakdownLabel(line, function(self, playerData)
+        local classColor = RAID_CLASS_COLORS[playerData.class]
+        self:SetTextColor(classColor.r, classColor.g, classColor.b)
+        self:SetText(detailsFramework:RemoveRealmName(playerData.name))
+    end)
 
-    --fontstring for the player score
-    local playerScore = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    local playerScore = CreateBreakdownLabel(line, function(self, playerData)
+        self:SetText(playerData.score)
+    end)
 
-    --fontstring for the player deaths
-    local playerDeaths = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    local playerDeaths = CreateBreakdownLabel(line, function(self, playerData)
+        self:SetText(playerData.deaths)
+    end)
 
     local playerDamageTaken = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGETAKEN, function(self, playerData)
         self:SetText(Details:Format(math.floor(playerData.damageTaken)))
@@ -692,19 +726,22 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(Details:Format(math.floor(playerData.hps)))
     end)
 
-    --fontstring for the player interrupts
-    local playerInterrupts = line:CreateFontString(nil, "overlay", "GameFontNormal")
-    local playerInterruptsCasts = line:CreateFontString(nil, "overlay", "GameFontNormal")
-    playerInterrupts.InterruptCasts = playerInterruptsCasts
+    local playerInterrupts = CreateBreakdownLabel(line, function(self, playerData)
+        self:SetText(math.floor(playerData.interrupts))
+        self.InterruptCasts:SetText("/ " .. math.floor(playerData.interruptCasts))
+    end)
 
-    --fontstring for the player dispels
-    local playerDispels = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    playerInterrupts.InterruptCasts = CreateBreakdownLabel(line)
 
-    --fontstring for the player cc casts
-    local playerCcCasts = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    local playerDispels = CreateBreakdownLabel(line, function(self, playerData)
+        self:SetText(math.floor(playerData.dispels))
+    end)
 
-    --fontstring for the empty field
-    local playerEmptyField = line:CreateFontString(nil, "overlay", "GameFontNormal")
+    local playerCcCasts = CreateBreakdownLabel(line, function(self, playerData)
+        self:SetText(math.floor(playerData.ccCasts))
+    end)
+
+    local playerEmptyField = CreateBreakdownLabel(line)
 
     --add each widget create to the header alignment
     line:AddFrameToHeaderAlignment(playerPortrait)
@@ -724,7 +761,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
 
     --set the point of the interrupt casts
     local a, b, c, d, e = playerInterrupts:GetPoint(1)
-    playerInterruptsCasts:SetPoint(a, b, c, d + 20, e)
+    playerInterrupts.InterruptCasts:SetPoint(a, b, c, d + 20, e)
 
     headerFrame.lines[index] = line
 
