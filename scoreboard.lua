@@ -63,8 +63,18 @@ local LOOT_DEBUG_MODE = false
 
 local lineTextSettings = {
     color = "white",
-    size = 13,
-    outline = "OUTLINE",
+    size = 12,
+    outline = "NONE",
+}
+local lineHoverSettings = {
+    color = "orange",
+    size = 12,
+    outline = "NONE",
+}
+local lineStandoutSettings = {
+    color = {230/255, 204/255, 128/255},
+    size = 12,
+    outline = "NONE",
 }
 
 --main frame settings
@@ -519,9 +529,11 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     end
 
     for frameId, value in pairs(topScores) do
-        local frames = lines[value.line] and lines[value.line]:GetFramesFromHeaderAlignment() or {}
-        if (frames[frameId] and frames[frameId].MarkTop) then
-            frames[frameId]:MarkTop()
+        if (value.best > 0) then
+            local frames = lines[value.line] and lines[value.line]:GetFramesFromHeaderAlignment() or {}
+            if (frames[frameId] and frames[frameId].MarkTop) then
+                frames[frameId]:MarkTop()
+            end
         end
     end
 
@@ -565,7 +577,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     end
 
     ---@type details_instanceinfo
-	local instanceInfo = Details:GetInstanceInfo(mythicPlusData.MapID) or Details:GetInstanceInfo(Details:GetCurrentCombat().mapId)
+	local instanceInfo = mythicPlusData and Details:GetInstanceInfo(mythicPlusData.MapID) or Details:GetInstanceInfo(Details:GetCurrentCombat().mapId)
     if (instanceInfo) then
         mainFrame.DungeonBackdropTexture:SetTexture(instanceInfo.iconLore)
     else
@@ -585,41 +597,19 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
     Details:OpenSpecificBreakdownWindow(Details:GetCombatByUID(playerData.combatUid), playerData.name, mainAttribute, subAttribute)
 end
 
-local topColor = {0/255, 204/255, 255/255, 1}
-
 local function OnEnterLineBreakdownButton(self)
-    self.MyObject.button.text.inactiveColor = {self.MyObject.button.text:GetTextColor()}
-    self.MyObject.button.text:SetTextColor(1, 1, 1, 1)
+    local text = self.MyObject.button.text
+    text.originalColor = {text:GetTextColor()}
+    detailsFramework:SetFontSize(text, lineHoverSettings.size)
+    detailsFramework:SetFontColor(text, lineHoverSettings.color)
+    detailsFramework:SetFontOutline(text, lineHoverSettings.outline)
 end
 
 local function OnLeaveLineBreakdownButton(self)
-    self.MyObject.button.text:SetTextColor(unpack(self.MyObject.button.text.inactiveColor))
-end
-
-local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPlayerData)
-    local button = detailsFramework:CreateButton(line, function (self)
-        OpenLineBreakdown(self, mainAttribute, subAttribute)
-    end, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
-
-    button:SetHook("OnEnter", OnEnterLineBreakdownButton)
-    button:SetHook("OnLeave", OnLeaveLineBreakdownButton)
-    button.button.text:ClearAllPoints("left", button.button, "left")
-    button.button.text:SetPoint("left", button.button, "left")
-    button.button.text.originalColor = {button.button.text:GetTextColor()}
-
-    function button.SetPlayerData(self, playerData)
-        self.PlayerData = playerData
-        self.button.text:SetTextColor(unpack(self.button.text.originalColor))
-        onSetPlayerData(self, playerData)
-    end
-    function button.GetPlayerData(self)
-        return self.PlayerData
-    end
-    function button.MarkTop(self)
-        self.button.text:SetTextColor(unpack(topColor))
-    end
-
-    return button
+    local text = self.MyObject.button.text
+    detailsFramework:SetFontSize(text, lineTextSettings.size)
+    detailsFramework:SetFontColor(text, text.originalColor)
+    detailsFramework:SetFontOutline(text, lineTextSettings.outline)
 end
 
 function mythicPlusBreakdown.SetFontSettings()
@@ -650,14 +640,42 @@ function mythicPlusBreakdown.SetFontSettings()
     end
 end
 
+local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPlayerData)
+    local button = detailsFramework:CreateButton(line, function (self)
+        OpenLineBreakdown(self, mainAttribute, subAttribute)
+    end, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
+
+    button:SetHook("OnEnter", OnEnterLineBreakdownButton)
+    button:SetHook("OnLeave", OnLeaveLineBreakdownButton)
+    button.button.text:ClearAllPoints("left", button.button, "left")
+    button.button.text:SetPoint("left", button.button, "left")
+    button.button.text.originalColor = {button.button.text:GetTextColor()}
+
+    function button.SetPlayerData(self, playerData)
+        self.PlayerData = playerData
+        onSetPlayerData(self, playerData)
+    end
+    function button.GetPlayerData(self)
+        return self.PlayerData
+    end
+    function button.MarkTop(self)
+        detailsFramework:SetFontSize(self.button.text, lineStandoutSettings.size)
+        detailsFramework:SetFontColor(self.button.text, lineStandoutSettings.color)
+        detailsFramework:SetFontOutline(self.button.text, lineStandoutSettings.outline)
+    end
+
+    return button
+end
+
 local function CreateBreakdownLabel(line, onSetPlayerData)
     local label = line:CreateFontString(nil, "overlay", "GameFontNormal")
-    label.originalColor = {label:GetTextColor()}
 
     function label.SetPlayerData(self, playerData)
         self.PlayerData = playerData
         if (onSetPlayerData) then
-            self:SetTextColor(unpack(self.originalColor))
+            detailsFramework:SetFontSize(self, lineTextSettings.size)
+            detailsFramework:SetFontColor(self, lineTextSettings.color)
+            detailsFramework:SetFontOutline(self, lineTextSettings.outline)
             onSetPlayerData(self, playerData)
         end
     end
@@ -665,7 +683,9 @@ local function CreateBreakdownLabel(line, onSetPlayerData)
         return self.PlayerData
     end
     function label.MarkTop(self)
-        self:SetTextColor(unpack(topColor))
+        detailsFramework:SetFontSize(self, lineStandoutSettings.size)
+        detailsFramework:SetFontColor(self, lineStandoutSettings.color)
+        detailsFramework:SetFontOutline(self, lineStandoutSettings.outline)
     end
 
     return label
