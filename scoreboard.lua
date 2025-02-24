@@ -1,4 +1,5 @@
 
+--mythic+ extension for Details! Damage Meter
 --[[
     This file show a frame at the end of a mythic+ run with a breakdown of the players performance.
     It shows the player name, the score, deaths, damage taken, dps, hps, interrupts, dispels and cc casts.
@@ -13,6 +14,7 @@ local addon = private.addon
 local _ = nil
 
 ---@class details_mythicplus_breakdown : table
+---@field lines details_mythicbreakdown_line[]
 ---@field CreateBigBreakdownFrame fun():details_mythicbreakdown_bigframe
 ---@field CreateLineForBigBreakdownFrame fun(parent:details_mythicbreakdown_bigframe, header:details_mythicbreakdown_headerframe, index:number):details_mythicbreakdown_line
 ---@field RefreshBigBreakdownFrame fun()
@@ -39,11 +41,13 @@ local _ = nil
 ---@class details_mythicbreakdown_headerframe : df_headerframe
 ---@field lines table<number, details_mythicbreakdown_line>
 
----@class details_mythicbreakdown_line : frame, df_headerfunctions
+---@class details_mythicbreakdown_line : button, df_headerfunctions
 
 ---@type details_mythicplus_breakdown
 ---@diagnostic disable-next-line: missing-fields
-local mythicPlusBreakdown = {}
+local mythicPlusBreakdown = {
+    lines = {},
+}
 
 local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
 local GetItemIcon = GetItemIcon or C_Item.GetItemIcon
@@ -56,6 +60,12 @@ local Loc = _G.LibStub("AceLocale-3.0"):GetLocale("Details")
 
 local CONST_DEBUG_MODE = false
 local LOOT_DEBUG_MODE = false
+
+local lineTextSettings = {
+    color = "white",
+    size = 13,
+    outline = "OUTLINE",
+}
 
 --main frame settings
 local mainFrameName = "DetailsMythicPlusBreakdownFrame"
@@ -316,6 +326,8 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     local mainFrame = _G[mainFrameName]
     local headerFrame = mainFrame.HeaderFrame
     local lines = headerFrame.lines
+
+    mythicPlusBreakdown.SetFontSettings()
 
     local mythicPlusOverallSegment = Details:GetCurrentCombat()
 
@@ -602,10 +614,39 @@ local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPl
     return button
 end
 
+function mythicPlusBreakdown.SetFontSettings()
+    for i = 1, #mythicPlusBreakdown.lines do
+        local line = mythicPlusBreakdown.lines[i]
+
+        local region = {line:GetRegions()}
+        for j = 1, #region do
+            local child = region[j]
+            if (child:GetObjectType() == "FontString") then
+                detailsFramework:SetFontSize(child, lineTextSettings.size)
+                detailsFramework:SetFontColor(child, lineTextSettings.color)
+                detailsFramework:SetFontOutline(child, lineTextSettings.outline)
+            end
+        end
+
+        --include framework buttons
+        local children = {line:GetChildren()}
+        for j = 1, #children do
+            local child = children[j]
+            if (child:GetObjectType() == "Button" and child.MyObject) then --.MyObject is a button from the framework
+                local buttonObject = child.MyObject
+                buttonObject:SetFontSize(lineTextSettings.size)
+                buttonObject:SetTextColor(lineTextSettings.color)
+                detailsFramework:SetFontOutline(child.text, lineTextSettings.outline)
+            end
+        end
+    end
+end
+
 function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFrame, index)
     ---@type details_mythicbreakdown_line
     local line = CreateFrame("button", "$parentLine" .. index, mainFrame, "BackdropTemplate")
     detailsFramework:Mixin(line, detailsFramework.HeaderFunctions)
+    mythicPlusBreakdown.lines[#mythicPlusBreakdown.lines+1] = line
 
     local yPosition = -((index-1)*(lineHeight+1)) - 1
     line:SetPoint("topleft", headerFrame, "bottomleft", lineOffset, yPosition)

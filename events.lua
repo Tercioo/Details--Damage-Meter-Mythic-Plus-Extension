@@ -1,4 +1,5 @@
 
+--mythic+ extension for Details! Damage Meter
 local Details = Details
 local detailsFramework = DetailsFramework
 local _
