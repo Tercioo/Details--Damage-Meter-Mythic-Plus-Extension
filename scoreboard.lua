@@ -145,7 +145,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     --title string
     local titleString = readyFrame:CreateFontString("$parentTitle", "overlay", "GameFontNormalLarge")
-    titleString:SetPoint("top", readyFrame, "top", 0, -14)
+    titleString:SetPoint("top", readyFrame, "top", 0, -18)
     DetailsFramework:SetFontSize(titleString, 20)
     readyFrame.TitleString = titleString
 
