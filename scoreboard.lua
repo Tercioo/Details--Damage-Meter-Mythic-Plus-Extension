@@ -73,10 +73,10 @@ local headerY = -55
 --the amount of lines to be created to show player data
 local lineAmount = 5
 --player info area width (a.k.a the width of each line)
-local lineWidth = mainFrameWidth - 6
-local lineOffset = 3
+local lineWidth = mainFrameWidth - 17
+local lineOffset = 2
 --the height of each line
-local lineHeight = 40
+local lineHeight = 46
 --two backdrop colors
 local lineColor1 = {1, 1, 1, 0.05}
 local lineColor2 = {1, 1, 1, 0.1}
@@ -225,18 +225,18 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     --header frame
     local headerTable = {
-        {text = "", width = 50}, --player portrait
-        {text = "", width = 20}, --spec icon
-        {text = "Player Name", width = 100},
-        {text = "M+ Score", width = 100},
-        {text = "Deaths", width = 100},
+        {text = "", width = 60}, --player portrait
+        {text = "", width = 25}, --spec icon
+        {text = "Player Name", width = 110},
+        {text = "M+ Score", width = 80},
+        {text = "Deaths", width = 80},
         {text = "Damage Taken", width = 100},
         {text = "DPS", width = 100},
         {text = "HPS", width = 100},
         {text = "Interrupts", width = 100},
-        {text = "Dispels", width = 100},
-        {text = "CC Casts", width = 100},
-        {text = "Empty Space", width = 200},
+        {text = "Dispels", width = 80},
+        {text = "CC Casts", width = 80},
+        {text = "", width = 250},
     }
     local headerOptions = {
         padding = 2,
