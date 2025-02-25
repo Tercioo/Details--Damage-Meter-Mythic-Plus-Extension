@@ -10,6 +10,7 @@ local Details = _G.Details
 ---@type detailsframework
 local detailsFramework = _G.DetailsFramework
 local addonName, private = ...
+---@type detailsmythicplus
 local addon = private.addon
 local _ = nil
 
@@ -18,6 +19,8 @@ local _ = nil
 ---@field CreateBigBreakdownFrame fun():details_mythicbreakdown_bigframe
 ---@field CreateLineForBigBreakdownFrame fun(parent:details_mythicbreakdown_bigframe, header:details_mythicbreakdown_headerframe, index:number):details_mythicbreakdown_line
 ---@field RefreshBigBreakdownFrame fun()
+---@field MythicPlusOverallSegmentReady fun() executed when details! send the event COMBAT_MYTHICPLUS_OVERALL_READY
+---@field SetFontSettings fun() set the default font settings
 
 ---@class details_mythicbreakdown_bigframe : frame
 ---@field HeaderFrame details_mythicbreakdown_headerframe
@@ -106,12 +109,20 @@ function addon.OpenMythicPlusBreakdownBigFrame()
     end
 
     local mainFrame = _G[mainFrameName]
-    mythicPlusBreakdown.RefreshBigBreakdownFrame()
     mainFrame:Show()
+
+    mythicPlusBreakdown.RefreshBigBreakdownFrame()
 end
 
 function Details.OpenMythicPlusBreakdownBigFrame()
     addon.OpenMythicPlusBreakdownBigFrame()
+end
+
+function mythicPlusBreakdown.MythicPlusOverallSegmentReady()
+    if (addon.profile.auto_open_mythic_plus_breakdown_big_frame) then
+        private.log("auto opening the mythic+ breakdown big frame after", addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, "seconds")
+        detailsFramework.Schedules.After(addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, addon.OpenMythicPlusBreakdownBigFrame)
+    end
 end
 
 function mythicPlusBreakdown.CreateBigBreakdownFrame()
@@ -606,29 +617,29 @@ end
 local function OnEnterLineBreakdownButton(self)
     local text = self.MyObject.button.text
     text.originalColor = {text:GetTextColor()}
-    detailsFramework:SetFontSize(text, lineHoverSettings.size)
-    detailsFramework:SetFontColor(text, lineHoverSettings.color)
-    detailsFramework:SetFontOutline(text, lineHoverSettings.outline)
+    detailsFramework:SetFontSize(text, addon.profile.font.hover_size)
+    detailsFramework:SetFontColor(text, addon.profile.font.hover_color)
+    detailsFramework:SetFontOutline(text, addon.profile.font.hover_outline)
 end
 
 local function OnLeaveLineBreakdownButton(self)
     local text = self.MyObject.button.text
-    detailsFramework:SetFontSize(text, lineTextSettings.size)
+    detailsFramework:SetFontSize(text, addon.profile.font.regular_size)
+    detailsFramework:SetFontOutline(text, addon.profile.font.regular_outline)
     detailsFramework:SetFontColor(text, text.originalColor)
-    detailsFramework:SetFontOutline(text, lineTextSettings.outline)
 end
 
 function mythicPlusBreakdown.SetFontSettings()
     for i = 1, #mythicPlusBreakdown.lines do
         local line = mythicPlusBreakdown.lines[i]
 
-        local region = {line:GetRegions()}
-        for j = 1, #region do
-            local child = region[j]
-            if (child:GetObjectType() == "FontString") then
-                detailsFramework:SetFontSize(child, lineTextSettings.size)
-                detailsFramework:SetFontColor(child, lineTextSettings.color)
-                detailsFramework:SetFontOutline(child, lineTextSettings.outline)
+        local regions = {line:GetRegions()}
+        for j = 1, #regions do
+            local region = regions[j]
+            if (region:GetObjectType() == "FontString") then
+                detailsFramework:SetFontSize(region, addon.profile.font.regular_size)
+                detailsFramework:SetFontColor(region, addon.profile.font.regular_color)
+                detailsFramework:SetFontOutline(region, addon.profile.font.regular_outline)
             end
         end
 
@@ -638,9 +649,9 @@ function mythicPlusBreakdown.SetFontSettings()
             local child = children[j]
             if (child:GetObjectType() == "Button" and child.MyObject) then --.MyObject is a button from the framework
                 local buttonObject = child.MyObject
-                buttonObject:SetFontSize(lineTextSettings.size)
-                buttonObject:SetTextColor(lineTextSettings.color)
-                detailsFramework:SetFontOutline(child.text, lineTextSettings.outline)
+                buttonObject:SetFontSize(addon.profile.font.regular_size)
+                buttonObject:SetTextColor(addon.profile.font.regular_color)
+                detailsFramework:SetFontOutline(child.text, addon.profile.font.regular_outline)
             end
         end
     end
@@ -665,9 +676,9 @@ local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPl
         return self.PlayerData
     end
     function button.MarkTop(self)
-        detailsFramework:SetFontSize(self.button.text, lineStandoutSettings.size)
-        detailsFramework:SetFontColor(self.button.text, lineStandoutSettings.color)
-        detailsFramework:SetFontOutline(self.button.text, lineStandoutSettings.outline)
+        detailsFramework:SetFontSize(self.button.text, addon.profile.font.standout_size)
+        detailsFramework:SetFontColor(self.button.text, addon.profile.font.standout_color)
+        detailsFramework:SetFontOutline(self.button.text, addon.profile.font.standout_outline)
     end
 
     return button
@@ -679,9 +690,9 @@ local function CreateBreakdownLabel(line, onSetPlayerData)
     function label.SetPlayerData(self, playerData)
         self.PlayerData = playerData
         if (onSetPlayerData) then
-            detailsFramework:SetFontSize(self, lineTextSettings.size)
-            detailsFramework:SetFontColor(self, lineTextSettings.color)
-            detailsFramework:SetFontOutline(self, lineTextSettings.outline)
+            detailsFramework:SetFontSize(self, addon.profile.font.regular_size)
+            detailsFramework:SetFontColor(self, addon.profile.font.regular_color)
+            detailsFramework:SetFontOutline(self, addon.profile.font.regular_outline)
             onSetPlayerData(self, playerData)
         end
     end
@@ -689,9 +700,9 @@ local function CreateBreakdownLabel(line, onSetPlayerData)
         return self.PlayerData
     end
     function label.MarkTop(self)
-        detailsFramework:SetFontSize(self, lineStandoutSettings.size)
-        detailsFramework:SetFontColor(self, lineStandoutSettings.color)
-        detailsFramework:SetFontOutline(self, lineStandoutSettings.outline)
+        detailsFramework:SetFontSize(self, addon.profile.font.standout_size)
+        detailsFramework:SetFontColor(self, addon.profile.font.standout_color)
+        detailsFramework:SetFontOutline(self, addon.profile.font.standout_outline)
     end
 
     return label

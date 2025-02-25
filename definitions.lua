@@ -2,9 +2,29 @@
 --mythic+ extension for Details! Damage Meter
 ---@class private : table
 ---@field addon detailsmythicplus
+---@field log fun(...) log a message to the addon logs
+
+---@class profile : table
+---@field auto_open_mythic_plus_breakdown_big_frame boolean if true, the panel will open after x seconds after the m+ overall segment is ready.
+---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
+---@field font fontsettings font settings
+---@field logs string[] logs of the addon
+---@field logout_logs string[]
+
+---@class fontsettings : table
+---@field regular_size number
+---@field regular_color any
+---@field regular_outline string
+---@field hover_size number
+---@field hover_color any
+---@field hover_outline string
+---@field standout_size number
+---@field standout_color any
+---@field standout_outline string
 
 ---@class detailsmythicplus : table
----@field detailsEventListener table
+---@field profile profile store the profile settings
+---@field detailsEventListener table register and listen to Details! events
 ---@field data table store data from the current mythic plus run
 ---@field InitializeEvents fun() run on PLAYER_LOGIN, create the function to listen to details events
 ---@field OnMythicDungeonStart fun(...) run on COMBAT_MYTHICDUNGEON_START
@@ -17,3 +37,5 @@
 ---@field StartParser fun() start the combatlog parser
 ---@field StopParser fun() stop the combatlog parser
 ---@field OpenMythicPlusBreakdownBigFrame fun() open the mythic plus breakdown big frame
+---@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment.
+---@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player
