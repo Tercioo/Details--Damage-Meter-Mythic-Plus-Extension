@@ -33,7 +33,7 @@ local _ = nil
 ---@field SandTimeIcon texture
 ---@field KeylevelText fontstring
 ---@field StrongArmIcon texture
----@field RantingLabel fontstring
+---@field RatingLabel fontstring
 ---@field LeftFiligree texture
 ---@field RightFiligree texture
 ---@field BottomFiligree texture
@@ -64,35 +64,19 @@ local Loc = _G.LibStub("AceLocale-3.0"):GetLocale("Details")
 local CONST_DEBUG_MODE = false
 local LOOT_DEBUG_MODE = false
 
-local lineTextSettings = {
-    color = "white",
-    size = 12,
-    outline = "NONE",
-}
-local lineHoverSettings = {
-    color = "orange",
-    size = 12,
-    outline = "NONE",
-}
-local lineStandoutSettings = {
-    color = {230/255, 204/255, 128/255},
-    size = 12,
-    outline = "NONE",
-}
-
 --main frame settings
 local mainFrameName = "DetailsMythicPlusBreakdownFrame"
 local mainFrameWidth = 1200
 local mainFrameHeight = 420
 --where the header is positioned in the Y axis from the top of the frame
-local headerY = -70
+local headerY = -55
 --the amount of lines to be created to show player data
-local lineAmount = 6
+local lineAmount = 5
 --player info area width (a.k.a the width of each line)
-local lineWidth = mainFrameWidth - 6
-local lineOffset = 3
+local lineWidth = mainFrameWidth - 17
+local lineOffset = 2
 --the height of each line
-local lineHeight = 40
+local lineHeight = 46
 --two backdrop colors
 local lineColor1 = {1, 1, 1, 0.05}
 local lineColor2 = {1, 1, 1, 0.1}
@@ -161,7 +145,8 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     --title string
     local titleString = readyFrame:CreateFontString("$parentTitle", "overlay", "GameFontNormalLarge")
-    titleString:SetPoint("top", readyFrame, "top", 0, -14)
+    titleString:SetPoint("top", readyFrame, "top", 0, -18)
+    DetailsFramework:SetFontSize(titleString, 20)
     readyFrame.TitleString = titleString
 
     --elapsed fontstring
@@ -240,18 +225,18 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     --header frame
     local headerTable = {
-        {text = "", width = 50}, --player portrait
-        {text = "", width = 20}, --spec icon
-        {text = "Player Name", width = 100},
-        {text = "M+ Score", width = 100},
-        {text = "Deaths", width = 100},
+        {text = "", width = 60}, --player portrait
+        {text = "", width = 25}, --spec icon
+        {text = "Player Name", width = 110},
+        {text = "M+ Score", width = 80},
+        {text = "Deaths", width = 80},
         {text = "Damage Taken", width = 100},
         {text = "DPS", width = 100},
         {text = "HPS", width = 100},
         {text = "Interrupts", width = 100},
-        {text = "Dispels", width = 100},
-        {text = "CC Casts", width = 100},
-        {text = "Empty Space", width = 200},
+        {text = "Dispels", width = 80},
+        {text = "CC Casts", width = 80},
+        {text = "", width = 250},
     }
     local headerOptions = {
         padding = 2,
@@ -265,7 +250,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     do --mythic+ run data
 		local textColor = {1, 0.8196, 0, 1}
-		local textSize = 11
+		local textSize = 12
 
 		--clock texture and icon to show the total time elapsed
 		local elapsedTimeIcon = readyFrame:CreateTexture("$parentClockIcon", "artwork", nil, 2)
@@ -277,7 +262,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 		elapsedTimeText:SetTextColor(1, 1, 1)
 		detailsFramework:SetFontSize(elapsedTimeText, 11)
 		elapsedTimeText:SetText("00:00")
-		elapsedTimeText:SetPoint("left", elapsedTimeIcon, "right", 3, 0)
+		elapsedTimeText:SetPoint("left", elapsedTimeIcon, "right", 6, -3)
 		readyFrame.ElapsedTimeText = elapsedTimeText
 
 		--another clock texture and icon to show the wasted time (time out of combat)
@@ -292,31 +277,18 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 		detailsFramework:SetFontSize(outOfCombatText, 11)
 		detailsFramework:SetFontColor(outOfCombatText, "orangered")
 		outOfCombatText:SetText("00:00")
-		outOfCombatText:SetPoint("left", outOfCombatIcon, "right", 3, 0)
+		outOfCombatText:SetPoint("left", outOfCombatIcon, "right", 6, -3)
 		readyFrame.OutOfCombatText = outOfCombatText
 
-		--create the sandtime icon and a text to show the keystone level
-		local sandTimeIcon = readyFrame:CreateTexture("$parentSandTimeIcon", "artwork", nil, 2)
-		sandTimeIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
-		sandTimeIcon:SetTexCoord(81/512, 137/512, 83/512, 143/512)
-		readyFrame.SandTimeIcon = sandTimeIcon
-
-		local keyLevelText = readyFrame:CreateFontString("$parentKeyLevelText", "artwork", "GameFontNormal")
-		keyLevelText:SetTextColor(1, 1, 1)
-		detailsFramework:SetFontSize(keyLevelText, 11)
-		keyLevelText:SetText("0")
-		keyLevelText:SetPoint("left", sandTimeIcon, "right", 1, 0)
-		readyFrame.KeylevelText = keyLevelText
-
-		--create a strong arm texture and a text to show the ranting of the player
+		--create a strong arm texture and a text to show the rating of the player
 		local strongArmIcon = readyFrame:CreateTexture("$parentStrongArmIcon", "artwork", nil, 2)
 		strongArmIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
 		strongArmIcon:SetTexCoord(84/512, 145/512, 151/512, 215/512)
 		readyFrame.StrongArmIcon = strongArmIcon
 
-		local rantingLabel = detailsFramework:CreateLabel(readyFrame, "0", textSize, textColor)
-		rantingLabel:SetPoint("left", strongArmIcon, "right", 3, 0)
-		readyFrame.RantingLabel = rantingLabel
+		local ratingLabel = detailsFramework:CreateLabel(readyFrame, "0", textSize, textColor)
+		ratingLabel:SetPoint("left", strongArmIcon, "right", 8, -3)
+		readyFrame.RatingLabel = ratingLabel
 
         local buttonSize = 24
 
@@ -325,11 +297,8 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         readyFrame.ElapsedTimeIcon:SetPoint("bottomleft", headerFrame, "topleft", 50, 12)
         readyFrame.OutOfCombatIcon:SetPoint("left", readyFrame.ElapsedTimeIcon, "right", 70, 0)
 
-        readyFrame.SandTimeIcon:SetSize(buttonSize, buttonSize) --original size is 32x60, need to adjust to the correct size
-        readyFrame.SandTimeIcon:SetPoint("left", readyFrame.OutOfCombatIcon, "right", 70, 0)
-
         readyFrame.StrongArmIcon:SetSize(buttonSize, buttonSize)
-        readyFrame.StrongArmIcon:SetPoint("left", readyFrame.SandTimeIcon, "right", 70, 0)
+        readyFrame.StrongArmIcon:SetPoint("left", readyFrame.OutOfCombatIcon, "right", 70, 0)
     end
 
     --create 6 rows to show data of the player, it only require 5 lines, the last one can be used on exception cases.
@@ -476,8 +445,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         lines[i]:Hide()
     end
 
-    local playerRatingScore = 0
-
     local topScores = {
         [6] = {key = "damageTaken", line = 0, best = 0},
         [7] = {key = "dps", line = 0, best = 0},
@@ -487,6 +454,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         [11] = {key = "ccCasts", line = 0, best = 0},
     }
 
+    local playerRating = 0
     for i = 1, lineAmount do
         local line = lines[i]
         local frames = line:GetFramesFromHeaderAlignment()
@@ -510,10 +478,10 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             --dumpt(playerData)
             local playerPortrait = frames[1]
             local specIcon = frames[2]
-            local playerScore = frames[4]
 
+            -- manually setting the textures, buttons are set through SetPlayerData
             if (GetUnitName("player", true) == playerData.name) then
-                playerRatingScore = playerData.score
+                playerRating = playerData.score
             end
 
             SetPortraitTexture(playerPortrait.Portrait, playerData.unitId)
@@ -532,9 +500,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                 playerPortrait.RoleIcon:Hide()
             end
 
-            -- manually setting the labels, buttons are set through SetPlayerData
             specIcon:SetTexture(select(4, GetSpecializationInfoByID(playerData.spec)))
-            playerScore:SetTextColor(playerData.scoreColor.r, playerData.scoreColor.g, playerData.scoreColor.b)
 
             for _, value in pairs(topScores) do
                 if (value.best < playerData[value.key]) then
@@ -563,35 +529,33 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
         mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
         mainFrame.OutOfCombatText:SetText(detailsFramework:IntegerToTimer(notInCombat))
-        mainFrame.KeylevelText:SetText(mythicPlusData.Level) --the level at the run displays above the header
         mainFrame.Level:SetText(mythicPlusData.Level) --the level in the big circle at the top
 
         mainFrame.TitleString:SetText(mythicPlusData.DungeonName)
     end
 
-    --mainFrame.RantingLabel:SetText(Details.LastMythicPlusData.Level or (mythicPlusData and mythicPlusData.Level) or 0)
-
+    --mainFrame.RatingLabel:SetText(Details.LastMythicPlusData.Level or (mythicPlusData and mythicPlusData.Level) or 0)
+    local oldRating = playerRating
     if (Details.LastMythicPlusData) then
-        if (Details.LastMythicPlusData.NewDungeonScore and Details.LastMythicPlusData.OldDungeonScore) then
-            local gainedScore = Details.LastMythicPlusData.NewDungeonScore - Details.LastMythicPlusData.OldDungeonScore
-            local color = C_ChallengeMode.GetDungeonScoreRarityColor(Details.LastMythicPlusData.NewDungeonScore)
-            if (not color) then
-                color = _G["HIGHLIGHT_FONT_COLOR"]
-            end
-            local text = ""
-            if (gainedScore >= 1) then
-                local textToFormat = "%d (+%d)"
-                text = textToFormat:format(Details.LastMythicPlusData.NewDungeonScore, gainedScore)
-            else
-                local textToFormat = "%d"
-                text = textToFormat:format(Details.LastMythicPlusData.NewDungeonScore)
-            end
-            mainFrame.RantingLabel:SetText(color:WrapTextInColorCode(text))
-            mainFrame.RantingLabel:SetTextColor(detailsFramework:ParseColors("limegreen"))
-        else
-            mainFrame.RantingLabel:SetText(playerRatingScore)
-        end
+        oldRating = Details.LastMythicPlusData.OldDungeonScore or oldRating
+        playerRating = Details.LastMythicPlusData.NewDungeonScore or playerRating
     end
+
+    local gainedScore = playerRating - oldRating
+    local color = C_ChallengeMode.GetDungeonScoreRarityColor(playerRating)
+    if (not color) then
+        color = _G["HIGHLIGHT_FONT_COLOR"]
+    end
+    local text = ""
+    if (gainedScore >= 1) then
+        local textToFormat = "%d (+%d)"
+        text = textToFormat:format(playerRating, gainedScore)
+    else
+        local textToFormat = "%d"
+        text = textToFormat:format(playerRating)
+    end
+    mainFrame.RatingLabel:SetText(text)
+    mainFrame.RatingLabel:SetTextColor(color)
 
     ---@type details_instanceinfo
 	local instanceInfo = mythicPlusData and Details:GetInstanceInfo(mythicPlusData.MapID) or Details:GetInstanceInfo(Details:GetCurrentCombat().mapId)
@@ -745,6 +709,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
 
     local playerScore = CreateBreakdownLabel(line, function(self, playerData)
         self:SetText(playerData.score)
+        self:SetTextColor(playerData.scoreColor.r, playerData.scoreColor.g, playerData.scoreColor.b)
     end)
 
     local playerDeaths = CreateBreakdownLabel(line, function(self, playerData)
