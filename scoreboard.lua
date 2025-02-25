@@ -353,6 +353,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 		end
 	end
 
+	if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
+        --no mythic+ segment found
+        mainFrame:Hide()
+        return
+    end
+
     --local mythicPlusOverallSegment = Details:GetOverallCombat()
     local combatTime = mythicPlusOverallSegment:GetCombatTime()
 
