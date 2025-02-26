@@ -1,10 +1,11 @@
-## Interface: 110007
-## Title: Details! Damage Meter Mythic Plus
+## Interface: 110100
+## Title: Details!: Mythic Plus Extension
 ## Notes: Add Mythic Plus stuff on Details!
 ## SavedVariables: Details_MythicPlusDB
 ## SavedVariablesPerCharacter: Details_MythicPlus_CharacterDB
 ## RequiredDeps: Details
 ## Version: #@project-version@
+## IconTexture: Interface\AddOns\Details\images\minimap
 
 start.lua
 parser.lua
