@@ -52,6 +52,8 @@ local mythicPlusBreakdown = {
     lines = {},
 }
 
+private.addon.mythicPlusBreakdown = mythicPlusBreakdown
+
 local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
 local GetItemIcon = GetItemIcon or C_Item.GetItemIcon
 local GetDetailedItemLevelInfo = GetDetailedItemLevelInfo or C_Item.GetDetailedItemLevelInfo

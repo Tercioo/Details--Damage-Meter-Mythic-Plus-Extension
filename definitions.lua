@@ -26,6 +26,7 @@
 ---@field profile profile store the profile settings
 ---@field detailsEventListener table register and listen to Details! events
 ---@field data table store data from the current mythic plus run
+---@field mythicPlusBreakdown details_mythicplus_breakdown
 ---@field InitializeEvents fun() run on PLAYER_LOGIN, create the function to listen to details events
 ---@field OnMythicDungeonStart fun(...) run on COMBAT_MYTHICDUNGEON_START
 ---@field OnMythicDungeonEnd fun(...) run on COMBAT_MYTHICDUNGEON_END

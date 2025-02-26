@@ -31,7 +31,7 @@ function addon.InitializeEvents()
     end
 
     function addon.OnMythicPlusOverallReady(...)
-        print("Mythic Plus Overall Ready")
+        private.addon.mythicPlusBreakdown.MythicPlusOverallSegmentReady()
     end
 
     function addon.OnMythicDungeonStart(...)
