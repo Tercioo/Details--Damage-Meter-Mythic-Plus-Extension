@@ -70,6 +70,8 @@ function private.addon.OnInit(self, profile) --PLAYER_LOGIN
     detailsEventListener:RegisterEvent("COMBAT_PLAYER_ENTER")
     detailsEventListener:RegisterEvent("COMBAT_PLAYER_LEAVE")
 
+    private.addon.InitializeEvents()
+
     private.log("addon loaded")
 end
 
