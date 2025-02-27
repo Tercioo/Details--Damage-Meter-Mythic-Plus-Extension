@@ -14,16 +14,16 @@ local addonName, private = ...
 local addon = private.addon
 local _ = nil
 
----@class details_mythicplus_breakdown : table
----@field lines details_mythicbreakdown_line[]
----@field CreateBigBreakdownFrame fun():details_mythicbreakdown_bigframe
----@field CreateLineForBigBreakdownFrame fun(parent:details_mythicbreakdown_bigframe, header:details_mythicbreakdown_headerframe, index:number):details_mythicbreakdown_line
+---@class scoreboard_object : table
+---@field lines scoreboard_line[]
+---@field CreateBigBreakdownFrame fun():scoreboard_mainframe
+---@field CreateLineForBigBreakdownFrame fun(parent:scoreboard_mainframe, header:scoreboard_header, index:number):scoreboard_line
 ---@field RefreshBigBreakdownFrame fun()
 ---@field MythicPlusOverallSegmentReady fun() executed when details! send the event COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field SetFontSettings fun() set the default font settings
 
----@class details_mythicbreakdown_bigframe : frame
----@field HeaderFrame details_mythicbreakdown_headerframe
+---@class scoreboard_mainframe : frame
+---@field HeaderFrame scoreboard_header
 ---@field TitleString fontstring
 ---@field DungeonBackdropTexture texture
 ---@field ElapsedTimeIcon texture
@@ -41,12 +41,36 @@ local _ = nil
 ---@field YellowFlash texture
 ---@field Level fontstring
 
----@class details_mythicbreakdown_headerframe : df_headerframe
----@field lines table<number, details_mythicbreakdown_line>
+---@class scoreboard_header : df_headerframe
+---@field lines table<number, scoreboard_line>
 
----@class details_mythicbreakdown_line : button, df_headerfunctions
+---@class scoreboard_line : button, df_headerfunctions
 
----@type details_mythicplus_breakdown
+---@class scoreboard_button : df_button
+---@field PlayerData table
+---@field SetPlayerData fun(self:scoreboard_button, playerData:table)
+---@field GetPlayerData fun(self:scoreboard_button):table
+---@field MarkTop fun(self:scoreboard_button)
+
+---@class scoreboard_playerdata : table
+---@field name string
+---@field class string
+---@field spec number
+---@field role string
+---@field score number
+---@field scoreColor table
+---@field deaths number
+---@field damageTaken number
+---@field dps number
+---@field hps number
+---@field interrupts number
+---@field interruptCasts number
+---@field dispels number
+---@field ccCasts number
+---@field unitId string
+---@field combatUid string
+
+---@type scoreboard_object
 ---@diagnostic disable-next-line: missing-fields
 local mythicPlusBreakdown = {
     lines = {},
@@ -117,7 +141,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         return _G[mainFrameName]
     end
 
-    ---@type details_mythicbreakdown_bigframe
+    ---@type scoreboard_mainframe
     local readyFrame = CreateFrame("frame", mainFrameName, UIParent, "BackdropTemplate")
     readyFrame:SetSize(mainFrameWidth, mainFrameHeight)
     readyFrame:SetPoint("center", UIParent, "center", 0, 0)
@@ -244,7 +268,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         padding = 2,
     }
 
-    ---@type details_mythicbreakdown_headerframe
+    ---@type scoreboard_header
     local headerFrame = detailsFramework:CreateHeader(readyFrame, headerTable, headerOptions)
     headerFrame:SetPoint("topleft", readyFrame, "topleft", 5, headerY)
     headerFrame.lines = {}
@@ -317,7 +341,7 @@ end
 --this function get the overall mythic+ segment created after a mythic+ run has finished
 --then it fill the lines with data from the overall segment
 function mythicPlusBreakdown.RefreshBigBreakdownFrame()
-    ---@type details_mythicbreakdown_bigframe
+    ---@type scoreboard_mainframe
     local mainFrame = _G[mainFrameName]
     local headerFrame = mainFrame.HeaderFrame
     local lines = headerFrame.lines
@@ -386,6 +410,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
             ---@cast actorObject actordamage
 
+            ---@type scoreboard_playerdata
             local thisPlayerData = {
                 name = actorObject.nome,
                 class = actorObject.classe,
@@ -468,11 +493,13 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         --(re)set the line contents
         for j = 1, #frames do
             local frame = frames[j]
+
             if (frame:GetObjectType() == "FontString" or frame:GetObjectType() == "Button") then
                 frame:SetText("")
             elseif (frame:GetObjectType() == "Texture") then
                 frame:SetTexture(nil)
             end
+
             if (playerData and frame.SetPlayerData) then
                 frame:SetPlayerData(playerData)
             end
@@ -584,11 +611,15 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
 end
 
 local function OnEnterLineBreakdownButton(self)
-    local text = self.MyObject.button.text
+    local frameworkButton = self.MyObject
+    local text = frameworkButton.button.text
     text.originalColor = {text:GetTextColor()}
     detailsFramework:SetFontSize(text, addon.profile.font.hover_size)
     detailsFramework:SetFontColor(text, addon.profile.font.hover_color)
     detailsFramework:SetFontOutline(text, addon.profile.font.hover_outline)
+
+    local playerData = frameworkButton:GetPlayerData()
+
 end
 
 local function OnLeaveLineBreakdownButton(self)
@@ -602,6 +633,7 @@ function mythicPlusBreakdown.SetFontSettings()
     for i = 1, #mythicPlusBreakdown.lines do
         local line = mythicPlusBreakdown.lines[i]
 
+        ---@type fontstring[]
         local regions = {line:GetRegions()}
         for j = 1, #regions do
             local region = regions[j]
@@ -613,27 +645,29 @@ function mythicPlusBreakdown.SetFontSettings()
         end
 
         --include framework buttons
+        ---@type df_blizzbutton[]
         local children = {line:GetChildren()}
         for j = 1, #children do
-            local child = children[j]
-            if (child:GetObjectType() == "Button" and child.MyObject) then --.MyObject is a button from the framework
-                local buttonObject = child.MyObject
+            local blizzButton = children[j]
+            if (blizzButton:GetObjectType() == "Button" and blizzButton.MyObject) then --.MyObject is a button from the framework
+                local buttonObject = blizzButton.MyObject
                 buttonObject:SetFontSize(addon.profile.font.regular_size)
                 buttonObject:SetTextColor(addon.profile.font.regular_color)
-                detailsFramework:SetFontOutline(child.text, addon.profile.font.regular_outline)
+                detailsFramework:SetFontOutline(buttonObject.button.text, addon.profile.font.regular_outline)
             end
         end
     end
 end
 
 local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPlayerData)
+    ---@type scoreboard_button
     local button = detailsFramework:CreateButton(line, function (self)
         OpenLineBreakdown(self, mainAttribute, subAttribute)
     end, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
 
     button:SetHook("OnEnter", OnEnterLineBreakdownButton)
     button:SetHook("OnLeave", OnLeaveLineBreakdownButton)
-    button.button.text:ClearAllPoints("left", button.button, "left")
+    button.button.text:ClearAllPoints()
     button.button.text:SetPoint("left", button.button, "left")
     button.button.text.originalColor = {button.button.text:GetTextColor()}
 
@@ -678,7 +712,7 @@ local function CreateBreakdownLabel(line, onSetPlayerData)
 end
 
 function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFrame, index)
-    ---@type details_mythicbreakdown_line
+    ---@type scoreboard_line
     local line = CreateFrame("button", "$parentLine" .. index, mainFrame, "BackdropTemplate")
     detailsFramework:Mixin(line, detailsFramework.HeaderFunctions)
     mythicPlusBreakdown.lines[#mythicPlusBreakdown.lines+1] = line
