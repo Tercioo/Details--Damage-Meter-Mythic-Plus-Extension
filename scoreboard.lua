@@ -296,11 +296,14 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
         readyFrame.ElapsedTimeIcon:SetSize(buttonSize, buttonSize)
         readyFrame.OutOfCombatIcon:SetSize(buttonSize, buttonSize)
-        readyFrame.ElapsedTimeIcon:SetPoint("bottomleft", headerFrame, "topleft", 50, 12)
-        readyFrame.OutOfCombatIcon:SetPoint("left", readyFrame.ElapsedTimeIcon, "right", 70, 0)
+        readyFrame.ElapsedTimeIcon:SetPoint("bottomleft", headerFrame, "topleft", 3, 12)
+        readyFrame.OutOfCombatIcon:SetPoint("left", readyFrame.ElapsedTimeIcon, "right", 120, 0)
 
         readyFrame.StrongArmIcon:SetSize(buttonSize, buttonSize)
         readyFrame.StrongArmIcon:SetPoint("left", readyFrame.OutOfCombatIcon, "right", 70, 0)
+
+        readyFrame.StrongArmIcon:Hide()
+        readyFrame.RatingLabel:Hide()
     end
 
     --create 6 rows to show data of the player, it only require 5 lines, the last one can be used on exception cases.
@@ -529,8 +532,8 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         local runTime = mythicPlusData.RunTime
         local notInCombat = runTime - combatTime
 
-        mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
-        mainFrame.OutOfCombatText:SetText(detailsFramework:IntegerToTimer(notInCombat))
+        mainFrame.ElapsedTimeText:SetText("Run Time: " .. detailsFramework:IntegerToTimer(runTime))
+        mainFrame.OutOfCombatText:SetText("Not in Combat: " .. detailsFramework:IntegerToTimer(notInCombat))
         mainFrame.Level:SetText(mythicPlusData.Level) --the level in the big circle at the top
 
         mainFrame.TitleString:SetText(mythicPlusData.DungeonName)
