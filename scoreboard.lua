@@ -48,8 +48,8 @@ local _ = nil
 
 ---@class scoreboard_button : df_button
 ---@field PlayerData table
----@field SetPlayerData fun(self:scoreboard_button, playerData:table)
----@field GetPlayerData fun(self:scoreboard_button):table
+---@field SetPlayerData fun(self:scoreboard_button, playerData:scoreboard_playerdata)
+---@field GetPlayerData fun(self:scoreboard_button):scoreboard_playerdata
 ---@field MarkTop fun(self:scoreboard_button)
 
 ---@class scoreboard_playerdata : table
@@ -68,7 +68,7 @@ local _ = nil
 ---@field dispels number
 ---@field ccCasts number
 ---@field unitId string
----@field combatUid string
+---@field combatUid number
 
 ---@type scoreboard_object
 ---@diagnostic disable-next-line: missing-fields
@@ -610,16 +610,84 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
     Details:OpenSpecificBreakdownWindow(Details:GetCombatByUID(playerData.combatUid), playerData.name, mainAttribute, subAttribute)
 end
 
-local function OnEnterLineBreakdownButton(self)
-    local frameworkButton = self.MyObject
-    local text = frameworkButton.button.text
+local showTargetsTooltip = function(self, playerObject, text)
+    local targets = playerObject.targets
+
+    if (targets) then
+        local targetList = {}
+        for targetName, amount in pairs(targets) do
+            targetList[#targetList+1] = {targetName, amount}
+        end
+        table.sort(targetList, function(t1, t2) return t1[2] > t2[2] end)
+
+        local text = ""
+        for i = 1, #targetList do
+            local targetName = targetList[i][1]
+            local amount = targetList[i][2]
+            text = text .. targetName .. ": " .. amount .. "\n"
+        end
+
+        GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+        GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. text)
+        GameTooltip:AddLine(text, 1, 1, 1, true)
+        GameTooltip:Show()
+    end
+end
+
+---@param self df_blizzbutton
+---@param button scoreboard_button
+local function OnEnterLineBreakdownButton(self, button)
+    local text = button.button.text
     text.originalColor = {text:GetTextColor()}
     detailsFramework:SetFontSize(text, addon.profile.font.hover_size)
     detailsFramework:SetFontColor(text, addon.profile.font.hover_color)
     detailsFramework:SetFontOutline(text, addon.profile.font.hover_outline)
 
-    local playerData = frameworkButton:GetPlayerData()
+    local playerData = button:GetPlayerData()
+    if (playerData) then
+        local playerName = playerData.name
+        local combatObject = Details:GetCombatByUID(playerData.combatUid)
+        if (combatObject) then
+            if (false or thisButtonIsADPSButton) then --not defined yet
+                local playerObject = combatObject:GetActor(DETAILS_ATTRIBUTE_DAMAGE, playerName)
+                if (playerObject) then
+                    showTargetsTooltip(self, playerObject, " - Damage Done")
+                end
 
+            elseif (false or thisButtonIsAHPSButton) then --not defined yet
+                local playerObject = combatObject:GetActor(DETAILS_ATTRIBUTE_HEAL, playerName)
+                if (playerObject) then
+                    showTargetsTooltip(self, playerObject, " - Healing Done")
+                end
+
+            elseif (false or thisButtonIsADamageTakenButton) then --not defined yet
+                ---@type actordamage
+                local playerObject = combatObject:GetActor(DETAILS_ATTRIBUTE_DAMAGE, playerName)
+                local damageTakenFrom = playerObject.damage_from
+
+                --indexed table with subtable with [1] spellId [2] amount
+                ---@type table<number, table<number, number>>
+                local spellsThatHitThisPlayer = {}
+
+                for damagerName in pairs (damageTakenFrom) do
+                    local damagerObject = combatObject:GetActor(DETAILS_ATTRIBUTE_DAMAGE, damagerName)
+                    if (damagerObject) then
+                        for spellId, spellTable in pairs(damagerObject:GetSpellList()) do
+                            if (spellTable.targets and spellTable.targets[playerName]) then
+                                local amount = spellTable.targets[playerName]
+                                if (amount > 0) then
+                                    spellsThatHitThisPlayer[#spellsThatHitThisPlayer+1] = {spellId, amount}
+                                end
+                            end
+                        end
+                    end
+                end
+
+                table.sort(spellsThatHitThisPlayer, function(t1, t2) return t1[2] > t2[2] end)
+
+            end
+        end
+    end
 end
 
 local function OnLeaveLineBreakdownButton(self)
@@ -627,6 +695,7 @@ local function OnLeaveLineBreakdownButton(self)
     detailsFramework:SetFontSize(text, addon.profile.font.regular_size)
     detailsFramework:SetFontOutline(text, addon.profile.font.regular_outline)
     detailsFramework:SetFontColor(text, text.originalColor)
+    GameTooltip:Hide()
 end
 
 function mythicPlusBreakdown.SetFontSettings()
