@@ -35,6 +35,10 @@ function addon.InitializeEvents()
     end
 
     function addon.OnMythicDungeonStart(...)
+        addon.profile.last_run_data.start_time = time()
+        --store the first value in the in combat timeline.
+        addon.profile.last_run_data.incombat_timeline = {{time = time(), in_combat = false}}
+        addon.profile.last_run_data.boss_timeline = {} --todo(tercio): need to insert the bosses here
         addon.StartParser()
     end
 
@@ -48,10 +52,18 @@ function addon.InitializeEvents()
     function addon.OnEncounterEnd(...)
     end
 
+    ---@class scoreboard_incombat_timeline_step : table
+    ---@field time number epoch time of when the player entered or left combat
+    ---@field in_combat boolean whether the player is in combat or not
+
     function addon.OnPlayerEnterCombat(...)
+        local incombatTimeline = addon.profile.last_run_data.incombat_timeline
+        table.insert(incombatTimeline, {time = time(), in_combat = true})
     end
 
     function addon.OnPlayerLeaveCombat(...)
+        local incombatTimeline = addon.profile.last_run_data.incombat_timeline
+        table.insert(incombatTimeline, {time = time(), in_combat = false})
     end
 
 end

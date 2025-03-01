@@ -23,6 +23,13 @@ local parserFrame = CreateFrame("frame")
 function addon.StartParser()
     print("+ Mythic Dungeon Start")
 
+    --this data need to survive a /reload
+    addon.profile.last_run_data.interrupt_cast_overlap = {}
+    addon.profile.last_run_data.interrupt_cast_overlap_done = {}
+
+    --store a timeline of when the group was in combat or not
+    addon.profile.last_run_data.incombat_timeline = {}
+
     addon.data.interrupt_cast_overlap = {}
     addon.data.interrupt_cast_overlap_done = {}
 
@@ -45,7 +52,7 @@ local parserFunctions = {
     ["SPELL_CAST_SUCCESS"] = function(token, time, sourceGUID, sourceName, sourceFlags, targetGUID, targetName, targetFlags, targetRaidFlags, spellId, spellName, spellType, extraSpellID, extraSpellName, extraSchool)
         local interruptSpells = LIB_OPEN_RAID_SPELL_INTERRUPT
         if (interruptSpells[spellId]) then
-            addon.data.interrupt_cast_overlap[targetGUID] = addon.data.interrupt_cast_overlap[targetGUID] or {}
+            addon.profile.last_run_data.interrupt_cast_overlap[targetGUID] = addon.profile.last_run_data.interrupt_cast_overlap[targetGUID] or {}
             ---@type interrupt_overlap
             local spellOverlapData = {
                 time = time,
@@ -55,7 +62,7 @@ local parserFunctions = {
                 extraSpellID = extraSpellID,
                 used = false,
             }
-            table.insert(addon.data.interrupt_cast_overlap[targetGUID], spellOverlapData)
+            table.insert(addon.profile.last_run_data.interrupt_cast_overlap[targetGUID], spellOverlapData)
         end
     end
 }
@@ -70,7 +77,7 @@ end
 
 
 function addon.CountInterruptOverlaps()
-    for _, data in pairs(addon.data.interrupt_cast_overlap) do
+    for _, data in pairs(addon.profile.last_run_data.interrupt_cast_overlap) do
         for i = 1, #data do
             ---@type interrupt_overlap
             local overlapData = data[i]
@@ -92,8 +99,8 @@ function addon.CountInterruptOverlaps()
                         local extraSpellID2 = overlapData2.extraSpellID
 
                         if (time2 - time < 1.5) then
-                            addon.data.interrupt_cast_overlap_done[sourceName] = (addon.data.interrupt_cast_overlap_done[sourceName] or 0) + 1
-                            addon.data.interrupt_cast_overlap_done[sourceName2] = (addon.data.interrupt_cast_overlap_done[sourceName2] or 0) + 1
+                            addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] or 0) + 1
+                            addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName2] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName2] or 0) + 1
                             print("Overlap: ", sourceName, targetName, C_Spell.GetSpellInfo(spellId).name, sourceName2, targetName2, "with", C_Spell.GetSpellInfo(spellId2).name)
 
                             overlapData.used = true

@@ -18,13 +18,15 @@ local _ = nil
 ---@field lines scoreboard_line[]
 ---@field CreateBigBreakdownFrame fun():scoreboard_mainframe
 ---@field CreateLineForBigBreakdownFrame fun(parent:scoreboard_mainframe, header:scoreboard_header, index:number):scoreboard_line
+---@field CreateActivityPanel fun(parent:scoreboard_mainframe):scoreboard_activityframe
 ---@field RefreshBigBreakdownFrame fun()
 ---@field MythicPlusOverallSegmentReady fun() executed when details! send the event COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field SetFontSettings fun() set the default font settings
 
 ---@class scoreboard_mainframe : frame
 ---@field HeaderFrame scoreboard_header
----@field TitleString fontstring
+---@field ActivityFrame scoreboard_activityframe
+---@field DungeonNameFontstring fontstring
 ---@field DungeonBackdropTexture texture
 ---@field ElapsedTimeIcon texture
 ---@field ElapsedTimeText fontstring
@@ -72,6 +74,14 @@ local _ = nil
 ---@field ccCasts number
 ---@field unitId string
 ---@field combatUid number
+---@field activityTimeDamage number
+---@field activityTimeHeal number
+
+---@class scoreboard_activityframe : frame
+---@field InCombatTexture texture
+---@field OutOfCombatTexture texture
+---@field BackgroundTexture texture
+---@field SetActivity fun(self: scoreboard_activityframe, inCombat: number, outOfCombat: number)
 
 ---@type scoreboard_object
 ---@diagnostic disable-next-line: missing-fields
@@ -96,8 +106,10 @@ local LOOT_DEBUG_MODE = false
 --main frame settings
 local mainFrameName = "DetailsMythicPlusBreakdownFrame"
 local mainFrameHeight = 420
--- the padding on the left and right side it should keep between the frame itself and the table
+--the padding on the left and right side it should keep between the frame itself and the table
 local mainFramePaddingHorizontal = 5
+--offset for the dungeon name y position related to the top of the frame
+local dungeonNameY = -10
 --where the header is positioned in the Y axis from the top of the frame
 local headerY = -55
 --the amount of lines to be created to show player data
@@ -109,6 +121,8 @@ local lineHeight = 46
 local lineColor1 = {1, 1, 1, 0.05}
 local lineColor2 = {1, 1, 1, 0.1}
 local lineBackdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true}
+
+local activityFrameY = headerY - 45 + (lineHeight * lineAmount * -1)
 
 ---store spell names of interrupt spells
 ---the table is filled when the main frame is created
@@ -164,38 +178,30 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     backgroundDungeonTexture:SetPoint("bottomright", readyFrame, "bottomright", -3, 3)
     readyFrame.DungeonBackdropTexture = backgroundDungeonTexture
 
-    --detailsFramework:ApplyStandardBackdrop(readyFrame)
     detailsFramework:MakeDraggable(readyFrame)
 
+    --close button at the top right of the frame
     local closeButton = detailsFramework:CreateCloseButton(readyFrame, "$parentCloseButton")
     closeButton:SetScript("OnClick", function()
         readyFrame:Hide()
     end)
     closeButton:SetPoint("topright", readyFrame, "topright", -5, -5)
 
-    --title string
-    local titleString = readyFrame:CreateFontString("$parentTitle", "overlay", "GameFontNormalLarge")
-    titleString:SetPoint("top", readyFrame, "top", 0, -18)
-    DetailsFramework:SetFontSize(titleString, 20)
-    readyFrame.TitleString = titleString
+    mythicPlusBreakdown.CreateActivityPanel(readyFrame)
 
-    --elapsed fontstring
+    --dungeon name at the top of the frame
+    local dungeonNameFontstring = readyFrame:CreateFontString("$parentTitle", "overlay", "GameFontNormalLarge")
+    dungeonNameFontstring:SetPoint("top", readyFrame, "top", 0, dungeonNameY)
+    DetailsFramework:SetFontSize(dungeonNameFontstring, 20)
+    readyFrame.DungeonNameFontstring = dungeonNameFontstring
 
-	--update the run time and time not in combat
-    --[=[
-	local elapsedTime = Details222.MythicPlus.time or 1507
-	readyFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(elapsedTime))
+    local runTimeFontstring = readyFrame:CreateFontString("$parentRunTime", "overlay", "GameFontNormal")
+    runTimeFontstring:SetPoint("top", dungeonNameFontstring, "bottom", 0, -5)
+    DetailsFramework:SetFontSize(runTimeFontstring, 16)
+    runTimeFontstring:SetText("00:00")
+    readyFrame.ElapsedTimeText = runTimeFontstring
 
-	if (overallMythicDungeonCombat:GetCombatType() == DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
-		local combatTime = overallMythicDungeonCombat:GetCombatTime()
-		local notInCombat = elapsedTime - combatTime
-		readyFrame.OutOfCombatText:SetText(detailsFramework:IntegerToTimer(notInCombat))
-	else
-		readyFrame.OutOfCombatText:SetText("00:00")
-	end
-    --]=]
-
-    do
+    do --create the orange circle with spikes and the level text
         local topFrame = CreateFrame("frame", "$parentTopFrame", readyFrame, "BackdropTemplate")
         topFrame:SetPoint("topleft", readyFrame, "topleft", 0, 0)
         topFrame:SetPoint("topright", readyFrame, "topright", 0, 0)
@@ -290,13 +296,6 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 		elapsedTimeIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
 		readyFrame.ElapsedTimeIcon = elapsedTimeIcon
 
-		local elapsedTimeText = readyFrame:CreateFontString("$parentClockText", "artwork", "GameFontNormal")
-		elapsedTimeText:SetTextColor(1, 1, 1)
-		detailsFramework:SetFontSize(elapsedTimeText, 11)
-		elapsedTimeText:SetText("00:00")
-		elapsedTimeText:SetPoint("left", elapsedTimeIcon, "right", 6, -3)
-		readyFrame.ElapsedTimeText = elapsedTimeText
-
 		--another clock texture and icon to show the wasted time (time out of combat)
 		local outOfCombatIcon = readyFrame:CreateTexture("$parentClockIcon2", "artwork", nil, 2)
 		outOfCombatIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
@@ -367,177 +366,182 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
     local data = {}
 
-    for actorIndex, actorObject in damageContainer:ListActors() do
-        ---@cast actorObject actor
-        if (actorObject:IsGroupPlayer()) then
-            local unitId
-            for i = 1, #Details.PartyUnits do
-                if (Details:GetFullName(Details.PartyUnits[i]) == actorObject.nome) then
-                    unitId = Details.PartyUnits[i]
+    do --code for filling the 5 player lines
+        for actorIndex, actorObject in damageContainer:ListActors() do
+            ---@cast actorObject actor
+            if (actorObject:IsGroupPlayer()) then
+                local unitId
+                for i = 1, #Details.PartyUnits do
+                    if (Details:GetFullName(Details.PartyUnits[i]) == actorObject.nome) then
+                        unitId = Details.PartyUnits[i]
+                    end
+                end
+                unitId = unitId or actorObject.nome
+
+                if (type(actorObject.mrating) == "table") then
+                    actorObject.mrating = actorObject.mrating.currentSeasonScore
+                end
+
+                local rating = actorObject.mrating or 0
+                local ratingColor = C_ChallengeMode.GetDungeonScoreRarityColor(rating)
+                if (not ratingColor) then
+                    ratingColor = _G["HIGHLIGHT_FONT_COLOR"]
+                end
+
+                local deathAmount = 0
+                local deathTable = mythicPlusOverallSegment:GetDeaths()
+                for i = 1, #deathTable do
+                    local thisDeathTable = deathTable[i]
+                    local playerName = thisDeathTable[3]
+                    if (playerName == actorObject.nome) then
+                        deathAmount = deathAmount + 1
+                    end
+                end
+
+                ---@cast actorObject actordamage
+
+                ---@type scoreboard_playerdata
+                local thisPlayerData = {
+                    name = actorObject.nome,
+                    class = actorObject.classe,
+                    spec = actorObject.spec,
+                    role = actorObject.role or UnitGroupRolesAssigned(unitId),
+                    score = rating,
+                    previousScore = Details.PlayerRatings[Details:GetFullName(unitId)] or rating - 100,
+                    scoreColor = ratingColor,
+                    deaths = deathAmount,
+                    damageTaken = actorObject.damage_taken,
+                    dps = actorObject.total / combatTime,
+                    activityTimeDamage = actorObject:Tempo(),
+                    activityTimeHeal = 0, --place holder for now, is setted when iterating the healingContainer
+                    hps = 0,
+                    interrupts = 0,
+                    interruptCasts = mythicPlusOverallSegment:GetInterruptCastAmount(actorObject.nome),
+                    dispels = 0,
+                    ccCasts = mythicPlusOverallSegment:GetCCCastAmount(actorObject.nome),
+                    unitId = unitId,
+                    combatUid = mythicPlusOverallSegment:GetCombatUID(),
+                }
+
+                if (thisPlayerData.role == "NONE") then
+                    thisPlayerData.role = "DAMAGER"
+                end
+
+                data[#data+1] = thisPlayerData
+            end
+        end
+
+        for actorIndex, actorObject in healingContainer:ListActors() do
+            local playerData
+            for i = 1, #data do
+                if (data[i].name == actorObject.nome) then
+                    playerData = data[i]
+                    break
                 end
             end
-            unitId = unitId or actorObject.nome
 
-            if (type(actorObject.mrating) == "table") then
-                actorObject.mrating = actorObject.mrating.currentSeasonScore
+            if (playerData) then
+                ---@cast actorObject actorheal
+                playerData.hps = actorObject.total / combatTime
+                playerData.activityTimeHeal = actorObject:Tempo()
             end
+        end
 
-            local rating = actorObject.mrating or 0
-            local ratingColor = C_ChallengeMode.GetDungeonScoreRarityColor(rating)
-            if (not ratingColor) then
-                ratingColor = _G["HIGHLIGHT_FONT_COLOR"]
-            end
-
-            local deathAmount = 0
-            local deathTable = mythicPlusOverallSegment:GetDeaths()
-            for i = 1, #deathTable do
-                local thisDeathTable = deathTable[i]
-                local playerName = thisDeathTable[3]
-                if (playerName == actorObject.nome) then
-                    deathAmount = deathAmount + 1
+        for actorIndex, actorObject in utilityContainer:ListActors() do
+            local playerData
+            for i = 1, #data do
+                if (data[i].name == actorObject.nome) then
+                    playerData = data[i]
+                    break
                 end
             end
 
-            ---@cast actorObject actordamage
-
-            ---@type scoreboard_playerdata
-            local thisPlayerData = {
-                name = actorObject.nome,
-                class = actorObject.classe,
-                spec = actorObject.spec,
-                role = actorObject.role or UnitGroupRolesAssigned(unitId),
-                score = rating,
-                previousScore = Details.PlayerRatings[Details:GetFullName(unitId)] or rating - 100,
-                scoreColor = ratingColor,
-                deaths = deathAmount,
-                damageTaken = actorObject.damage_taken,
-                dps = actorObject.total / combatTime,
-                hps = 0,
-                interrupts = 0,
-                interruptCasts = mythicPlusOverallSegment:GetInterruptCastAmount(actorObject.nome),
-                dispels = 0,
-                ccCasts = mythicPlusOverallSegment:GetCCCastAmount(actorObject.nome),
-                unitId = unitId,
-                combatUid = mythicPlusOverallSegment:GetCombatUID(),
-            }
-
-            if (thisPlayerData.role == "NONE") then
-                thisPlayerData.role = "DAMAGER"
-            end
-
-            data[#data+1] = thisPlayerData
-        end
-    end
-
-    for actorIndex, actorObject in healingContainer:ListActors() do
-        local playerData
-        for i = 1, #data do
-            if (data[i].name == actorObject.nome) then
-                playerData = data[i]
-                break
+            if (playerData) then
+                ---@cast actorObject actorutility
+                playerData.interrupts = actorObject.interrupt or 0
+                playerData.dispels = actorObject.dispell or 0
             end
         end
 
-        if (playerData) then
-            ---@cast actorObject actorheal
-            playerData.hps = actorObject.total / combatTime
-        end
-    end
+        table.sort(data, function(t1, t2) return t1.role > t2.role end)
 
-    for actorIndex, actorObject in utilityContainer:ListActors() do
-        local playerData
-        for i = 1, #data do
-            if (data[i].name == actorObject.nome) then
-                playerData = data[i]
-                break
-            end
+        for i = 1, lineAmount do
+            lines[i]:Hide()
         end
 
-        if (playerData) then
-            ---@cast actorObject actorutility
-            playerData.interrupts = actorObject.interrupt or 0
-            playerData.dispels = actorObject.dispell or 0
-        end
-    end
+        local topScores = {
+            [6] = {key = "damageTaken", line = 0, best = 0},
+            [7] = {key = "dps", line = 0, best = 0},
+            [8] = {key = "hps", line = 0, best = 0},
+            [9] = {key = "interrupts", line = 0, best = 0},
+            [10] = {key = "dispels", line = 0, best = 0},
+            [11] = {key = "ccCasts", line = 0, best = 0},
+        }
 
-    table.sort(data, function(t1, t2) return t1.role > t2.role end)
+        for i = 1, lineAmount do
+            local line = lines[i]
+            local frames = line:GetFramesFromHeaderAlignment()
+            local playerData = data[i]
 
-    for i = 1, lineAmount do
-        lines[i]:Hide()
-    end
+            --(re)set the line contents
+            for j = 1, #frames do
+                local frame = frames[j]
 
-    local topScores = {
-        [6] = {key = "damageTaken", line = 0, best = 0},
-        [7] = {key = "dps", line = 0, best = 0},
-        [8] = {key = "hps", line = 0, best = 0},
-        [9] = {key = "interrupts", line = 0, best = 0},
-        [10] = {key = "dispels", line = 0, best = 0},
-        [11] = {key = "ccCasts", line = 0, best = 0},
-    }
+                if (frame:GetObjectType() == "FontString" or frame:GetObjectType() == "Button") then
+                    frame:SetText("")
+                elseif (frame:GetObjectType() == "Texture") then
+                    frame:SetTexture(nil)
+                end
 
-    for i = 1, lineAmount do
-        local line = lines[i]
-        local frames = line:GetFramesFromHeaderAlignment()
-        local playerData = data[i]
-
-        --(re)set the line contents
-        for j = 1, #frames do
-            local frame = frames[j]
-
-            if (frame:GetObjectType() == "FontString" or frame:GetObjectType() == "Button") then
-                frame:SetText("")
-            elseif (frame:GetObjectType() == "Texture") then
-                frame:SetTexture(nil)
+                if (playerData and frame.SetPlayerData) then
+                    frame:SetPlayerData(playerData)
+                end
             end
 
-            if (playerData and frame.SetPlayerData) then
-                frame:SetPlayerData(playerData)
-            end
-        end
+            if (playerData) then
+                line:Show()
+                --dumpt(playerData)
+                local playerPortrait = frames[1]
+                local specIcon = frames[2]
 
-        if (playerData) then
-            line:Show()
-            --dumpt(playerData)
-            local playerPortrait = frames[1]
-            local specIcon = frames[2]
+                -- manually setting the textures, buttons are set through SetPlayerData
+                if (GetUnitName("player", true) == playerData.name) then
+                    playerRating = playerData.score
+                end
 
-            -- manually setting the textures, buttons are set through SetPlayerData
-            if (GetUnitName("player", true) == playerData.name) then
-                playerRating = playerData.score
-            end
+                SetPortraitTexture(playerPortrait.Portrait, playerData.unitId)
+                local portraitTexture = playerPortrait.Portrait:GetTexture()
+                if (not portraitTexture) then
+                    local class = playerData.class
+                    playerPortrait.Portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
+                    playerPortrait.Portrait:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+                end
 
-            SetPortraitTexture(playerPortrait.Portrait, playerData.unitId)
-            local portraitTexture = playerPortrait.Portrait:GetTexture()
-            if (not portraitTexture) then
-                local class = playerData.class
-                playerPortrait.Portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
-                playerPortrait.Portrait:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
-            end
+                local role = playerData.role
+                if (role == "TANK" or role == "HEALER" or role == "DAMAGER") then
+                    playerPortrait.RoleIcon:SetAtlas(GetMicroIconForRole(role), TextureKitConstants.IgnoreAtlasSize)
+                    playerPortrait.RoleIcon:Show()
+                else
+                    playerPortrait.RoleIcon:Hide()
+                end
 
-            local role = playerData.role
-            if (role == "TANK" or role == "HEALER" or role == "DAMAGER") then
-                playerPortrait.RoleIcon:SetAtlas(GetMicroIconForRole(role), TextureKitConstants.IgnoreAtlasSize)
-                playerPortrait.RoleIcon:Show()
-            else
-                playerPortrait.RoleIcon:Hide()
-            end
+                specIcon:SetTexture(select(4, GetSpecializationInfoByID(playerData.spec)))
 
-            specIcon:SetTexture(select(4, GetSpecializationInfoByID(playerData.spec)))
-
-            for _, value in pairs(topScores) do
-                if (value.best < playerData[value.key]) then
-                    value.best = playerData[value.key]
-                    value.line = i
+                for _, value in pairs(topScores) do
+                    if (value.best < playerData[value.key]) then
+                        value.best = playerData[value.key]
+                        value.line = i
+                    end
                 end
             end
         end
-    end
 
-    for frameId, value in pairs(topScores) do
-        if (value.best > 0) then
-            local frames = lines[value.line] and lines[value.line]:GetFramesFromHeaderAlignment() or {}
-            if (frames[frameId] and frames[frameId].MarkTop) then
-                frames[frameId]:MarkTop()
+        for frameId, value in pairs(topScores) do
+            if (value.best > 0) then
+                local frames = lines[value.line] and lines[value.line]:GetFramesFromHeaderAlignment() or {}
+                if (frames[frameId] and frames[frameId].MarkTop) then
+                    frames[frameId]:MarkTop()
+                end
             end
         end
     end
@@ -547,12 +551,21 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
     if (mythicPlusData) then
         local runTime = mythicPlusData.RunTime
-        local notInCombat = runTime - combatTime
+        if (runTime) then
+            local notInCombat = runTime - combatTime
 
-        mainFrame.ElapsedTimeText:SetText("Run Time: " .. detailsFramework:IntegerToTimer(runTime))
-        mainFrame.OutOfCombatText:SetText("Not in Combat: " .. detailsFramework:IntegerToTimer(notInCombat))
-        mainFrame.Level:SetText(mythicPlusData.Level) --the level in the big circle at the top
-        mainFrame.TitleString:SetText(mythicPlusData.DungeonName)
+            mainFrame.ActivityFrame:SetActivity(combatTime, notInCombat)
+
+            mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
+            mainFrame.OutOfCombatText:SetText("Not in Combat: " .. detailsFramework:IntegerToTimer(notInCombat))
+            mainFrame.Level:SetText(mythicPlusData.Level) --the level in the big circle at the top
+            mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName)
+        else
+            mainFrame.ElapsedTimeText:SetText("00:00")
+            mainFrame.OutOfCombatText:SetText("00:00")
+            mainFrame.Level:SetText("0")
+            mainFrame.DungeonNameFontstring:SetText("Unknown Dungeon")
+        end
     end
 
     ---@type details_instanceinfo
@@ -722,7 +735,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
 
     local yPosition = -((index-1)*(lineHeight+1)) - 1
     line:SetPoint("topleft", headerFrame, "bottomleft", lineOffset, yPosition)
-    line:SetPoint("topright", headerFrame, "bottomRight", -lineOffset - 1, yPosition)
+    line:SetPoint("topright", headerFrame, "bottomright", -lineOffset - 1, yPosition)
     line:SetHeight(lineHeight)
 
     line:SetBackdrop(lineBackdrop)
@@ -895,4 +908,50 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     headerFrame.lines[index] = line
 
     return line
+end
+
+
+function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
+    ---@type scoreboard_activityframe
+    local activityFrame = CreateFrame("frame", "$parentActivityFrame", mainFrame)
+    mainFrame.ActivityFrame = activityFrame
+
+    activityFrame:SetHeight(4)
+    activityFrame:SetPoint("topleft", mainFrame, "topleft", lineOffset, activityFrameY)
+    activityFrame:SetPoint("topright", mainFrame, "topright", -lineOffset - 1, activityFrameY)
+
+    local backgroundTexture = activityFrame:CreateTexture("$parentBackgroundTexture", "border")
+    backgroundTexture:SetColorTexture(0, 0, 0, 0.834)
+    backgroundTexture:SetAllPoints()
+
+    local incombatTexture = activityFrame:CreateTexture("$parentInCombatTexture", "artwork")
+    incombatTexture:SetColorTexture(0, 1, 0, 0.734)
+    incombatTexture:SetPoint("left", activityFrame, "left", 0, 0)
+
+    local outOfCombatTexture = activityFrame:CreateTexture("$parentOutOfCombatTexture", "artwork")
+    outOfCombatTexture:SetColorTexture(1, 0, 0, 0.734)
+
+    --members
+    activityFrame.InCombatTexture = incombatTexture
+    activityFrame.OutOfCombatTexture = outOfCombatTexture
+    activityFrame.BackgroundTexture = backgroundTexture
+
+    --functions
+    activityFrame.SetActivity = function(self, inCombat, outOfCombat)
+        local total = inCombat + outOfCombat
+        local inCombatWidth = (inCombat / total) * self:GetWidth()
+        local outOfCombatWidth = (outOfCombat / total) * self:GetWidth()
+
+        --inCombatTimeline is a table with 'scoreboard_incombat_timeline_step' subtable that tells when the group entered or left combat
+        ---@type scoreboard_incombat_timeline_step[]
+        local inCombatTimeline = addon.profile.last_run_data.incombat_timeline
+        --todo(tercio): use the timeline to show when the group entered or left combat with small chunks for textures
+        --todo(tercio): show players activityTime some place in the mainFrame
+
+        self.InCombatTexture:SetWidth(inCombatWidth)
+        self.OutOfCombatTexture:SetWidth(outOfCombatWidth)
+        self.OutOfCombatTexture:SetPoint("left", self.InCombatTexture, "right", 0, 0)
+    end
+
+    return activityFrame
 end

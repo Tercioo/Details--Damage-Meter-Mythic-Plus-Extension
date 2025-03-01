@@ -1014,9 +1014,9 @@ end
 		buttonObject.text_overlay = _G[name .. "_Text"]
 		buttonObject.disabled_overlay = _G[name .. "_TextureDisabled"]
 
-		--check for atlas
 		texture = texture or ""
-
+		
+		--check for atlas
 		local bSetTexture = false
 		if (type(texture) == "string") then
 			local isAtlas = C_Texture.GetAtlasInfo(texture)
@@ -1035,6 +1035,9 @@ end
 				local r, g, b, a = detailsFramework:ParseColors(texture)
 				self.icon:SetColorTexture(r, g, b, a)
 				bSetTexture = true
+
+			elseif (texture == "") then
+				bSetTexture = true -- setting textures with an empty string causes green rectangles
 			end
 		end
 

@@ -12,7 +12,7 @@ local tocFileName, private = ...
 local defaultSettings = {
     auto_open_mythic_plus_breakdown_big_frame = true,
     delay_to_open_mythic_plus_breakdown_big_frame = 5,
-    show_column_summary_in_tooltip = false,
+    show_column_summary_in_tooltip = true,
     logs = {},
     font = {
         row_size = 12,
@@ -27,6 +27,7 @@ local defaultSettings = {
         standout_outline = "NONE",
     },
     logout_logs = {},
+    last_run_data = {},
 }
 
 private.addon = detailsFramework:CreateNewAddOn(tocFileName, "Details_MythicPlusDB", defaultSettings)
