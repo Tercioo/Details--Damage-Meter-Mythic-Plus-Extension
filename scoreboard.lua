@@ -51,6 +51,8 @@ local _ = nil
 ---@field SetPlayerData fun(self:scoreboard_button, playerData:scoreboard_playerdata)
 ---@field GetPlayerData fun(self:scoreboard_button):scoreboard_playerdata
 ---@field MarkTop fun(self:scoreboard_button)
+---@field OnMouseEnter fun(self:scoreboard_button)|nil
+---@field GetActor fun(self:scoreboard_button, actorMainAttribute):actor|nil, combat|nil
 
 ---@class scoreboard_playerdata : table
 ---@field name string
@@ -92,14 +94,13 @@ local LOOT_DEBUG_MODE = false
 
 --main frame settings
 local mainFrameName = "DetailsMythicPlusBreakdownFrame"
-local mainFrameWidth = 1200
 local mainFrameHeight = 420
+-- the padding on the left and right side it should keep between the frame itself and the table
+local mainFramePaddingHorizontal = 5
 --where the header is positioned in the Y axis from the top of the frame
 local headerY = -55
 --the amount of lines to be created to show player data
 local lineAmount = 5
---player info area width (a.k.a the width of each line)
-local lineWidth = mainFrameWidth - 17
 local lineOffset = 2
 --the height of each line
 local lineHeight = 46
@@ -122,6 +123,8 @@ function addon.OpenMythicPlusBreakdownBigFrame()
     mainFrame:Show()
 
     mythicPlusBreakdown.RefreshBigBreakdownFrame()
+
+    mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
 end
 
 function Details.OpenMythicPlusBreakdownBigFrame()
@@ -143,7 +146,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     ---@type scoreboard_mainframe
     local readyFrame = CreateFrame("frame", mainFrameName, UIParent, "BackdropTemplate")
-    readyFrame:SetSize(mainFrameWidth, mainFrameHeight)
+    readyFrame:SetHeight(mainFrameHeight)
     readyFrame:SetPoint("center", UIParent, "center", 0, 0)
     readyFrame:SetFrameStrata("HIGH")
     readyFrame:EnableMouse(true)
@@ -262,7 +265,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         {text = "Interrupts", width = 100},
         {text = "Dispels", width = 80},
         {text = "CC Casts", width = 80},
-        {text = "", width = 250},
+        --{text = "", width = 250},
     }
     local headerOptions = {
         padding = 2,
@@ -273,6 +276,8 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     headerFrame:SetPoint("topleft", readyFrame, "topleft", 5, headerY)
     headerFrame.lines = {}
     readyFrame.HeaderFrame = headerFrame
+
+    readyFrame:SetWidth(headerFrame:GetWidth() + mainFramePaddingHorizontal * 2)
 
     do --mythic+ run data
 		local textColor = {1, 0.8196, 0, 1}
@@ -320,7 +325,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
         readyFrame.ElapsedTimeIcon:SetSize(buttonSize, buttonSize)
         readyFrame.OutOfCombatIcon:SetSize(buttonSize, buttonSize)
-        readyFrame.ElapsedTimeIcon:SetPoint("bottomleft", headerFrame, "topleft", 3, 12)
+        readyFrame.ElapsedTimeIcon:SetPoint("bottomleft", headerFrame, "topleft", 20, 12)
         readyFrame.OutOfCombatIcon:SetPoint("left", readyFrame.ElapsedTimeIcon, "right", 120, 0)
 
         readyFrame.StrongArmIcon:SetSize(buttonSize, buttonSize)
@@ -364,7 +369,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
 	if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
         --no mythic+ segment found
-        mainFrame:Hide()
+        --mainFrame:Hide()
         return
     end
 
@@ -610,9 +615,9 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
     Details:OpenSpecificBreakdownWindow(Details:GetCombatByUID(playerData.combatUid), playerData.name, mainAttribute, subAttribute)
 end
 
-local showTargetsTooltip = function(self, playerObject, text)
+local showTargetsTooltip = function(self, playerObject, title)
     local targets = playerObject.targets
-
+    local text = ""
     if (targets) then
         local targetList = {}
         for targetName, amount in pairs(targets) do
@@ -620,18 +625,17 @@ local showTargetsTooltip = function(self, playerObject, text)
         end
         table.sort(targetList, function(t1, t2) return t1[2] > t2[2] end)
 
-        local text = ""
-        for i = 1, #targetList do
+        for i = 1, math.min(#targetList, 7) do
             local targetName = targetList[i][1]
             local amount = targetList[i][2]
             text = text .. targetName .. ": " .. amount .. "\n"
         end
-
-        GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-        GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. text)
-        GameTooltip:AddLine(text, 1, 1, 1, true)
-        GameTooltip:Show()
     end
+
+    GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+    GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. title)
+    GameTooltip:AddLine(text, 1, 1, 1, true)
+    GameTooltip:Show()
 end
 
 ---@param self df_blizzbutton
@@ -639,60 +643,18 @@ end
 local function OnEnterLineBreakdownButton(self, button)
     local text = button.button.text
     text.originalColor = {text:GetTextColor()}
-    detailsFramework:SetFontSize(text, addon.profile.font.hover_size)
+    detailsFramework:SetFontSize(text, addon.profile.font.row_size)
     detailsFramework:SetFontColor(text, addon.profile.font.hover_color)
     detailsFramework:SetFontOutline(text, addon.profile.font.hover_outline)
 
-    local playerData = button:GetPlayerData()
-    if (playerData) then
-        local playerName = playerData.name
-        local combatObject = Details:GetCombatByUID(playerData.combatUid)
-        if (combatObject) then
-            if (false or thisButtonIsADPSButton) then --not defined yet
-                local playerObject = combatObject:GetActor(DETAILS_ATTRIBUTE_DAMAGE, playerName)
-                if (playerObject) then
-                    showTargetsTooltip(self, playerObject, " - Damage Done")
-                end
-
-            elseif (false or thisButtonIsAHPSButton) then --not defined yet
-                local playerObject = combatObject:GetActor(DETAILS_ATTRIBUTE_HEAL, playerName)
-                if (playerObject) then
-                    showTargetsTooltip(self, playerObject, " - Healing Done")
-                end
-
-            elseif (false or thisButtonIsADamageTakenButton) then --not defined yet
-                ---@type actordamage
-                local playerObject = combatObject:GetActor(DETAILS_ATTRIBUTE_DAMAGE, playerName)
-                local damageTakenFrom = playerObject.damage_from
-
-                --indexed table with subtable with [1] spellId [2] amount
-                ---@type table<number, table<number, number>>
-                local spellsThatHitThisPlayer = {}
-
-                for damagerName in pairs (damageTakenFrom) do
-                    local damagerObject = combatObject:GetActor(DETAILS_ATTRIBUTE_DAMAGE, damagerName)
-                    if (damagerObject) then
-                        for spellId, spellTable in pairs(damagerObject:GetSpellList()) do
-                            if (spellTable.targets and spellTable.targets[playerName]) then
-                                local amount = spellTable.targets[playerName]
-                                if (amount > 0) then
-                                    spellsThatHitThisPlayer[#spellsThatHitThisPlayer+1] = {spellId, amount}
-                                end
-                            end
-                        end
-                    end
-                end
-
-                table.sort(spellsThatHitThisPlayer, function(t1, t2) return t1[2] > t2[2] end)
-
-            end
-        end
+    if (button.OnMouseEnter and addon.profile.show_column_summary_in_tooltip) then
+        button.OnMouseEnter(self, button)
     end
 end
 
 local function OnLeaveLineBreakdownButton(self)
     local text = self.MyObject.button.text
-    detailsFramework:SetFontSize(text, addon.profile.font.regular_size)
+    detailsFramework:SetFontSize(text, addon.profile.font.row_size)
     detailsFramework:SetFontOutline(text, addon.profile.font.regular_outline)
     detailsFramework:SetFontColor(text, text.originalColor)
     GameTooltip:Hide()
@@ -707,7 +669,7 @@ function mythicPlusBreakdown.SetFontSettings()
         for j = 1, #regions do
             local region = regions[j]
             if (region:GetObjectType() == "FontString") then
-                detailsFramework:SetFontSize(region, addon.profile.font.regular_size)
+                detailsFramework:SetFontSize(region, addon.profile.font.row_size)
                 detailsFramework:SetFontColor(region, addon.profile.font.regular_color)
                 detailsFramework:SetFontOutline(region, addon.profile.font.regular_outline)
             end
@@ -720,7 +682,7 @@ function mythicPlusBreakdown.SetFontSettings()
             local blizzButton = children[j]
             if (blizzButton:GetObjectType() == "Button" and blizzButton.MyObject) then --.MyObject is a button from the framework
                 local buttonObject = blizzButton.MyObject
-                buttonObject:SetFontSize(addon.profile.font.regular_size)
+                buttonObject:SetFontSize(addon.profile.font.row_size)
                 buttonObject:SetTextColor(addon.profile.font.regular_color)
                 detailsFramework:SetFontOutline(buttonObject.button.text, addon.profile.font.regular_outline)
             end
@@ -728,11 +690,9 @@ function mythicPlusBreakdown.SetFontSettings()
     end
 end
 
-local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPlayerData)
+local function CreateBreakdownButton(line, onClick, onSetPlayerData, onMouseEnter)
     ---@type scoreboard_button
-    local button = detailsFramework:CreateButton(line, function (self)
-        OpenLineBreakdown(self, mainAttribute, subAttribute)
-    end, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
+    local button = detailsFramework:CreateButton(line, onClick, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
 
     button:SetHook("OnEnter", OnEnterLineBreakdownButton)
     button:SetHook("OnLeave", OnLeaveLineBreakdownButton)
@@ -740,6 +700,7 @@ local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPl
     button.button.text:SetPoint("left", button.button, "left")
     button.button.text.originalColor = {button.button.text:GetTextColor()}
 
+    button.OnMouseEnter = onMouseEnter
     function button.SetPlayerData(self, playerData)
         self.PlayerData = playerData
         onSetPlayerData(self, playerData)
@@ -747,8 +708,20 @@ local function CreateBreakdownButton(line, mainAttribute,  subAttribute, onSetPl
     function button.GetPlayerData(self)
         return self.PlayerData
     end
+    function button.GetActor(self, actorMainAttribute)
+        local playerData = self:GetPlayerData()
+        if (not playerData) then
+            return
+        end
+        local combat = Details:GetCombatByUID(playerData.combatUid)
+        if (not combat) then
+            return
+        end
+        return combat:GetActor(actorMainAttribute, playerData.name), combat
+    end
+
     function button.MarkTop(self)
-        detailsFramework:SetFontSize(self.button.text, addon.profile.font.standout_size)
+        detailsFramework:SetFontSize(self.button.text, addon.profile.font.row_size)
         detailsFramework:SetFontColor(self.button.text, addon.profile.font.standout_color)
         detailsFramework:SetFontOutline(self.button.text, addon.profile.font.standout_outline)
     end
@@ -762,7 +735,7 @@ local function CreateBreakdownLabel(line, onSetPlayerData)
     function label.SetPlayerData(self, playerData)
         self.PlayerData = playerData
         if (onSetPlayerData) then
-            detailsFramework:SetFontSize(self, addon.profile.font.regular_size)
+            detailsFramework:SetFontSize(self, addon.profile.font.row_size)
             detailsFramework:SetFontColor(self, addon.profile.font.regular_color)
             detailsFramework:SetFontOutline(self, addon.profile.font.regular_outline)
             onSetPlayerData(self, playerData)
@@ -772,7 +745,7 @@ local function CreateBreakdownLabel(line, onSetPlayerData)
         return self.PlayerData
     end
     function label.MarkTop(self)
-        detailsFramework:SetFontSize(self, addon.profile.font.standout_size)
+        detailsFramework:SetFontSize(self, addon.profile.font.row_size)
         detailsFramework:SetFontColor(self, addon.profile.font.standout_color)
         detailsFramework:SetFontOutline(self, addon.profile.font.standout_outline)
     end
@@ -788,7 +761,8 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
 
     local yPosition = -((index-1)*(lineHeight+1)) - 1
     line:SetPoint("topleft", headerFrame, "bottomleft", lineOffset, yPosition)
-    line:SetSize(lineWidth, lineHeight)
+    line:SetPoint("topright", headerFrame, "bottomRight", -lineOffset - 1, yPosition)
+    line:SetHeight(lineHeight)
 
     line:SetBackdrop(lineBackdrop)
     if (index % 2 == 0) then
@@ -824,17 +798,91 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(playerData.deaths)
     end)
 
-    local playerDamageTaken = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGETAKEN, function(self, playerData)
-        self:SetText(Details:Format(math.floor(playerData.damageTaken)))
-    end)
+    local playerDamageTaken = CreateBreakdownButton(
+        line,
+        -- onclick
+        function (self)
+            OpenLineBreakdown(self, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGETAKEN)
+        end,
+        -- onSetPlayerData
+        function(self, playerData)
+            self:SetText(Details:Format(math.floor(playerData.damageTaken)))
+        end,
+        -- onMouseEnter
+        function (self, button)
+            -- this one does not work yet
 
-    local playerDps = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS, function(self, playerData)
-        self:SetText(Details:Format(math.floor(playerData.dps)))
-    end)
+            ---@type actordamage|combat
+            local actor, combat = button:GetActor(DETAILS_ATTRIBUTE_DAMAGE)
 
-    local playerHps = CreateBreakdownButton(line, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HPS, function(self, playerData)
-        self:SetText(Details:Format(math.floor(playerData.hps)))
-    end)
+            --indexed table with subtable with [1] spellId [2] amount
+            ---@type table<number, table<number, number>>
+            local spellsThatHitThisPlayer = {}
+
+            for damagerName in pairs (actor.damage_from) do
+                local damagerObject = combat:GetActor(DETAILS_ATTRIBUTE_DAMAGE, damagerName)
+                if (damagerObject) then
+                    for spellId, spellTable in pairs(damagerObject:GetSpellList()) do
+                        if (spellTable.targets and spellTable.targets[playerName]) then
+                            local amount = spellTable.targets[playerName]
+                            if (amount > 0) then
+                                spellsThatHitThisPlayer[#spellsThatHitThisPlayer+1] = {spellId, amount}
+                            end
+                        end
+                    end
+                end
+            end
+
+            table.sort(spellsThatHitThisPlayer, function(t1, t2) return t1[2] > t2[2] end)
+            for i = 1, math.min(#spells, 7) do
+                local spellId = spells[i][1]
+                local amount = spells[i][2]
+                text = text .. spellId .. ": " .. amount .. "\n"
+            end
+
+            GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+            GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. " - Damage Taken")
+            GameTooltip:AddLine(text, 1, 1, 1, true)
+            GameTooltip:Show()
+        end
+    )
+
+    local playerDps = CreateBreakdownButton(
+        line,
+        -- onclick
+        function (self)
+            OpenLineBreakdown(self, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS)
+        end,
+        -- onSetPlayerData
+        function(self, playerData)
+            self:SetText(Details:Format(math.floor(playerData.dps)))
+        end,
+        function (self, button)
+            local actor = button:GetActor(DETAILS_ATTRIBUTE_DAMAGE)
+            if (actor) then
+                showTargetsTooltip(self, actor, " - Damage Done")
+            end
+        end
+    )
+
+    local playerHps = CreateBreakdownButton(
+        line,
+        -- onclick
+        function (self)
+            OpenLineBreakdown(self, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HPS)
+        end,
+        -- onSetPlayerData
+        function(self, playerData)
+            self:SetText(Details:Format(math.floor(playerData.hps)))
+        end,
+        -- onMouseEnter
+        function (self, button)
+            local actor = button:GetActor(DETAILS_ATTRIBUTE_HEAL)
+            if (actor) then
+                showTargetsTooltip(self, actor, " - Healing Done")
+            end
+        end
+    )
 
     local playerInterrupts = CreateBreakdownLabel(line, function(self, playerData)
         self:SetText(math.floor(playerData.interrupts))
@@ -851,7 +899,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(math.floor(playerData.ccCasts))
     end)
 
-    local playerEmptyField = CreateBreakdownLabel(line)
+    --local playerEmptyField = CreateBreakdownLabel(line)
 
     --add each widget create to the header alignment
     line:AddFrameToHeaderAlignment(playerPortrait)
@@ -865,7 +913,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     line:AddFrameToHeaderAlignment(playerInterrupts)
     line:AddFrameToHeaderAlignment(playerDispels)
     line:AddFrameToHeaderAlignment(playerCcCasts)
-    line:AddFrameToHeaderAlignment(playerEmptyField)
+    --line:AddFrameToHeaderAlignment(playerEmptyField)
 
     line:AlignWithHeader(headerFrame, "left")
 

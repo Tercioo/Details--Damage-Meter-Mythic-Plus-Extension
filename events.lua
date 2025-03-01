@@ -43,19 +43,15 @@ function addon.InitializeEvents()
     end
 
     function addon.OnEncounterStart(...)
-        print("Encounter Start")
     end
 
     function addon.OnEncounterEnd(...)
-        print("Encounter End")
     end
 
     function addon.OnPlayerEnterCombat(...)
-        print("Player Enter")
     end
 
     function addon.OnPlayerLeaveCombat(...)
-        print("Player Leave")
     end
 
 end
