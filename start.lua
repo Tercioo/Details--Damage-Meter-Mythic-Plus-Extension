@@ -12,17 +12,17 @@ local tocFileName, private = ...
 local defaultSettings = {
     auto_open_mythic_plus_breakdown_big_frame = true,
     delay_to_open_mythic_plus_breakdown_big_frame = 5,
+    show_column_summary_in_tooltip = false,
     logs = {},
     font = {
-        regular_size = 12,
+        row_size = 12,
+
         regular_color = "white",
         regular_outline = "NONE",
 
-        hover_size = 12,
         hover_color = "orange",
         hover_outline = "NONE",
 
-        standout_size = 12,
         standout_color = {230/255, 204/255, 128/255},
         standout_outline = "NONE",
     },
@@ -41,6 +41,8 @@ function private.addon.OnInit(self, profile) --PLAYER_LOGIN
         profile.logout_logs = {}
     end
     self:SetLogoutLogTable(profile.logout_logs)
+
+    private.addon.data = {}
 
     local detailsEventListener = Details:CreateEventListener()
     private.addon.detailsEventListener = detailsEventListener

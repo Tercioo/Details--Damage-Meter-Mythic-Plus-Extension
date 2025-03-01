@@ -7,18 +7,17 @@
 ---@class profile : table
 ---@field auto_open_mythic_plus_breakdown_big_frame boolean if true, the panel will open after x seconds after the m+ overall segment is ready.
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
+---@field show_column_summary_in_tooltip boolean whether or not to show the summary in a tooltip when hovering over the column
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
 
 ---@class fontsettings : table
----@field regular_size number
+---@field row_size number
 ---@field regular_color any
 ---@field regular_outline string
----@field hover_size number
 ---@field hover_color any
 ---@field hover_outline string
----@field standout_size number
 ---@field standout_color any
 ---@field standout_outline string
 
