@@ -11,3 +11,4 @@ start.lua
 parser.lua
 scoreboard.lua
 events.lua
+functions.lua

@@ -78,9 +78,13 @@ local _ = nil
 ---@field activityTimeHeal number
 
 ---@class scoreboard_activityframe : frame
+---@field nextTextureIndex number
+---@field segmentTextures texture[]
 ---@field InCombatTexture texture
 ---@field OutOfCombatTexture texture
 ---@field BackgroundTexture texture
+---@field ResetSegmentTextures fun(self:scoreboard_activityframe)
+---@field GetSegmentTexture fun(self:scoreboard_activityframe):texture
 ---@field SetActivity fun(self: scoreboard_activityframe, inCombat: number, outOfCombat: number)
 
 ---@type scoreboard_object
@@ -550,7 +554,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     --dumpt(mythicPlusData)
 
     if (mythicPlusData) then
-        local runTime = mythicPlusData.RunTime
+        local runTime = addon.GetRunTime()
         if (runTime) then
             local notInCombat = runTime - combatTime
 
@@ -923,34 +927,116 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     local backgroundTexture = activityFrame:CreateTexture("$parentBackgroundTexture", "border")
     backgroundTexture:SetColorTexture(0, 0, 0, 0.834)
     backgroundTexture:SetAllPoints()
-
-    local incombatTexture = activityFrame:CreateTexture("$parentInCombatTexture", "artwork")
-    incombatTexture:SetColorTexture(0, 1, 0, 0.734)
-    incombatTexture:SetPoint("left", activityFrame, "left", 0, 0)
-
-    local outOfCombatTexture = activityFrame:CreateTexture("$parentOutOfCombatTexture", "artwork")
-    outOfCombatTexture:SetColorTexture(1, 0, 0, 0.734)
-
-    --members
-    activityFrame.InCombatTexture = incombatTexture
-    activityFrame.OutOfCombatTexture = outOfCombatTexture
     activityFrame.BackgroundTexture = backgroundTexture
+
+    activityFrame.segmentTextures = {}
+    activityFrame.nextTextureIndex = 1
+
+    --reset the next index of texture to use and hide all existing textures
+    activityFrame.ResetSegmentTextures = function(self)
+        activityFrame.nextTextureIndex = 1
+        --iterate among all textures and hide them
+        for i = 1, #activityFrame.segmentTextures do
+            activityFrame.segmentTextures[i]:Hide()
+        end
+    end
+
+    --return a texture to be used as a segment of the activity bar
+    activityFrame.GetSegmentTexture = function(self)
+        local currentIndex = activityFrame.nextTextureIndex
+        activityFrame.nextTextureIndex = currentIndex + 1
+
+        if (activityFrame.segmentTextures[currentIndex]) then
+            return activityFrame.segmentTextures[currentIndex]
+        end
+
+        local texture = activityFrame:CreateTexture("$parentSegmentTexture" .. currentIndex, "artwork")
+        texture:SetColorTexture(1, 1, 1, 0.5)
+        texture:SetHeight(4)
+        texture:ClearAllPoints()
+
+        activityFrame.segmentTextures[currentIndex] = texture
+
+        return texture
+    end
+
+---@class scoreboard_activityframe : frame
+
+
+--todo(tercio): show players activityTime some place in the mainFrame
 
     --functions
     activityFrame.SetActivity = function(self, inCombat, outOfCombat)
-        local total = inCombat + outOfCombat
-        local inCombatWidth = (inCombat / total) * self:GetWidth()
-        local outOfCombatWidth = (outOfCombat / total) * self:GetWidth()
+        local runTime = addon.GetRunTime()
+        local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
 
-        --inCombatTimeline is a table with 'scoreboard_incombat_timeline_step' subtable that tells when the group entered or left combat
         ---@type detailsmythicplus_combatstep[]
-        local inCombatTimeline = addon.profile.last_run_data.incombat_timeline
-        --todo(tercio): use the timeline to show when the group entered or left combat with small chunks for textures
-        --todo(tercio): show players activityTime some place in the mainFrame
+        local inAndOutCombatTimeline = addon.GetInAndOutOfCombatTimeline()
 
-        self.InCombatTexture:SetWidth(inCombatWidth)
-        self.OutOfCombatTexture:SetWidth(outOfCombatWidth)
-        self.OutOfCombatTexture:SetPoint("left", self.InCombatTexture, "right", 0, 0)
+        ---@type mythicdungeoninfo
+        local mythicPlusData = mythicPlusOverallSegment:GetMythicDungeonInfo()
+
+        --the goal here is to iterate among the inAndOutCombatTimeline and create a texture for each segment
+        --the iterating will be in pairs, the first value is the time in combat and the second is the time out of combat
+        --then get a texture and determine if the color is green (in combat) or red (out of combat)
+        --data format: inAndOutCombatTimeline{outOfCombatTime when out of combat started, inCombatTime when the combat started, outOfCombatTime when player left combat, end so on...}
+        --outOfCombatTime has a key .time, which is the time() of when the combat ended. inCombatTime has a key .time, which is the time() of when the combat started
+
+        --time() of when the run started
+        local runStartTime = addon.profile.last_run_data.start_time --time()
+
+        --reset the segment textures
+        activityFrame:ResetSegmentTextures()
+
+        local sumOfTimes = 0 --debug
+
+        --in case the combat ended after the m+ run ended, the in_combat may be true and need to be closed
+        if (inAndOutCombatTimeline[#inAndOutCombatTimeline].in_combat == true) then
+            --check if the previous segment has the same time, if so, can be an extra segment created by details! after the last combat finished and this can be ignored
+            if (inAndOutCombatTimeline[#inAndOutCombatTimeline-1].time == inAndOutCombatTimeline[#inAndOutCombatTimeline].time) then
+                --remove this last segment
+                table.remove(inAndOutCombatTimeline)
+            else
+                table.insert(inAndOutCombatTimeline, {time = math.floor(mythicPlusData.EndedAt), in_combat = false})
+            end
+        end
+
+        for i = 1, #inAndOutCombatTimeline do
+            local combatStep = inAndOutCombatTimeline[i]
+            local nextCombatStep = inAndOutCombatTimeline[i + 1]
+
+            --last index
+            if (not nextCombatStep and combatStep.in_combat == true) then
+                nextCombatStep = {time = math.floor(mythicPlusData.EndedAt), in_combat = false}
+
+            elseif (not nextCombatStep and combatStep.in_combat == false) then
+                nextCombatStep = {time = math.floor(mythicPlusData.EndedAt - (runTime - sumOfTimes)), in_combat = false}
+            end
+
+            --step length in seconds
+            local thisStepTime = nextCombatStep.time - combatStep.time
+            sumOfTimes = sumOfTimes + thisStepTime
+            --print(i, "sum of times: ", sumOfTimes, "run time", runTime)
+
+            --size in pixels of the step
+            local thisStepWidth = (thisStepTime / runTime) * activityFrame:GetWidth()
+
+            --step start relative to runStartTime
+            local stepStart = (combatStep.time - runStartTime) / runTime * activityFrame:GetWidth()
+            local thisStepTexture = activityFrame:GetSegmentTexture()
+
+            thisStepTexture:SetWidth(thisStepWidth)
+            thisStepTexture:SetPoint("left", activityFrame, "left", stepStart, 0)
+            thisStepTexture:Show()
+
+            if (combatStep.in_combat) then
+                thisStepTexture:SetColorTexture(0, 1, 0, 0.5)
+            else
+                thisStepTexture:SetColorTexture(1, 0, 0, 0.5)
+            end
+        end
+
+
     end
 
     return activityFrame

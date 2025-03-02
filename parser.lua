@@ -28,9 +28,6 @@ function addon.StartParser()
     addon.profile.last_run_data.interrupt_cast_overlap = {}
     addon.profile.last_run_data.interrupt_cast_overlap_done = {}
 
-    --store a timeline of when the group was in combat or not
-    addon.profile.last_run_data.incombat_timeline = {}
-
     addon.data.interrupt_cast_overlap = {}
     addon.data.interrupt_cast_overlap_done = {}
 

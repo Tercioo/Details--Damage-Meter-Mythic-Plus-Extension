@@ -24,6 +24,7 @@
 
 ---@class detailsmythicplus_rundata : table
 ---@field start_time number
+---@field end_time number
 ---@field incombat_timeline detailsmythicplus_combatstep[] first table tells the group left table, second when entered in combat, third when left combat, and so on
 ---@field encounter_timeline detailsmythicplus_encounterinfo[] store the data from encounter_start and encounter_end events, one sub table per boss attempt
 ---@field interrupt_overlaps table<string, number> count the interrupt overlaps for each player
@@ -58,5 +59,8 @@
 ---@field StopParser fun() stop the combatlog parser
 ---@field IsParsing fun():boolean whether or parsing at the moment
 ---@field OpenMythicPlusBreakdownBigFrame fun() open the mythic plus breakdown big frame
----@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment.
+---@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment
 ---@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player
+---@field GetInAndOutOfCombatTimeline fun() : detailsmythicplus_combatstep[] return the in and out of combat timeline
+---@field GetRunTime fun() : number return the run time of the last run
+---@field GetMythicPlusOverallSegment fun() : combat return the latest mythic+ overall segment from details!

@@ -43,6 +43,7 @@ function addon.InitializeEvents()
     end
 
     function addon.OnMythicDungeonEnd(...)
+        addon.profile.last_run_data.end_time = time()
         addon.StopParser()
     end
 
