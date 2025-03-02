@@ -37,6 +37,8 @@ function addon.StartParser()
     parserFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     parserFrame:SetScript("OnEvent", parserFrame.OnEvent)
     parserFrame.isParsing = true
+
+    private.log("Parser stared")
 end
 
 function addon.StopParser()
@@ -44,6 +46,8 @@ function addon.StopParser()
     parserFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     addon.CountInterruptOverlaps()
     parserFrame.isParsing = false
+
+    private.log("Parser stopped")
 end
 
 function addon.IsParsing()
@@ -52,8 +56,9 @@ end
 
 --functions for events that the addon is interesting in
 local parserFunctions = {
-    ["SPELL_INTERRUPT"] = function()
+    ["SPELL_INTERRUPT"] = function(token, time, sourceGUID, sourceName, sourceFlags)
         --when an interrupt happened
+        private.log("Interrupt succeded!", sourceName)
     end,
 
     ["SPELL_CAST_SUCCESS"] = function(token, time, sourceGUID, sourceName, sourceFlags, targetGUID, targetName, targetFlags, targetRaidFlags, spellId, spellName, spellType, extraSpellID, extraSpellName, extraSchool)
@@ -70,6 +75,8 @@ local parserFunctions = {
                 used = false,
             }
             table.insert(addon.profile.last_run_data.interrupt_cast_overlap[targetGUID], spellOverlapData)
+
+            private.log("Interrupt cast:", sourceName)
         end
     end
 }
@@ -109,6 +116,8 @@ function addon.CountInterruptOverlaps()
                             addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] or 0) + 1
                             addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName2] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName2] or 0) + 1
                             print("Overlap: ", sourceName, targetName, C_Spell.GetSpellInfo(spellId).name, sourceName2, targetName2, "with", C_Spell.GetSpellInfo(spellId2).name)
+
+                            private.log("Interrupt overlap found:", sourceName)
 
                             overlapData.used = true
                             overlapData2.used = true

@@ -38,7 +38,7 @@ function addon.InitializeEvents()
         addon.profile.last_run_data.start_time = time()
         --store the first value in the in combat timeline.
         addon.profile.last_run_data.incombat_timeline = {{time = time(), in_combat = false}}
-        addon.profile.last_run_data.boss_timeline = {} --todo(tercio): need to insert the bosses here
+        addon.profile.last_run_data.encounter_timeline = {} --todo(tercio): need to insert the bosses here
         addon.StartParser()
     end
 
@@ -46,20 +46,48 @@ function addon.InitializeEvents()
         addon.StopParser()
     end
 
-    function addon.OnEncounterStart(...)
+    function addon.OnEncounterStart(dungeonEncounterId, encounterName, difficultyId, raidSize)
+        if (addon.IsParsing()) then
+            ---@type detailsmythicplus_encounterinfo
+            local currentEncounterInfo = {
+                dungeonEncounterId = dungeonEncounterId,
+                encounterName = encounterName,
+                difficultyId = difficultyId,
+                raidSize = raidSize,
+                startTime = time(),
+                endTime = 0,
+                defeated = false,
+            }
+
+            table.insert(addon.profile.last_run_data.encounter_timeline, currentEncounterInfo)
+
+            private.log("Encounter started: ", encounterName)
+        end
     end
 
-    function addon.OnEncounterEnd(...)
-    end
+    function addon.OnEncounterEnd(dungeonEncounterId, encounterName, difficultyId, raidSize, endStatus)
+        if (addon.IsParsing()) then
+            ---@type detailsmythicplus_encounterinfo
+            local currentEncounterInfo = addon.profile.last_run_data.encounter_timeline[#addon.profile.last_run_data.encounter_timeline]
 
-    ---@class scoreboard_incombat_timeline_step : table
-    ---@field time number epoch time of when the player entered or left combat
-    ---@field in_combat boolean whether the player is in combat or not
+            --if the current encounter is nil, then we did miss the encounter start event
+            if (not currentEncounterInfo) then
+                return
+            end
+
+            currentEncounterInfo.endTime = time()
+            currentEncounterInfo.defeated = endStatus == 1
+
+            private.log("Encounter ended: ", encounterName, " defeated: ", endStatus == 1)
+        end
+    end
 
     function addon.OnPlayerEnterCombat(...)
         if (addon.IsParsing()) then
             local incombatTimeline = addon.profile.last_run_data.incombat_timeline
             table.insert(incombatTimeline, {time = time(), in_combat = true})
+
+            private.log("Entered in combat: ", time())
         end
     end
 
@@ -67,6 +95,8 @@ function addon.InitializeEvents()
         if (addon.IsParsing()) then
             local incombatTimeline = addon.profile.last_run_data.incombat_timeline
             table.insert(incombatTimeline, {time = time(), in_combat = false})
+
+            private.log("Left combat: ", time())
         end
     end
 

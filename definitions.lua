@@ -8,7 +8,7 @@
 ---@field auto_open_mythic_plus_breakdown_big_frame boolean if true, the panel will open after x seconds after the m+ overall segment is ready.
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
 ---@field show_column_summary_in_tooltip boolean whether or not to show the summary in a tooltip when hovering over the column
----@field last_run_data table store the data from the last run
+---@field last_run_data detailsmythicplus_rundata store the data from the last run
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
@@ -21,6 +21,25 @@
 ---@field hover_outline string
 ---@field standout_color any
 ---@field standout_outline string
+
+---@class detailsmythicplus_rundata : table
+---@field start_time number
+---@field incombat_timeline detailsmythicplus_combatstep[] first table tells the group left table, second when entered in combat, third when left combat, and so on
+---@field encounter_timeline detailsmythicplus_encounterinfo[] store the data from encounter_start and encounter_end events, one sub table per boss attempt
+---@field interrupt_overlaps table<string, number> count the interrupt overlaps for each player
+
+---@class detailsmythicplus_combatstep : table a table with the time and if the group was in combat or not, sub table of 'incombat_timeline'
+---@field time number time() of when the player entered or left combat
+---@field in_combat boolean whether the player is in combat or not
+
+---@class detailsmythicplus_encounterinfo : table
+---@field dungeonEncounterId number encounter id given from the encounter_start event
+---@field encounterName string localized name of the encounter
+---@field difficultyId number difficulty id of the encounter
+---@field raidSize number number of players in the group
+---@field startTime number time() of when the encounter started
+---@field endTime number time() of when the encounter ended (if the encounter did not ended yet, this value is zero)
+---@field defeated boolean true if the boss has been killed
 
 ---@class detailsmythicplus : table
 ---@field profile profile store the profile settings

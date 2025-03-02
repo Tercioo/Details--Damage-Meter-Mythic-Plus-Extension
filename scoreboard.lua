@@ -943,7 +943,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         local outOfCombatWidth = (outOfCombat / total) * self:GetWidth()
 
         --inCombatTimeline is a table with 'scoreboard_incombat_timeline_step' subtable that tells when the group entered or left combat
-        ---@type scoreboard_incombat_timeline_step[]
+        ---@type detailsmythicplus_combatstep[]
         local inCombatTimeline = addon.profile.last_run_data.incombat_timeline
         --todo(tercio): use the timeline to show when the group entered or left combat with small chunks for textures
         --todo(tercio): show players activityTime some place in the mainFrame
