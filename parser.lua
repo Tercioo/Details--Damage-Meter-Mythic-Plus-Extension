@@ -19,6 +19,7 @@ local addon = private.addon
 ---@field used boolean
 
 local parserFrame = CreateFrame("frame")
+parserFrame.isParsing = false
 
 function addon.StartParser()
     print("+ Mythic Dungeon Start")
@@ -35,12 +36,18 @@ function addon.StartParser()
 
     parserFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     parserFrame:SetScript("OnEvent", parserFrame.OnEvent)
+    parserFrame.isParsing = true
 end
 
 function addon.StopParser()
     print("- Mythic Dungeon Stopped")
     parserFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     addon.CountInterruptOverlaps()
+    parserFrame.isParsing = false
+end
+
+function addon.IsParsing()
+    return parserFrame.isParsing
 end
 
 --functions for events that the addon is interesting in

@@ -57,13 +57,17 @@ function addon.InitializeEvents()
     ---@field in_combat boolean whether the player is in combat or not
 
     function addon.OnPlayerEnterCombat(...)
-        local incombatTimeline = addon.profile.last_run_data.incombat_timeline
-        table.insert(incombatTimeline, {time = time(), in_combat = true})
+        if (addon.IsParsing()) then
+            local incombatTimeline = addon.profile.last_run_data.incombat_timeline
+            table.insert(incombatTimeline, {time = time(), in_combat = true})
+        end
     end
 
     function addon.OnPlayerLeaveCombat(...)
-        local incombatTimeline = addon.profile.last_run_data.incombat_timeline
-        table.insert(incombatTimeline, {time = time(), in_combat = false})
+        if (addon.IsParsing()) then
+            local incombatTimeline = addon.profile.last_run_data.incombat_timeline
+            table.insert(incombatTimeline, {time = time(), in_combat = false})
+        end
     end
 
 end
