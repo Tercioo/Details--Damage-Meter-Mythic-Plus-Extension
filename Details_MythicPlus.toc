@@ -9,6 +9,7 @@
 
 start.lua
 parser.lua
+options.lua
 scoreboard.lua
 events.lua
 functions.lua
