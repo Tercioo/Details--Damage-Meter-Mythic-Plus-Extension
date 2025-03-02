@@ -52,6 +52,7 @@ local _ = nil
 ---@field PlayerData table
 ---@field SetPlayerData fun(self:scoreboard_button, playerData:scoreboard_playerdata)
 ---@field GetPlayerData fun(self:scoreboard_button):scoreboard_playerdata
+---@field HasPlayerData fun(self:scoreboard_button):boolean returns true if data is attached
 ---@field MarkTop fun(self:scoreboard_button)
 ---@field OnMouseEnter fun(self:scoreboard_button)|nil
 ---@field GetActor fun(self:scoreboard_button, actorMainAttribute):actor|nil, combat|nil
@@ -134,9 +135,7 @@ local activityFrameY = headerY - 45 + (lineHeight * lineAmount * -1)
 local interruptSpellNameCache = {}
 
 function addon.OpenMythicPlusBreakdownBigFrame()
-    if (not _G[mainFrameName]) then
-        mythicPlusBreakdown.CreateBigBreakdownFrame()
-    end
+    mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     local mainFrame = _G[mainFrameName]
     mainFrame:Show()
@@ -497,7 +496,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                     frame:SetTexture(nil)
                 end
 
-                if (playerData and frame.SetPlayerData) then
+                if (frame.SetPlayerData) then
                     frame:SetPlayerData(playerData)
                 end
             end
@@ -625,7 +624,7 @@ local function OnEnterLineBreakdownButton(self, button)
     detailsFramework:SetFontColor(text, addon.profile.font.hover_color)
     detailsFramework:SetFontOutline(text, addon.profile.font.hover_outline)
 
-    if (button.OnMouseEnter and addon.profile.show_column_summary_in_tooltip) then
+    if (button.OnMouseEnter and addon.profile.show_column_summary_in_tooltip and button:HasPlayerData()) then
         button.OnMouseEnter(self, button)
     end
 end
@@ -681,7 +680,12 @@ local function CreateBreakdownButton(line, onClick, onSetPlayerData, onMouseEnte
     button.OnMouseEnter = onMouseEnter
     function button.SetPlayerData(self, playerData)
         self.PlayerData = playerData
-        onSetPlayerData(self, playerData)
+        if (playerData ~= nil) then
+            onSetPlayerData(self, playerData)
+        end
+    end
+    function button.HasPlayerData(self)
+        return self.PlayerData ~= nil
     end
     function button.GetPlayerData(self)
         return self.PlayerData
