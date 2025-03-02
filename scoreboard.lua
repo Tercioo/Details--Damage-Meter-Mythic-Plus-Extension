@@ -407,7 +407,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                     spec = actorObject.spec,
                     role = actorObject.role or UnitGroupRolesAssigned(unitId),
                     score = rating,
-                    previousScore = Details.PlayerRatings[Details:GetFullName(unitId)] or rating - 100,
+                    previousScore = Details.PlayerRatings[Details:GetFullName(unitId)] or rating,
                     scoreColor = ratingColor,
                     deaths = deathAmount,
                     damageTaken = actorObject.damage_taken,

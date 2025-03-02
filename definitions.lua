@@ -37,6 +37,7 @@
 ---@field OnPlayerLeaveCombat fun(...) run on COMBAT_PLAYER_LEAVE
 ---@field StartParser fun() start the combatlog parser
 ---@field StopParser fun() stop the combatlog parser
+---@field IsParsing fun():boolean whether or parsing at the moment
 ---@field OpenMythicPlusBreakdownBigFrame fun() open the mythic plus breakdown big frame
 ---@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment.
 ---@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player
