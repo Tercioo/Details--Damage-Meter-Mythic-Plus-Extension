@@ -8,6 +8,7 @@
 ---@field auto_open_mythic_plus_breakdown_big_frame boolean if true, the panel will open after x seconds after the m+ overall segment is ready.
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
 ---@field show_column_summary_in_tooltip boolean whether or not to show the summary in a tooltip when hovering over the column
+---@field translit boolean translit cyrillic
 ---@field last_run_data detailsmythicplus_rundata store the data from the last run
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon

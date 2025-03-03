@@ -42,6 +42,13 @@ local optionsTemplate = {
         name = "Summary in tooltip",
         desc = "When hovering over a column in the scoreboard it will show a summary of the breakdown",
     },
+    {
+        type = "toggle",
+        get = function () return addon.profile.translit end,
+        set = function (_, _, value) addon.profile.translit = value end,
+        name = "Translit",
+        desc = "Translit Cyrillic characters to the latin alphabet",
+    },
 }
 
 local mainFrameName = "DetailsMythicPlusOptionsFrame"
@@ -77,7 +84,7 @@ function mythicPlusOptions.InitializeOptionsWindow()
     canvasFrame:SetPoint("bottomright", optionsFrame, "bottomright", -26, 6)
     optionsFrame.canvasFrame = canvasFrame
 
-    detailsFramework:BuildMenu(canvasFrame, optionsTemplate, 0, 0, 0, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+    detailsFramework:BuildMenu(canvasFrame, optionsTemplate, 0, 0, 400, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
     return optionsFrame
 end

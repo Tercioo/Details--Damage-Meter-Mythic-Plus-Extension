@@ -13,6 +13,7 @@ local defaultSettings = {
     auto_open_mythic_plus_breakdown_big_frame = true,
     delay_to_open_mythic_plus_breakdown_big_frame = 5,
     show_column_summary_in_tooltip = true,
+    translit = GetLocale() ~= "ruRU",
     logs = {},
     font = {
         row_size = 12,

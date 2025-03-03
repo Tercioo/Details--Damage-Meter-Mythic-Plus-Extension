@@ -13,6 +13,7 @@ local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
 local _ = nil
+local Translit = LibStub("LibTranslit-1.0")
 
 ---@class scoreboard_object : table
 ---@field lines scoreboard_line[]
@@ -768,7 +769,9 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     local playerName = CreateBreakdownLabel(line, function(self, playerData)
         local classColor = RAID_CLASS_COLORS[playerData.class]
         self:SetTextColor(classColor.r, classColor.g, classColor.b)
-        self:SetText(detailsFramework:RemoveRealmName(playerData.name))
+
+        local name = detailsFramework:RemoveRealmName(playerData.name)
+        self:SetText(addon.profile.translit and Translit:Transliterate(name, "!") or name)
     end)
 
     local playerScore = CreateBreakdownLabel(line, function(self, playerData)
@@ -925,8 +928,8 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     mainFrame.ActivityFrame = activityFrame
 
     activityFrame:SetHeight(4)
-    activityFrame:SetPoint("topleft", mainFrame, "topleft", lineOffset, activityFrameY)
-    activityFrame:SetPoint("topright", mainFrame, "topright", -lineOffset - 1, activityFrameY)
+    activityFrame:SetPoint("topleft", mainFrame, "topleft", lineOffset * 2, activityFrameY)
+    activityFrame:SetPoint("topright", mainFrame, "topright", -lineOffset * 2 - 1, activityFrameY)
 
     local backgroundTexture = activityFrame:CreateTexture("$parentBackgroundTexture", "border")
     backgroundTexture:SetColorTexture(0, 0, 0, 0.834)
@@ -1005,40 +1008,83 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             end
         end
 
+        -- start lin version of timeline
+        local eventColors = {
+            fallback = {0.6, 0.6, 0.6, 0.5},
+            enter_combat = {0.1, 0.7, 0.1, 0.5},
+            leave_combat = {0.7, 0.1, 0.1, 0.5},
+        }
+
+        local timestamps = {}
+        local start
+        local last
         for i = 1, #inAndOutCombatTimeline do
-            local combatStep = inAndOutCombatTimeline[i]
-            local nextCombatStep = inAndOutCombatTimeline[i + 1]
-
-            --last index
-            if (not nextCombatStep and combatStep.in_combat == true) then
-                nextCombatStep = {time = math.floor(mythicPlusData.EndedAt), in_combat = false}
-
-            elseif (not nextCombatStep and combatStep.in_combat == false) then
-                nextCombatStep = {time = math.floor(mythicPlusData.EndedAt - (runTime - sumOfTimes)), in_combat = false}
+            if (start == nil) then
+                start = inAndOutCombatTimeline[i].time
             end
 
-            --step length in seconds
-            local thisStepTime = nextCombatStep.time - combatStep.time
-            sumOfTimes = sumOfTimes + thisStepTime
-            --print(i, "sum of times: ", sumOfTimes, "run time", runTime)
+            timestamps[i] = {
+                time = inAndOutCombatTimeline[i].time - start,
+                event = inAndOutCombatTimeline[i].in_combat and "enter_combat" or "leave_combat"
+            }
 
-            --size in pixels of the step
-            local thisStepWidth = (thisStepTime / runTime) * activityFrame:GetWidth()
+            last = timestamps[i]
+        end
 
-            --step start relative to runStartTime
-            local stepStart = (combatStep.time - runStartTime) / runTime * activityFrame:GetWidth()
+        last.time = math.max(last.time, mythicPlusData.EndedAt - start)
+
+        local width = activityFrame:GetWidth()
+        local multiplier = width / last.time
+        for i = 1, #timestamps do
+            local step = timestamps[i]
+            local nextStep = timestamps[i + 1]
+            if (nextStep == nil) then
+                break
+            end
+
             local thisStepTexture = activityFrame:GetSegmentTexture()
 
-            thisStepTexture:SetWidth(thisStepWidth)
-            thisStepTexture:SetPoint("left", activityFrame, "left", stepStart, 0)
+            thisStepTexture:SetWidth((nextStep.time - step.time) * multiplier)
+            thisStepTexture:SetPoint("left", activityFrame, "left", step.time * multiplier, 0)
             thisStepTexture:Show()
-
-            if (combatStep.in_combat) then
-                thisStepTexture:SetColorTexture(0, 1, 0, 0.5)
-            else
-                thisStepTexture:SetColorTexture(1, 0, 0, 0.5)
-            end
+            thisStepTexture:SetColorTexture(unpack(eventColors[step.event] or eventColors.fallback))
         end
+        -- end lin version of timeline
+
+        --for i = 1, #inAndOutCombatTimeline do
+        --    local combatStep = inAndOutCombatTimeline[i]
+        --    local nextCombatStep = inAndOutCombatTimeline[i + 1]
+        --
+        --    --last index
+        --    if (not nextCombatStep and combatStep.in_combat == true) then
+        --        nextCombatStep = {time = math.floor(mythicPlusData.EndedAt), in_combat = false}
+        --
+        --    elseif (not nextCombatStep and combatStep.in_combat == false) then
+        --        nextCombatStep = {time = math.floor(mythicPlusData.EndedAt - (runTime - sumOfTimes)), in_combat = false}
+        --    end
+        --
+        --    --step length in seconds
+        --    local thisStepTime = nextCombatStep.time - combatStep.time
+        --    sumOfTimes = sumOfTimes + thisStepTime
+        --    --print(i, "sum of times: ", sumOfTimes, "run time", runTime)
+        --
+        --    --size in pixels of the step
+        --    local thisStepWidth = (thisStepTime / runTime) * width
+        --
+        --    --step start relative to runStartTime
+        --    local stepStart = (combatStep.time - runStartTime) / runTime * width
+        --    local thisStepTexture = activityFrame:GetSegmentTexture()
+        --
+        --    thisStepTexture:SetWidth(thisStepWidth)
+        --    thisStepTexture:SetPoint("left", activityFrame, "left", stepStart, 0)
+        --    thisStepTexture:Show()
+        --
+        --    if (combatStep.in_combat) then
+        --        thisStepTexture:SetColorTexture(0, 1, 0, 0.5)
+        --    else
+        --        thisStepTexture:SetColorTexture(1, 0, 0, 0.5)
+        --    end
+        --end
 
 
     end
