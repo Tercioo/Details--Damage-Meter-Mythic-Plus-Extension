@@ -76,6 +76,21 @@ function private.addon.OnInit(self, profile) --PLAYER_LOGIN
 
     private.addon.InitializeEvents()
 
+    AddonCompartmentFrame:RegisterAddon({
+        text = "Mythic+ Scoreboard",
+        icon = "4352494",
+        notCheckable = true,
+        func = Details.OpenMythicPlusBreakdownBigFrame,
+        funcOnEnter = function(button)
+            MenuUtil.ShowTooltip(button, function(tooltip)
+                tooltip:SetText("Open the Details! Mythic+ scoreboard")
+            end)
+        end,
+        funcOnLeave = function(button)
+            MenuUtil.HideTooltip(button)
+        end,
+    })
+
     private.log("addon loaded")
 end
 

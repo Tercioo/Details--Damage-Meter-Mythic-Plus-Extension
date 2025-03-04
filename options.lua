@@ -67,12 +67,25 @@ function mythicPlusOptions.InitializeOptionsWindow()
         return _G[mainFrameName]
     end
 
-    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 400, 300, "Details! Mythic Plus Options", mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
+    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 300, "Details! Mythic Plus Options", mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
     detailsFramework:MakeDraggable(optionsFrame)
     optionsFrame:SetPoint("center", UIParent, "center", 160, -50)
     detailsFramework:ApplyStandardBackdrop(optionsFrame)
     optionsFrame:SetFrameStrata("HIGH")
     optionsFrame:SetToplevel(true)
+    optionsFrame:SetFrameLevel(1000)
+
+    --close button at the top right of the frame
+    local closeButton = detailsFramework:CreateCloseButton(optionsFrame, "$parentCloseButton")
+    closeButton:SetScript("OnClick", function()
+        optionsFrame:Hide()
+    end)
+    closeButton:SetPoint("topright", optionsFrame, "topright", -5, -5)
+
+    -- detailsFramework:CreateCloseButton looks better
+    optionsFrame.Close:Hide()
+    optionsFrame.Close = closeButton
+    optionsFrame.closeButton = closeButton
 
     optionsTemplate.always_boxfirst = true
     optionsTemplate.align_as_pairs = true
@@ -84,7 +97,7 @@ function mythicPlusOptions.InitializeOptionsWindow()
     canvasFrame:SetPoint("bottomright", optionsFrame, "bottomright", -26, 6)
     optionsFrame.canvasFrame = canvasFrame
 
-    detailsFramework:BuildMenu(canvasFrame, optionsTemplate, 0, 0, 400, false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+    detailsFramework:BuildMenu(canvasFrame, optionsTemplate, 0, 0, optionsFrame:GetWidth(), false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
     return optionsFrame
 end
