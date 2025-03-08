@@ -29,7 +29,6 @@ local Translit = LibStub("LibTranslit-1.0")
 ---@field ActivityFrame scoreboard_activityframe
 ---@field DungeonNameFontstring fontstring
 ---@field DungeonBackdropTexture texture
----@field ElapsedTimeIcon texture
 ---@field ElapsedTimeText fontstring
 ---@field OutOfCombatIcon texture
 ---@field OutOfCombatText fontstring
@@ -79,6 +78,11 @@ local Translit = LibStub("LibTranslit-1.0")
 ---@field activityTimeDamage number
 ---@field activityTimeHeal number
 
+---@class timeline_event : table
+---@field type string
+---@field timestamp number
+---@field arguments table
+
 ---@class scoreboard_activityframe : frame
 ---@field nextTextureIndex number
 ---@field segmentTextures texture[]
@@ -87,7 +91,7 @@ local Translit = LibStub("LibTranslit-1.0")
 ---@field BackgroundTexture texture
 ---@field ResetSegmentTextures fun(self:scoreboard_activityframe)
 ---@field GetSegmentTexture fun(self:scoreboard_activityframe):texture
----@field SetActivity fun(self: scoreboard_activityframe, inCombat: number, outOfCombat: number)
+---@field SetActivity fun(self: scoreboard_activityframe, events: table<number, timeline_event>, inCombat: number, outOfCombat: number)
 
 ---@type scoreboard_object
 ---@diagnostic disable-next-line: missing-fields
@@ -111,13 +115,13 @@ local LOOT_DEBUG_MODE = false
 
 --main frame settings
 local mainFrameName = "DetailsMythicPlusBreakdownFrame"
-local mainFrameHeight = 420
+local mainFrameHeight = 452
 --the padding on the left and right side it should keep between the frame itself and the table
 local mainFramePaddingHorizontal = 5
 --offset for the dungeon name y position related to the top of the frame
-local dungeonNameY = -10
+local dungeonNameY = -12
 --where the header is positioned in the Y axis from the top of the frame
-local headerY = -55
+local headerY = -65
 --the amount of lines to be created to show player data
 local lineAmount = 5
 local lineOffset = 2
@@ -128,12 +132,18 @@ local lineColor1 = {1, 1, 1, 0.05}
 local lineColor2 = {1, 1, 1, 0.1}
 local lineBackdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true}
 
-local activityFrameY = headerY - 45 + (lineHeight * lineAmount * -1)
+local activityFrameY = headerY - 90 + (lineHeight * lineAmount * -1)
 
 ---store spell names of interrupt spells
 ---the table is filled when the main frame is created
 ---@type table<string, boolean>
 local interruptSpellNameCache = {}
+
+local EventType = {
+    EncounterStart = "EncounterStart",
+    EncounterEnd = "EncounterEnd",
+    Death = "Death",
+}
 
 function addon.OpenMythicPlusBreakdownBigFrame()
     mythicPlusBreakdown.CreateBigBreakdownFrame()
@@ -204,7 +214,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     readyFrame.DungeonNameFontstring = dungeonNameFontstring
 
     local runTimeFontstring = readyFrame:CreateFontString("$parentRunTime", "overlay", "GameFontNormal")
-    runTimeFontstring:SetPoint("top", dungeonNameFontstring, "bottom", 0, -5)
+    runTimeFontstring:SetPoint("top", dungeonNameFontstring, "bottom", 0, -8)
     DetailsFramework:SetFontSize(runTimeFontstring, 16)
     runTimeFontstring:SetText("00:00")
     readyFrame.ElapsedTimeText = runTimeFontstring
@@ -295,13 +305,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     readyFrame:SetWidth(headerFrame:GetWidth() + mainFramePaddingHorizontal * 2)
 
     do --mythic+ run data
-		--clock texture and icon to show the total time elapsed
-		local elapsedTimeIcon = readyFrame:CreateTexture("$parentClockIcon", "artwork", nil, 2)
-		elapsedTimeIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
-		elapsedTimeIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
-		readyFrame.ElapsedTimeIcon = elapsedTimeIcon
-
-		--another clock texture and icon to show the wasted time (time out of combat)
+		--clock texture and icon to show the wasted time (time out of combat)
 		local outOfCombatIcon = readyFrame:CreateTexture("$parentClockIcon2", "artwork", nil, 2)
 		outOfCombatIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
 		outOfCombatIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
@@ -318,10 +322,8 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
         local buttonSize = 24
 
-        readyFrame.ElapsedTimeIcon:SetSize(buttonSize, buttonSize)
         readyFrame.OutOfCombatIcon:SetSize(buttonSize, buttonSize)
-        readyFrame.ElapsedTimeIcon:SetPoint("bottomleft", headerFrame, "topleft", 20, 12)
-        readyFrame.OutOfCombatIcon:SetPoint("left", readyFrame.ElapsedTimeIcon, "right", 120, 0)
+        readyFrame.OutOfCombatIcon:SetPoint("bottomleft", headerFrame, "topleft", 20, 12)
     end
 
     --create 6 rows to show data of the player, it only require 5 lines, the last one can be used on exception cases.
@@ -371,8 +373,10 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
     local data = {}
 
+    local events = {}
+
     do --code for filling the 5 player lines
-        for actorIndex, actorObject in damageContainer:ListActors() do
+        for _, actorObject in damageContainer:ListActors() do
             ---@cast actorObject actor
             if (actorObject:IsGroupPlayer()) then
                 local unitId
@@ -393,16 +397,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                     ratingColor = _G["HIGHLIGHT_FONT_COLOR"]
                 end
 
-                local deathAmount = 0
-                local deathTable = mythicPlusOverallSegment:GetDeaths()
-                for i = 1, #deathTable do
-                    local thisDeathTable = deathTable[i]
-                    local playerName = thisDeathTable[3]
-                    if (playerName == actorObject.nome) then
-                        deathAmount = deathAmount + 1
-                    end
-                end
-
                 ---@cast actorObject actordamage
 
                 ---@type scoreboard_playerdata
@@ -414,7 +408,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                     score = rating,
                     previousScore = Details.PlayerRatings[Details:GetFullName(unitId)] or rating,
                     scoreColor = ratingColor,
-                    deaths = deathAmount,
+                    deaths = 0,
                     damageTaken = actorObject.damage_taken,
                     dps = actorObject.total / combatTime,
                     activityTimeDamage = actorObject:Tempo(),
@@ -432,11 +426,28 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                     thisPlayerData.role = "DAMAGER"
                 end
 
+                local deathAmount = 0
+                local deathTable = mythicPlusOverallSegment:GetDeaths()
+                for i = 1, #deathTable do
+                    local thisDeathTable = deathTable[i]
+                    local playerName = thisDeathTable[3]
+                    if (playerName == actorObject.nome) then
+                        deathAmount = deathAmount + 1
+                        events[#events+1] = {
+                            type = EventType.Death,
+                            timestamp = thisDeathTable[2],
+                            arguments = {playerData = thisPlayerData},
+                        }
+                    end
+                end
+
+                thisPlayerData.deaths = deathAmount
+
                 data[#data+1] = thisPlayerData
             end
         end
 
-        for actorIndex, actorObject in healingContainer:ListActors() do
+        for _, actorObject in healingContainer:ListActors() do
             local playerData
             for i = 1, #data do
                 if (data[i].name == actorObject.nome) then
@@ -452,7 +463,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             end
         end
 
-        for actorIndex, actorObject in utilityContainer:ListActors() do
+        for _, actorObject in utilityContainer:ListActors() do
             local playerData
             for i = 1, #data do
                 if (data[i].name == actorObject.nome) then
@@ -509,11 +520,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                 local playerPortrait = frames[1]
                 local specIcon = frames[2]
 
-                -- manually setting the textures, buttons are set through SetPlayerData
-                if (GetUnitName("player", true) == playerData.name) then
-                    playerRating = playerData.score
-                end
-
                 SetPortraitTexture(playerPortrait.Portrait, playerData.unitId)
                 local portraitTexture = playerPortrait.Portrait:GetTexture()
                 if (not portraitTexture) then
@@ -559,7 +565,9 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         if (runTime) then
             local notInCombat = runTime - combatTime
 
-            mainFrame.ActivityFrame:SetActivity(combatTime, notInCombat)
+            table.sort(events, function(t1, t2) return t1.timestamp < t2.timestamp end)
+
+            mainFrame.ActivityFrame:SetActivity(events, combatTime, notInCombat)
 
             mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
             mainFrame.OutOfCombatText:SetText("Not in Combat: " .. detailsFramework:IntegerToTimer(notInCombat))
@@ -922,7 +930,6 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     return line
 end
 
-
 function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     ---@type scoreboard_activityframe
     local activityFrame = CreateFrame("frame", "$parentActivityFrame", mainFrame)
@@ -937,6 +944,8 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     backgroundTexture:SetAllPoints()
     activityFrame.BackgroundTexture = backgroundTexture
 
+    activityFrame.markers = {}
+    activityFrame.maxEvents = 20
     activityFrame.segmentTextures = {}
     activityFrame.nextTextureIndex = 1
 
@@ -968,13 +977,63 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         return texture
     end
 
+    activityFrame.PrepareEventFrames = function (self, events)
+        local i = 0
+        local eventCount = #events
+        local function iterator()
+            i = i + 1
+            if (i > eventCount or i > self.maxEvents) then
+                return
+            end
+
+            local marker = self.markers[i]
+            if (not self.markers[i]) then
+                self.markers[i] = CreateFrame("frame", "$parentEventMarker" .. i, self, "BackdropTemplate")
+                marker = self.markers[i]
+                marker.subFrames = {} -- used to track sub frames that can then all be hidden
+                marker:EnableMouse(true)
+                marker:SetSize(32, 32)
+                marker:SetScript("OnEnter", function (self)
+                    self.originalFrameLevel = self:GetFrameLevel()
+                    self:SetFrameLevel(self.originalFrameLevel + 50)
+                    self.label:Show()
+                end)
+                marker:SetScript("OnLeave", function (self)
+                    self:SetFrameLevel(self.originalFrameLevel)
+                    self.label:Hide()
+                end)
+
+                local markerLabel = marker:CreateFontString("$parentTextLabel", "overlay", "GameFontNormal")
+                marker.label = markerLabel
+                detailsFramework:SetFontSize(markerLabel, 12)
+                markerLabel:SetJustifyH("center")
+                markerLabel:Hide()
+
+                local line = marker:CreateTexture("$parentMarkerLineTexture", "border")
+                line:SetColorTexture(1, 1, 1, 0.5)
+                line:SetWidth(1)
+                marker.lineTexture = line
+            end
+
+            marker:ClearAllPoints()
+            marker:Hide()
+            for _, subFrame in pairs(marker.subFrames) do
+                subFrame:Hide()
+            end
+
+            return i, events[i], marker
+        end
+
+        return iterator
+    end
+
 ---@class scoreboard_activityframe : frame
 
 
 --todo(tercio): show players activityTime some place in the mainFrame
 
     --functions
-    activityFrame.SetActivity = function(self, inCombat, outOfCombat)
+    activityFrame.SetActivity = function(self, events, inCombat, outOfCombat)
         local runTime = addon.GetRunTime()
         local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
 
@@ -994,7 +1053,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         local runStartTime = addon.profile.last_run_data.start_time --time()
 
         --reset the segment textures
-        activityFrame:ResetSegmentTextures()
+        self:ResetSegmentTextures()
 
         local sumOfTimes = 0 --debug
 
@@ -1009,7 +1068,6 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             end
         end
 
-        -- start lin version of timeline
         local eventColors = {
             fallback = {0.6, 0.6, 0.6, 0.5},
             enter_combat = {0.1, 0.7, 0.1, 0.5},
@@ -1050,43 +1108,87 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             thisStepTexture:Show()
             thisStepTexture:SetColorTexture(unpack(eventColors[step.event] or eventColors.fallback))
         end
-        -- end lin version of timeline
 
-        --for i = 1, #inAndOutCombatTimeline do
-        --    local combatStep = inAndOutCombatTimeline[i]
-        --    local nextCombatStep = inAndOutCombatTimeline[i + 1]
-        --
-        --    --last index
-        --    if (not nextCombatStep and combatStep.in_combat == true) then
-        --        nextCombatStep = {time = math.floor(mythicPlusData.EndedAt), in_combat = false}
-        --
-        --    elseif (not nextCombatStep and combatStep.in_combat == false) then
-        --        nextCombatStep = {time = math.floor(mythicPlusData.EndedAt - (runTime - sumOfTimes)), in_combat = false}
-        --    end
-        --
-        --    --step length in seconds
-        --    local thisStepTime = nextCombatStep.time - combatStep.time
-        --    sumOfTimes = sumOfTimes + thisStepTime
-        --    --print(i, "sum of times: ", sumOfTimes, "run time", runTime)
-        --
-        --    --size in pixels of the step
-        --    local thisStepWidth = (thisStepTime / runTime) * width
-        --
-        --    --step start relative to runStartTime
-        --    local stepStart = (combatStep.time - runStartTime) / runTime * width
-        --    local thisStepTexture = activityFrame:GetSegmentTexture()
-        --
-        --    thisStepTexture:SetWidth(thisStepWidth)
-        --    thisStepTexture:SetPoint("left", activityFrame, "left", stepStart, 0)
-        --    thisStepTexture:Show()
-        --
-        --    if (combatStep.in_combat) then
-        --        thisStepTexture:SetColorTexture(0, 1, 0, 0.5)
-        --    else
-        --        thisStepTexture:SetColorTexture(1, 0, 0, 0.5)
-        --    end
-        --end
+        local reservedUntil = -100
+        local up = true
+        for i, event, marker in self:PrepareEventFrames(events) do
+            local relativeTimestamp = event.timestamp - start
+            local pointOnBar = relativeTimestamp * multiplier
 
+            marker.label:SetText("")
+            marker:SetFrameLevel(10 + 5 * i)
+            detailsFramework:SetFontColor(marker.label, 1, 1, 1)
+            if (event.type == EventType.Death) then
+                local playerPortrait = marker.subFrames.playerPortrait
+                if (not marker.subFrames.playerPortrait) then
+                    --player portrait
+                    playerPortrait = Details:CreatePlayerPortrait(marker, "$parentPortrait")
+                    playerPortrait:ClearAllPoints()
+                    playerPortrait:SetPoint("center", marker, "center", 0, 0)
+                    playerPortrait.Portrait:SetSize(32, 32)
+                    playerPortrait:SetSize(32, 32)
+                    playerPortrait.RoleIcon:SetSize(18, 18)
+                    playerPortrait.RoleIcon:ClearAllPoints()
+                    playerPortrait.RoleIcon:SetPoint("bottomleft", playerPortrait.Portrait, "bottomright", -9, -2)
+
+                    playerPortrait.Portrait:SetDesaturated(true)
+                    playerPortrait.RoleIcon:SetDesaturated(true)
+
+                    marker.subFrames.playerPortrait = playerPortrait
+                end
+
+                SetPortraitTexture(playerPortrait.Portrait, event.arguments.playerData.unitId)
+                local portraitTexture = playerPortrait.Portrait:GetTexture()
+                if (not portraitTexture) then
+                    local class = event.arguments.playerData.class
+                    playerPortrait.Portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
+                    playerPortrait.Portrait:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+                end
+
+                local role = event.arguments.playerData.role
+                if (role == "TANK" or role == "HEALER" or role == "DAMAGER") then
+                    playerPortrait.RoleIcon:SetAtlas(GetMicroIconForRole(role), TextureKitConstants.IgnoreAtlasSize)
+                    playerPortrait.RoleIcon:Show()
+                else
+                    playerPortrait.RoleIcon:Hide()
+                end
+
+                playerPortrait:SetFrameLevel(playerPortrait:GetParent():GetFrameLevel() - 2)
+                playerPortrait:Show()
+                playerPortrait.Portrait:Show()
+
+                marker.label:SetText(detailsFramework:IntegerToTimer(relativeTimestamp))
+                marker.label:SetTextColor(1, 0, 0)
+            end
+
+            local offset = marker:GetWidth() * 0.5
+            local before = pointOnBar - offset
+            local after = pointOnBar + offset
+            if (before < reservedUntil) then
+                up = not up
+            end
+
+            if (after > reservedUntil) then
+                reservedUntil = after
+            end
+
+            marker:ClearAllPoints()
+            marker.label:ClearAllPoints()
+            marker.lineTexture:ClearAllPoints()
+            if (up) then
+                marker:SetPoint("bottom", activityFrame, "topleft", pointOnBar, 15)
+                marker.lineTexture:SetPoint("top", marker, "bottom", 0, 0)
+                marker.lineTexture:SetPoint("bottom", activityFrame, "top", 0, 0)
+                marker.label:SetPoint("bottom", marker, "top", 0, 2)
+            else
+                marker:SetPoint("top", activityFrame, "bottomleft", pointOnBar, -15)
+                marker.lineTexture:SetPoint("top", marker, "top", 0, 0)
+                marker.lineTexture:SetPoint("bottom", activityFrame, "bottom", 0, 0)
+                marker.label:SetPoint("top", marker, "bottom", 0, -2)
+            end
+
+            marker:Show()
+        end
 
     end
 
