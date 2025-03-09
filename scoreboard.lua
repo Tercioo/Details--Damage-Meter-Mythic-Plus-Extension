@@ -143,17 +143,24 @@ local EventType = {
     EncounterStart = "EncounterStart",
     EncounterEnd = "EncounterEnd",
     Death = "Death",
+    KeyFinished = "KeyFinished",
 }
 
 function addon.OpenMythicPlusBreakdownBigFrame()
-    mythicPlusBreakdown.CreateBigBreakdownFrame()
-
-    local mainFrame = _G[mainFrameName]
+    local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
     mainFrame:Show()
 
     mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
     mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
+end
+
+function addon.RefreshOpenScoreBoard()
+    local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
+
+    if (mainFrame:IsVisible()) then
+        mythicPlusBreakdown.RefreshBigBreakdownFrame()
+    end
 end
 
 function Details.OpenMythicPlusBreakdownBigFrame()
@@ -306,13 +313,13 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     do --mythic+ run data
 		--clock texture and icon to show the wasted time (time out of combat)
-		local outOfCombatIcon = readyFrame:CreateTexture("$parentClockIcon2", "artwork", nil, 2)
+		local outOfCombatIcon = readyFrame:CreateTexture("$parentOutOfCombatIcon", "artwork", nil, 2)
 		outOfCombatIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
 		outOfCombatIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
 		outOfCombatIcon:SetVertexColor(detailsFramework:ParseColors("orangered"))
 		readyFrame.OutOfCombatIcon = outOfCombatIcon
 
-		local outOfCombatText = readyFrame:CreateFontString("$parentClockText2", "artwork", "GameFontNormal")
+		local outOfCombatText = readyFrame:CreateFontString("$parentOutOfCombatText", "artwork", "GameFontNormal")
 		outOfCombatText:SetTextColor(1, 1, 1)
 		detailsFramework:SetFontSize(outOfCombatText, 11)
 		detailsFramework:SetFontColor(outOfCombatText, "orangered")
@@ -558,12 +565,21 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     end
 
     local mythicPlusData = mythicPlusOverallSegment:GetMythicDungeonInfo()
-    --dumpt(mythicPlusData)
-
     if (mythicPlusData) then
         local runTime = addon.GetRunTime()
         if (runTime) then
             local notInCombat = runTime - combatTime
+
+            if (mythicPlusData.EndedAt) then
+                events[#events+1] = {
+                    type = EventType.KeyFinished,
+                    timestamp = mythicPlusData.EndedAt,
+                    arguments = {
+                        onTime = mythicPlusData.OnTime,
+                        keystoneLevelsUpgrade = mythicPlusData.KeystoneUpgradeLevels,
+                    },
+                }
+            end
 
             table.sort(events, function(t1, t2) return t1.timestamp < t2.timestamp end)
 
@@ -996,18 +1012,22 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 marker:SetScript("OnEnter", function (self)
                     self.originalFrameLevel = self:GetFrameLevel()
                     self:SetFrameLevel(self.originalFrameLevel + 50)
-                    self.label:Show()
+                    self.timestampLabel:Show()
                 end)
                 marker:SetScript("OnLeave", function (self)
                     self:SetFrameLevel(self.originalFrameLevel)
-                    self.label:Hide()
+                    self.timestampLabel:Hide()
                 end)
 
-                local markerLabel = marker:CreateFontString("$parentTextLabel", "overlay", "GameFontNormal")
-                marker.label = markerLabel
-                detailsFramework:SetFontSize(markerLabel, 12)
-                markerLabel:SetJustifyH("center")
-                markerLabel:Hide()
+                local timestampLabel = marker:CreateFontString("$parentTimestampLabel", "overlay", "GameFontNormal")
+                timestampLabel:SetJustifyH("center")
+                timestampLabel:Hide()
+                marker.timestampLabel = timestampLabel
+
+                local iconLabel = marker:CreateFontString("$parentIconLabel", "overlay", "GameFontNormal")
+                iconLabel:SetPoint("center", marker, "center", 0, 0)
+                iconLabel:SetJustifyH("center")
+                marker.iconLabel = iconLabel
 
                 local line = marker:CreateTexture("$parentMarkerLineTexture", "border")
                 line:SetColorTexture(1, 1, 1, 0.5)
@@ -1078,25 +1098,37 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         local start
         local last
         for i = 1, #inAndOutCombatTimeline do
+            local timestamp = inAndOutCombatTimeline[i].time
             if (start == nil) then
-                start = inAndOutCombatTimeline[i].time
+                start = timestamp
             end
 
-            timestamps[i] = {
-                time = inAndOutCombatTimeline[i].time - start,
-                event = inAndOutCombatTimeline[i].in_combat and "enter_combat" or "leave_combat"
-            }
+            if (timestamp >= start) then
+                last = {
+                    time = timestamp - start,
+                    event = inAndOutCombatTimeline[i].in_combat and "enter_combat" or "leave_combat"
+                }
 
-            last = timestamps[i]
+                timestamps[#timestamps+1] = last
+            end
         end
 
         last.time = math.max(last.time, mythicPlusData.EndedAt - start)
+
+        if (addon.profile.show_remaining_timeline_after_finish and mythicPlusData.TimeLimit and last.time < mythicPlusData.TimeLimit) then
+            last = {
+                time = mythicPlusData.TimeLimit,
+                event = "time_limit",
+            }
+
+            timestamps[#timestamps+1] = last
+        end
 
         local width = activityFrame:GetWidth()
         local multiplier = width / last.time
         for i = 1, #timestamps do
             local step = timestamps[i]
-            local nextStep = timestamps[i + 1]
+            local nextStep = timestamps[i+1]
             if (nextStep == nil) then
                 break
             end
@@ -1106,7 +1138,12 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             thisStepTexture:SetWidth((nextStep.time - step.time) * multiplier)
             thisStepTexture:SetPoint("left", activityFrame, "left", step.time * multiplier, 0)
             thisStepTexture:Show()
-            thisStepTexture:SetColorTexture(unpack(eventColors[step.event] or eventColors.fallback))
+
+            if (nextStep.event == "time_limit") then
+                thisStepTexture:SetColorTexture(unpack(eventColors.fallback))
+            else
+                thisStepTexture:SetColorTexture(unpack(eventColors[step.event] or eventColors.fallback))
+            end
         end
 
         local reservedUntil = -100
@@ -1114,11 +1151,13 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         for i, event, marker in self:PrepareEventFrames(events) do
             local relativeTimestamp = event.timestamp - start
             local pointOnBar = relativeTimestamp * multiplier
-
-            marker.label:SetText("")
+            local preferUp = true
+            local forceDirection
             marker:SetFrameLevel(10 + 5 * i)
-            detailsFramework:SetFontColor(marker.label, 1, 1, 1)
+
+            marker.timestampLabel:SetText(detailsFramework:IntegerToTimer(relativeTimestamp))
             if (event.type == EventType.Death) then
+                preferUp = false
                 local playerPortrait = marker.subFrames.playerPortrait
                 if (not marker.subFrames.playerPortrait) then
                     --player portrait
@@ -1157,15 +1196,60 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 playerPortrait:Show()
                 playerPortrait.Portrait:Show()
 
-                marker.label:SetText(detailsFramework:IntegerToTimer(relativeTimestamp))
-                marker.label:SetTextColor(1, 0, 0)
+                detailsFramework:SetFontSize(marker.timestampLabel, 12)
+                detailsFramework:SetFontColor(marker.timestampLabel, 1, 0, 0)
+            elseif event.type == EventType.KeyFinished then
+                local icon = marker.icon
+                if (not icon) then
+                    icon = marker:CreateTexture("$parentIcon", "artwork")
+                    marker.icon = icon
+                end
+
+                detailsFramework:SetFontSize(marker.iconLabel, 17)
+                detailsFramework:SetFontSize(marker.timestampLabel, 12)
+                if (event.arguments.onTime) then
+                    forceDirection = "up"
+
+                    icon:SetAtlas("ChallengeMode-SpikeyStar")
+                    icon:SetSize(55, 55)
+                    icon:ClearAllPoints()
+                    icon:SetPoint("center", marker, "center", 0, 0)
+
+                    marker.iconLabel:SetText("+" .. event.arguments.keystoneLevelsUpgrade)
+                    marker.iconLabel:SetPoint("center", marker.icon, "center", -2, 0)
+                    detailsFramework:SetFontColor(marker.timestampLabel, 0.2, 0.8, 0.2)
+                    detailsFramework:SetFontColor(marker.iconLabel, "yellow")
+                else
+                    forceDirection = "down"
+
+                    icon:SetAtlas("BossBanner-SkullSpikes")
+                    icon:SetSize(32, 44)
+                    icon:ClearAllPoints()
+                    icon:SetPoint("center", marker, "center", 0, 0)
+
+                    marker.iconLabel:SetText(":(")
+                    marker.iconLabel:SetPoint("center", marker.icon, "center", 0, -3)
+                    detailsFramework:SetFontColor(marker.timestampLabel, 0.8, 0.2, 0.2)
+                    detailsFramework:SetFontColor(marker.iconLabel, 0.8, 0.2, 0.2)
+                end
+            else
+                marker.iconLabel:SetText("")
+                marker.iconLabel:ClearAllPoints()
+                marker.iconLabel:SetPoint("center", marker.icon, "center")
+                detailsFramework:SetFontColor(marker.timestampLabel, 1, 1, 1)
+                detailsFramework:SetFontSize(marker.timestampLabel, 12)
             end
 
             local offset = marker:GetWidth() * 0.5
             local before = pointOnBar - offset
             local after = pointOnBar + offset
-            if (before < reservedUntil) then
+
+            if (forceDirection) then
+                up = forceDirection == "up" and true or false
+            elseif (before < reservedUntil) then
                 up = not up
+            else
+                up = preferUp
             end
 
             if (after > reservedUntil) then
@@ -1173,18 +1257,18 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             end
 
             marker:ClearAllPoints()
-            marker.label:ClearAllPoints()
+            marker.timestampLabel:ClearAllPoints()
             marker.lineTexture:ClearAllPoints()
             if (up) then
                 marker:SetPoint("bottom", activityFrame, "topleft", pointOnBar, 15)
                 marker.lineTexture:SetPoint("top", marker, "bottom", 0, 0)
                 marker.lineTexture:SetPoint("bottom", activityFrame, "top", 0, 0)
-                marker.label:SetPoint("bottom", marker, "top", 0, 2)
+                marker.timestampLabel:SetPoint("bottom", marker, "top", 0, 2)
             else
                 marker:SetPoint("top", activityFrame, "bottomleft", pointOnBar, -15)
                 marker.lineTexture:SetPoint("top", marker, "top", 0, 0)
                 marker.lineTexture:SetPoint("bottom", activityFrame, "bottom", 0, 0)
-                marker.label:SetPoint("top", marker, "bottom", 0, -2)
+                marker.timestampLabel:SetPoint("top", marker, "bottom", 0, -2)
             end
 
             marker:Show()
