@@ -961,7 +961,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     activityFrame.BackgroundTexture = backgroundTexture
 
     activityFrame.markers = {}
-    activityFrame.maxEvents = 20
+    activityFrame.maxEvents = 64
     activityFrame.segmentTextures = {}
     activityFrame.nextTextureIndex = 1
 
@@ -996,9 +996,19 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     activityFrame.PrepareEventFrames = function (self, events)
         local i = 0
         local eventCount = #events
+        local markerCount = #self.markers
         local function iterator()
             i = i + 1
             if (i > eventCount or i > self.maxEvents) then
+                -- hide all other markers and frames
+                if (i <= markerCount) then
+                    for j = i, markerCount do
+                        self.markers[j]:Hide()
+                        for _, subFrame in pairs(self.markers[j].subFrames) do
+                            subFrame:Hide()
+                        end
+                    end
+                end
                 return
             end
 
@@ -1205,10 +1215,10 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 detailsFramework:SetFontSize(marker.timestampLabel, 12)
                 detailsFramework:SetFontColor(marker.timestampLabel, 1, 0, 0)
             elseif event.type == EventType.KeyFinished then
-                local icon = marker.icon
+                local icon = marker.subFrames.icon
                 if (not icon) then
                     icon = marker:CreateTexture("$parentIcon", "artwork")
-                    marker.icon = icon
+                    marker.subFrames.icon = icon
                 end
 
                 detailsFramework:SetFontSize(marker.iconLabel, 17)
@@ -1220,9 +1230,10 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                     icon:SetSize(55, 55)
                     icon:ClearAllPoints()
                     icon:SetPoint("center", marker, "center", 0, 0)
+                    icon:Show()
 
-                    marker.iconLabel:SetText("+" .. event.arguments.keystoneLevelsUpgrade)
-                    marker.iconLabel:SetPoint("center", marker.icon, "center", -2, 0)
+                    marker.iconLabel:SetText("+" .. (event.arguments.keystoneLevelsUpgrade or "1"))
+                    marker.iconLabel:SetPoint("center", marker.subFrames.icon, "center", -2, 0)
                     detailsFramework:SetFontColor(marker.timestampLabel, 0.2, 0.8, 0.2)
                     detailsFramework:SetFontColor(marker.iconLabel, "yellow")
                 else
@@ -1232,16 +1243,17 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                     icon:SetSize(32, 44)
                     icon:ClearAllPoints()
                     icon:SetPoint("center", marker, "center", 0, 0)
+                    icon:Show()
 
                     marker.iconLabel:SetText(":(")
-                    marker.iconLabel:SetPoint("center", marker.icon, "center", 0, -3)
+                    marker.iconLabel:SetPoint("center", marker.subFrames.icon, "center", 0, -3)
                     detailsFramework:SetFontColor(marker.timestampLabel, 0.8, 0.2, 0.2)
                     detailsFramework:SetFontColor(marker.iconLabel, 0.8, 0.2, 0.2)
                 end
             else
                 marker.iconLabel:SetText("")
                 marker.iconLabel:ClearAllPoints()
-                marker.iconLabel:SetPoint("center", marker.icon, "center")
+                marker.iconLabel:SetPoint("center", marker.subFrames.icon, "center")
                 detailsFramework:SetFontColor(marker.timestampLabel, 1, 1, 1)
                 detailsFramework:SetFontSize(marker.timestampLabel, 12)
             end
