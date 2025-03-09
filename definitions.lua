@@ -67,3 +67,6 @@
 ---@field GetInAndOutOfCombatTimeline fun() : detailsmythicplus_combatstep[] return the in and out of combat timeline
 ---@field GetRunTime fun() : number return the run time of the last run
 ---@field GetMythicPlusOverallSegment fun() : combat return the latest mythic+ overall segment from details!
+---@field GetRunBossSegments fun() : combat[] retrieves the segments of a Mythic+ run that correspond to boss encounters.
+---@field GetMythicPlusData fun() : mythicdungeoninfo? retrieves the data from the current mythic plus run
+

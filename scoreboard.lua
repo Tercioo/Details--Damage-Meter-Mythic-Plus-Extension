@@ -1094,6 +1094,12 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             leave_combat = {0.7, 0.1, 0.1, 0.5},
         }
 
+        local allBossesSegments = addon.GetRunBossSegments()
+        --print(#allBossesSegments)
+
+        local data = addon.GetMythicPlusData()
+        --dumpt(data)
+
         local timestamps = {}
         local start
         local last

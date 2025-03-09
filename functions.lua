@@ -48,3 +48,41 @@ function addon.GetMythicPlusOverallSegment()
 
     return mythicPlusOverallSegment
 end
+
+---retrieves the data from the current mythic plus run
+---@return mythicdungeoninfo? mythicPlusData a table containing the data from the current mythic plus run.
+function addon.GetMythicPlusData()
+    local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
+    if (mythicPlusOverallSegment) then
+        return mythicPlusOverallSegment:GetMythicDungeonInfo()
+    end
+end
+
+---retrieves the segments of a Mythic+ run that correspond to boss encounters.
+---@return table runBossSegments a table containing the segments of the current Mythic+ run that are boss encounters.
+function addon.GetRunBossSegments()
+    local runBossSegments = {}
+
+    local currentMythicSegment = addon.GetMythicPlusOverallSegment()
+    if (currentMythicSegment) then
+        ---@type mythicdungeoninfo
+        local mythicPlusData = currentMythicSegment:GetMythicDungeonInfo()
+        if (mythicPlusData) then
+            local runId = mythicPlusData.RunID
+            if (runId) then
+                local allSegments = Details:GetCombatSegments()
+                for i = 1, #allSegments do
+                    local mythicBossSegment = allSegments[i]
+                    local thisSegmentMythicPlusData = mythicBossSegment:GetMythicDungeonInfo()
+                    if (thisSegmentMythicPlusData and thisSegmentMythicPlusData.RunID == runId) then
+                        if (mythicBossSegment:GetCombatType() == DETAILS_SEGMENTTYPE_MYTHICDUNGEON_BOSS) then
+                            table.insert(runBossSegments, mythicBossSegment)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return runBossSegments
+end
