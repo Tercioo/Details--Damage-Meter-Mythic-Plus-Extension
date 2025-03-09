@@ -28,7 +28,10 @@ local optionsTemplate = {
     {
         type = "range",
         get = function () return addon.profile.delay_to_open_mythic_plus_breakdown_big_frame end,
-        set = function (_, _, value) addon.profile.delay_to_open_mythic_plus_breakdown_big_frame = value end,
+        set = function (_, _, value)
+            addon.profile.delay_to_open_mythic_plus_breakdown_big_frame = value
+            addon.RefreshOpenScoreBoard()
+        end,
         min = 0,
         max = 10,
         step = 1,
@@ -38,16 +41,33 @@ local optionsTemplate = {
     {
         type = "toggle",
         get = function () return addon.profile.show_column_summary_in_tooltip end,
-        set = function (_, _, value) addon.profile.show_column_summary_in_tooltip = value end,
+        set = function (_, _, value)
+            addon.profile.show_column_summary_in_tooltip = value
+            addon.RefreshOpenScoreBoard()
+        end,
         name = "Summary in tooltip",
         desc = "When hovering over a column in the scoreboard it will show a summary of the breakdown",
     },
     {
         type = "toggle",
         get = function () return addon.profile.translit end,
-        set = function (_, _, value) addon.profile.translit = value end,
+        set = function (_, _, value)
+            addon.profile.translit = value
+            addon.RefreshOpenScoreBoard()
+        end,
         name = "Translit",
         desc = "Translit Cyrillic characters to the latin alphabet",
+    },
+    {type = "label", get = function() return "Timeline" end, text_template = detailsFramework:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+    {
+        type = "toggle",
+        get = function () return addon.profile.show_remaining_timeline_after_finish end,
+        set = function (_, _, value)
+            addon.profile.show_remaining_timeline_after_finish = value
+            addon.RefreshOpenScoreBoard()
+        end,
+        name = "Show remaining time",
+        desc = "When a key is timed, an extra section will be added showing the time still remaining",
     },
 }
 

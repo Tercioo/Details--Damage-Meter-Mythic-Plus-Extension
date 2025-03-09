@@ -127,6 +127,7 @@
 ---@class mythicdungeoninfo
 ---@field StartedAt number?
 ---@field EndedAt number?
+---@field TotalTime number?
 ---@field WorldStateTimerStart number?
 ---@field WorldStateTimerEnd number?
 ---@field RunTime number?

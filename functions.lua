@@ -21,7 +21,7 @@ function addon.GetRunTime()
     if (segment) then
         ---@type mythicdungeoninfo
         local mythicPlusData = segment:GetMythicDungeonInfo()
-        if (mythicPlusData) then
+        if (mythicPlusData and mythicPlusData.TotalTime) then
             return math.floor(mythicPlusData.TotalTime / 1000)
         end
     end
