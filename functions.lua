@@ -86,3 +86,14 @@ function addon.GetRunBossSegments()
 
     return runBossSegments
 end
+
+---retrieves the start and end time() of a boss encounter segment.
+---@param bossSegment combat
+---@return number killTime the time() in seconds when the encounter finished.
+function addon.GetBossKillTime(bossSegment)
+    local mythicPlusData = bossSegment:GetMythicDungeonInfo()
+    if (mythicPlusData) then
+        return mythicPlusData.EndedAt
+    end
+    return 0
+end

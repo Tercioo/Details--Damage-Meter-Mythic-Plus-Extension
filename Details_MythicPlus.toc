@@ -8,6 +8,7 @@
 ## IconTexture: Interface\AddOns\Details\images\minimap
 
 start.lua
+frames.lua
 parser.lua
 options.lua
 scoreboard.lua

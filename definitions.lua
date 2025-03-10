@@ -69,4 +69,5 @@
 ---@field GetMythicPlusOverallSegment fun() : combat return the latest mythic+ overall segment from details!
 ---@field GetRunBossSegments fun() : combat[] retrieves the segments of a Mythic+ run that correspond to boss encounters.
 ---@field GetMythicPlusData fun() : mythicdungeoninfo? retrieves the data from the current mythic plus run
-
+---@field GetBossKillTime fun(bossSegment:combat) : number retrieves the end time() of a boss encounter segment.
+---@field CreateBossPortraiTexture fun(parent:frame, index:number) : bosswidget create a boss portrait texture widget
