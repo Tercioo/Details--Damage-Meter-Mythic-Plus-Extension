@@ -18,7 +18,7 @@ local Translit = LibStub("LibTranslit-1.0")
 ---@param parent frame
 ---@param index number
 ---@return bosswidget
-function addon.CreateBossPortraiTexture(parent, index)
+function addon.CreateBossPortraitTexture(parent, index)
     local newBossWidget = CreateFrame("frame", "$parentBossWidget" .. index, parent, "BackdropTemplate")
     newBossWidget:SetSize(64, 32)
     newBossWidget:SetBackdrop({edgeFile = [[Interface\Buttons\WHITE8X8]], edgeSize = 1, bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true})
