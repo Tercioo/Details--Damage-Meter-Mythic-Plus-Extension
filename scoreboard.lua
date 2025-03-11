@@ -962,7 +962,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     activityFrame.BackgroundTexture = backgroundTexture
 
     activityFrame.markers = {}
-    activityFrame.maxEvents = 64
+    activityFrame.maxEvents = 256
     activityFrame.segmentTextures = {}
     activityFrame.nextTextureIndex = 1
 
@@ -1113,51 +1113,13 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
 
         local allBossesSegments = addon.GetRunBossSegments()
 
-        local bossWidgetIndex = 1
-        for i = 1, #allBossesSegments do
-            local bossSegment = allBossesSegments[i]
-            local bossSegmentTexture = bossSegment:GetMythicDungeonInfo()
-            local bossSegmentTime = bossSegment:GetCombatTime()
-            local killTime = addon.GetBossKillTime(bossSegment)
-
-            if (killTime > 0) then
-                local bossWidget = self.bossWidgets[bossWidgetIndex]
-                if (not bossWidget) then
-                    bossWidget = addon.CreateBossPortraiTexture(self, bossWidgetIndex)
-                    self.bossWidgets[bossWidgetIndex] = bossWidget
-                end
-                bossWidgetIndex = bossWidgetIndex + 1
-
-                local chartLength = self:GetWidth()
-                local secondsPerPixel = chartLength / runTime
-                local killTimeRelativeToStart = killTime - runStartTime
-                local xPosition = (killTimeRelativeToStart) * secondsPerPixel
-
-                bossWidget:SetPoint("bottomright", self, "bottomleft", xPosition, 4)
-
-                bossWidget.TimeText:SetText(detailsFramework:IntegerToTimer(killTimeRelativeToStart))
-
-                --local bossInfo = bossSegment:GetBossInfo()
-                --if (bossInfo and bossInfo.bossimage) then
-                if (bossSegment:GetBossImage()) then
-                    bossWidget.AvatarTexture:SetTexture(bossSegment:GetBossImage())
-                else
-                    --local bossAvatar = Details:GetBossPortrait(nil, nil, bossTable[2].name, bossTable[2].ej_instance_id)
-                    --bossWidget.AvatarTexture:SetTexture(bossAvatar)
-                end
-            end
-        end
-
-        local data = addon.GetMythicPlusData()
-        --dumpt(data)
-
         local timestamps = {}
         local start
         local last
         for i = 1, #inAndOutCombatTimeline do
             local timestamp = inAndOutCombatTimeline[i].time
             if (start == nil) then
-                start = timestamp
+                start = math.min(runStartTime, timestamp)
             end
 
             if (timestamp >= start) then
@@ -1181,8 +1143,42 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             timestamps[#timestamps+1] = last
         end
 
-        local width = activityFrame:GetWidth()
+        local width = self:GetWidth()
         local multiplier = width / last.time
+
+        local bossWidgetIndex = 1
+        for i = 1, #allBossesSegments do
+            local bossSegment = allBossesSegments[i]
+            local bossSegmentTexture = bossSegment:GetMythicDungeonInfo()
+            local bossSegmentTime = bossSegment:GetCombatTime()
+            local killTime = addon.GetBossKillTime(bossSegment)
+
+            if (killTime > 0) then
+                local bossWidget = self.bossWidgets[bossWidgetIndex]
+                if (not bossWidget) then
+                    bossWidget = addon.CreateBossPortraitTexture(self, bossWidgetIndex)
+                    self.bossWidgets[bossWidgetIndex] = bossWidget
+                end
+                bossWidgetIndex = bossWidgetIndex + 1
+
+                local killTimeRelativeToStart = killTime - start
+                local xPosition = killTimeRelativeToStart * multiplier
+
+                bossWidget:SetPoint("bottomright", self, "bottomleft", xPosition, 4)
+
+                bossWidget.TimeText:SetText(detailsFramework:IntegerToTimer(killTimeRelativeToStart))
+
+                --local bossInfo = bossSegment:GetBossInfo()
+                --if (bossInfo and bossInfo.bossimage) then
+                if (bossSegment:GetBossImage()) then
+                    bossWidget.AvatarTexture:SetTexture(bossSegment:GetBossImage())
+                else
+                    --local bossAvatar = Details:GetBossPortrait(nil, nil, bossTable[2].name, bossTable[2].ej_instance_id)
+                    --bossWidget.AvatarTexture:SetTexture(bossAvatar)
+                end
+            end
+        end
+
         for i = 1, #timestamps do
             local step = timestamps[i]
             local nextStep = timestamps[i+1]
