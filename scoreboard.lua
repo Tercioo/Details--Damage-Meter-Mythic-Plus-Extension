@@ -169,10 +169,14 @@ function Details.OpenMythicPlusBreakdownBigFrame()
 end
 
 function mythicPlusBreakdown.MythicPlusOverallSegmentReady()
-    if (addon.profile.auto_open_mythic_plus_breakdown_big_frame) then
-        private.log("auto opening the mythic+ breakdown big frame after", addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, "seconds")
-        detailsFramework.Schedules.After(addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, addon.OpenMythicPlusBreakdownBigFrame)
+    if (addon.profile.when_to_automatically_open_scoreboard == "COMBAT_MYTHICPLUS_OVERALL_READY") then
+        addon.OpenScoreBoardAtEnd()
     end
+end
+
+function addon.OpenScoreBoardAtEnd()
+    private.log("auto opening the mythic+ scoreboard", addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, "seconds")
+    detailsFramework.Schedules.After(addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, addon.OpenMythicPlusBreakdownBigFrame)
 end
 
 function mythicPlusBreakdown.CreateBigBreakdownFrame()
@@ -188,6 +192,28 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     readyFrame:SetFrameStrata("HIGH")
     readyFrame:EnableMouse(true)
     readyFrame:SetMovable(true)
+    readyFrame:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+    readyFrame:SetScript("OnEvent", function (self, event, ...)
+        if (event == "LOOT_CLOSED") then
+            self:UnregisterEvent("LOOT_CLOSED")
+            self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+            self:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+            if (addon.profile.when_to_automatically_open_scoreboard == "LOOT_CLOSED") then
+                addon.OpenScoreBoardAtEnd()
+            end
+        elseif (event == "CHALLENGE_MODE_COMPLETED") then
+            self:RegisterEvent("LOOT_CLOSED")
+            self:RegisterEvent("PLAYER_ENTERING_WORLD")
+            self:UnregisterEvent("CHALLENGE_MODE_COMPLETED")
+        elseif (event == "PLAYER_ENTERING_WORLD") then
+            local isLogin, isReload = ...
+            if (not isLogin and not isReload) then
+                self:UnregisterEvent("LOOT_CLOSED")
+                self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+                self:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+            end
+        end
+    end)
 
     table.insert(UISpecialFrames, mainFrameName)
 
