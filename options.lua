@@ -31,7 +31,7 @@ local optionsTemplate = {
         values = function()
             local set = function (_, _, value) addon.profile.when_to_automatically_open_scoreboard = value end
             return {
-                { label = "When done looting", onclick = set, value = "LOOT_CLOSE" },
+                { label = "When done looting", onclick = set, value = "LOOT_CLOSED" },
                 { label = "When the run ends", onclick = set, value = "COMBAT_MYTHICPLUS_OVERALL_READY" },
             } end,
         name = "Automatically open scoreboard",

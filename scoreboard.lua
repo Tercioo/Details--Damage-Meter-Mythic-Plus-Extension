@@ -179,6 +179,10 @@ function addon.OpenScoreBoardAtEnd()
     detailsFramework.Schedules.After(addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, addon.OpenMythicPlusBreakdownBigFrame)
 end
 
+function addon.CreateBigBreakdownFrame()
+    mythicPlusBreakdown.CreateBigBreakdownFrame()
+end
+
 function mythicPlusBreakdown.CreateBigBreakdownFrame()
     --quick exit if the frame already exists
     if (_G[mainFrameName]) then

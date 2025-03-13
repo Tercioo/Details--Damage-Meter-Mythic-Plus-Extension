@@ -10,8 +10,8 @@ local tocFileName, private = ...
 
 ---@type profile
 local defaultSettings = {
-    when_to_automatically_open_scoreboard = "LOOT_CLOSE",
-    delay_to_open_mythic_plus_breakdown_big_frame = 5,
+    when_to_automatically_open_scoreboard = "LOOT_CLOSED",
+    delay_to_open_mythic_plus_breakdown_big_frame = 3,
     show_column_summary_in_tooltip = true,
     show_remaining_timeline_after_finish = true,
     translit = GetLocale() ~= "ruRU",
@@ -91,6 +91,9 @@ function private.addon.OnInit(self, profile) --PLAYER_LOGIN
             MenuUtil.HideTooltip(button)
         end,
     })
+
+    -- required to create early due to the frame events
+    private.addon.CreateBigBreakdownFrame()
 
     private.log("addon loaded")
 end
