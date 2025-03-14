@@ -14,3 +14,4 @@ options.lua
 scoreboard.lua
 events.lua
 functions.lua
+loot.lua

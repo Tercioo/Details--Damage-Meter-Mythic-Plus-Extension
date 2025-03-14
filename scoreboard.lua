@@ -342,8 +342,8 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         {text = "", width = 60}, --player portrait
         {text = "", width = 25}, --spec icon
         {text = "Player Name", width = 110},
-        {text = "Loot", width = 80},
         {text = "M+ Score", width = 90},
+        {text = "Loot", width = 80},
         {text = "Deaths", width = 80},
         {text = "Damage Taken", width = 100},
         {text = "DPS", width = 100},
@@ -700,13 +700,18 @@ local showTargetsTooltip = function(self, playerObject, title)
             local targetName = targetList[i][1]
             local amount = targetList[i][2]
 
-            GameCooltip:AddLine(targetName, amount)
-            GameCooltip:AddIcon([[Interface\Icons\Ability_Creature_Cursed_04]], 1, 1, 16, 16)
-            --text = text .. targetName .. ": " .. amount .. "\n"
+            local noRealmName = detailsFramework:RemoveRealmName(targetName)
+            local formattedAmount = Details:Format(amount)
+            GameCooltip:AddLine(noRealmName, formattedAmount)
+
+            local specId = playerObject.spec
+            local bUseAlpha = false
+            local specTexture, left, right, top, bottom = Details:GetSpecIcon(specId, bUseAlpha)
+            GameCooltip:AddIcon(specTexture, 1, 1, 16, 16, left, right, top, bottom)
         end
     end
 
-    GameCooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+    GameCooltip:SetOwner(self)
     GameCooltip:SetOption("TextSize", 10)
     GameCooltip:SetOption("FixedWidth", 200)
     GameCooltip:Show()
@@ -737,6 +742,7 @@ local function OnLeaveLineBreakdownButton(self)
     detailsFramework:SetFontOutline(text, addon.profile.font.regular_outline)
     detailsFramework:SetFontColor(text, text.originalColor)
     GameTooltip:Hide()
+    GameCooltip:Hide()
 end
 
 function mythicPlusBreakdown.SetFontSettings()
@@ -909,44 +915,58 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         -- onMouseEnter
         function (self, button)
             -- this one does not work yet
-
             ---@type actordamage, combat
             local actor, combat = button:GetActor(DETAILS_ATTRIBUTE_DAMAGE)
 
-            --indexed table with subtable with [1] spellId [2] amount
-            ---@type table<number, table<number, number>>
+            ---@class spell_hit_player : table
+            ---@field spellId number
+            ---@field amount number
+            ---@field damagerName string
+
+            ---@type spell_hit_player[]
             local spellsThatHitThisPlayer = {}
 
             for damagerName in pairs (actor.damage_from) do
                 local damagerObject = combat:GetActor(DETAILS_ATTRIBUTE_DAMAGE, damagerName)
                 if (damagerObject) then
                     for spellId, spellTable in pairs(damagerObject:GetSpellList()) do
-                        if (spellTable.targets and spellTable.targets[playerName]) then
-                            local amount = spellTable.targets[playerName]
+                        if (spellTable.targets and spellTable.targets[actor:Name()]) then
+                            local amount = spellTable.targets[actor:Name()]
                             if (amount > 0) then
-                                spellsThatHitThisPlayer[#spellsThatHitThisPlayer+1] = {spellId, amount}
+                                ---@type spell_hit_player
+                                local spellThatHitThePlayer = {
+                                    spellId = spellId,
+                                    amount = amount,
+                                    damagerName = damagerObject:Name(),
+                                }
+                                spellsThatHitThisPlayer[#spellsThatHitThisPlayer+1] = spellThatHitThePlayer
                             end
                         end
                     end
                 end
             end
 
-            table.sort(spellsThatHitThisPlayer, function(t1, t2) return t1[2] > t2[2] end)
-            for i = 1, math.min(#spells, 7) do
-                local spellId = spells[i][1]
-                local amount = spells[i][2]
-                text = text .. spellId .. ": " .. amount .. "\n"
+            table.sort(spellsThatHitThisPlayer, function(t1, t2) return t1.amount > t2.amount end)
+
+            GameCooltip:Preset(2)
+
+            for i = 1, math.min(#spellsThatHitThisPlayer, 7) do
+                local spellId = spellsThatHitThisPlayer[i].spellId
+                local amount = spellsThatHitThisPlayer[i].amount
+                local sourceName = spellsThatHitThisPlayer[i].damagerName
+
+                local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
+                if (spellName and spellIcon) then
+                    local spellAmount = Details:Format(amount)
+                    GameCooltip:AddLine(spellName .. " (" .. sourceName .. ")", spellAmount)
+                    GameCooltip:AddIcon(spellIcon, 1, 1, 16, 16)
+                end
             end
 
-            GameCooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+            GameCooltip:SetOwner(self)
             GameCooltip:SetOption("TextSize", 10)
-            GameCooltip:SetOption("FixedWidth", 200)
+            GameCooltip:SetOption("FixedWidth", 300)
             GameCooltip:Show()
-
-           --GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-           --GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. " - Damage Taken")
-           --GameTooltip:AddLine(text, 1, 1, 1, true)
-           --GameTooltip:Show()
         end
     )
 
@@ -1002,15 +1022,14 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(math.floor(playerData.ccCasts))
     end)
 
-
-    --local playerEmptyField = CreateBreakdownLabel(line)
+    local lootAnchor = addon.loot.CreateLootWidgetsInScoreboardLine(line)
 
     --add each widget create to the header alignment
     line:AddFrameToHeaderAlignment(playerPortrait)
     line:AddFrameToHeaderAlignment(specIcon)
     line:AddFrameToHeaderAlignment(playerName)
-    line:AddFrameToHeaderAlignment(lootAnchor)
     line:AddFrameToHeaderAlignment(playerScore)
+    line:AddFrameToHeaderAlignment(lootAnchor)
     line:AddFrameToHeaderAlignment(playerDeaths)
     line:AddFrameToHeaderAlignment(playerDamageTaken)
     line:AddFrameToHeaderAlignment(playerDps)

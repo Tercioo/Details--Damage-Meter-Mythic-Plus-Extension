@@ -11,7 +11,7 @@ local _ = nil
 local Translit = LibStub("LibTranslit-1.0")
 
 local CONST_DEBUG_MODE = false
-local LOOT_DEBUG_MODE = false
+local LOOT_DEBUG_MODE = true
 
 local playerBannerSettings = {
 	background_width = 286,
@@ -261,6 +261,7 @@ end
 
 
 ---@param line scoreboard_line
+---@return frame
 function addon.loot.CreateLootWidgetsInScoreboardLine(line)
     local lootAnchor = CreateFrame("frame", nil, line)
     --waiting for loot animation
@@ -319,7 +320,7 @@ function addon.loot.CreateLootWidgetsInScoreboardLine(line)
 		if (i == 1) then
 			lootSquare:SetPoint("right", lootAnchor, "left", 0, 0)
 		else
-			lootSquare:SetPoint("right", lootAnchor.LootSquares[i-1], "left", -2, 0)
+			lootSquare:SetPoint("right", line.LootSquares[i-1], "left", -2, 0)
 		end
 		line.LootSquares[i] = lootSquare
 		line["lootSquare" .. i] = lootSquare
@@ -344,5 +345,5 @@ function addon.loot.CreateLootWidgetsInScoreboardLine(line)
 		return lootSquare
 	end
 
-
+	return lootAnchor
 end
