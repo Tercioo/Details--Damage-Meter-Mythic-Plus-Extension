@@ -5,7 +5,7 @@
 ---@field log fun(...) log a message to the addon logs
 
 ---@class profile : table
----@field auto_open_mythic_plus_breakdown_big_frame boolean if true, the panel will open after x seconds after the m+ overall segment is ready.
+---@field when_to_automatically_open_scoreboard string which method to use to automatically open? can be LOOT_CLOSED or COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
 ---@field show_column_summary_in_tooltip boolean whether or not to show the summary in a tooltip when hovering over the column
 ---@field show_remaining_timeline_after_finish boolean whether or not to render the remaining time in a bar in a keystone after completing
@@ -62,6 +62,7 @@
 ---@field IsParsing fun():boolean whether or parsing at the moment
 ---@field OpenMythicPlusBreakdownBigFrame fun() open the mythic plus breakdown big frame
 ---@field RefreshOpenScoreBoard fun() Refreshes the score board, but only if it's visible
+---@field OpenScoreBoardAtEnd fun() Opens the scoreboard with the configured delay, at the end of a run
 ---@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment
 ---@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player
 ---@field GetInAndOutOfCombatTimeline fun() : detailsmythicplus_combatstep[] return the in and out of combat timeline

@@ -26,6 +26,18 @@ local mythicPlusOptions = {}
 local optionsTemplate = {
     {type = "label", get = function() return "General Options" end, text_template = detailsFramework:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
     {
+        type = "select",
+        get = function() return addon.profile.when_to_automatically_open_scoreboard end,
+        values = function()
+            local set = function (_, _, value) addon.profile.when_to_automatically_open_scoreboard = value end
+            return {
+                { label = "When done looting", onclick = set, value = "LOOT_CLOSED" },
+                { label = "When the run ends", onclick = set, value = "COMBAT_MYTHICPLUS_OVERALL_READY" },
+            } end,
+        name = "Automatically open scoreboard",
+        desc = "Do you want to automatically open the scoreboard when done looting the chest, or when the run itself finishes?",
+    },
+    {
         type = "range",
         get = function () return addon.profile.delay_to_open_mythic_plus_breakdown_big_frame end,
         set = function (_, _, value)
@@ -36,7 +48,7 @@ local optionsTemplate = {
         max = 10,
         step = 1,
         name = "Scoreboard open delay",
-        desc = "The amount of seconds after which the scoreboard will appear when the mythic plus dungeon completes",
+        desc = "The amount of seconds after which the scoreboard will appear according to the setting above",
     },
     {
         type = "toggle",
