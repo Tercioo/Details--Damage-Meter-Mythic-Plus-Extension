@@ -47,6 +47,20 @@ local Translit = LibStub("LibTranslit-1.0")
 ---@field lines table<number, scoreboard_line>
 
 ---@class scoreboard_line : button, df_headerfunctions
+---@field unitId string
+---@field unitName string
+---@field NextLootSquare number
+---@field WaitingForLootLabel loot_dot_animation
+---@field LootSquare details_lootsquare
+---@field LootSquares details_lootsquare[]
+---@field SetPlayerData fun(self:scoreboard_line, playerData:scoreboard_playerdata)
+---@field GetPlayerData fun(self:scoreboard_line):scoreboard_playerdata
+---@field HasPlayerData fun(self:scoreboard_line):boolean returns true if data is attached
+---@field StopTextDotAnimation fun(self:scoreboard_line)
+---@field GetLootSquare fun(self: scoreboard_line):details_lootsquare
+---@field ClearLootSquares fun(self: scoreboard_line)
+---@field StartTextDotAnimation fun(self:scoreboard_line)
+
 
 ---@class scoreboard_button : df_button
 ---@field PlayerData table
@@ -59,6 +73,7 @@ local Translit = LibStub("LibTranslit-1.0")
 
 ---@class scoreboard_playerdata : table
 ---@field name string
+---@field unitName string same as 'name'
 ---@field class string
 ---@field spec number
 ---@field role string
@@ -162,6 +177,13 @@ function addon.RefreshOpenScoreBoard()
     if (mainFrame:IsVisible()) then
         mythicPlusBreakdown.RefreshBigBreakdownFrame()
     end
+end
+
+function addon.IsScoreboardOpen()
+    if (_G[mainFrameName]) then
+        return _G[mainFrameName]:IsShown()
+    end
+    return false
 end
 
 function Details.OpenMythicPlusBreakdownBigFrame()
@@ -320,6 +342,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         {text = "", width = 60}, --player portrait
         {text = "", width = 25}, --spec icon
         {text = "Player Name", width = 110},
+        {text = "Loot", width = 80},
         {text = "M+ Score", width = 90},
         {text = "Deaths", width = 80},
         {text = "Damage Taken", width = 100},
@@ -383,6 +406,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     mythicPlusBreakdown.SetFontSettings()
 
     local mythicPlusOverallSegment = Details:GetCurrentCombat()
+
+    --hide the lootSquare
+	--for i = 1, #readyFrame.PlayerBanners do
+	--	readyFrame.PlayerBanners[i]:ClearLootSquares()
+	--end
+
 
 	if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
 		--get a table with all segments
@@ -457,6 +486,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                     dispels = 0,
                     ccCasts = mythicPlusOverallSegment:GetCCCastAmount(actorObject.nome),
                     unitId = unitId,
+                    unitName = actorObject.nome,
                     combatUid = mythicPlusOverallSegment:GetCombatUID(),
                 }
 
@@ -533,9 +563,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         }
 
         for i = 1, lineAmount do
-            local line = lines[i]
-            local frames = line:GetFramesFromHeaderAlignment()
+            local scoreboardLine = lines[i]
+            local frames = scoreboardLine:GetFramesFromHeaderAlignment()
+            ---@type scoreboard_playerdata
             local playerData = data[i]
+
+            private.addon.loot.scoreboardLineCacheByName[playerData.name] = scoreboardLine
 
             --(re)set the line contents
             for j = 1, #frames do
@@ -550,10 +583,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                 if (frame.SetPlayerData) then
                     frame:SetPlayerData(playerData)
                 end
+
+                private.addon.loot.UpdateUnitLoot(scoreboardLine)
             end
 
             if (playerData) then
-                line:Show()
+                scoreboardLine:Show()
                 --dumpt(playerData)
                 local playerPortrait = frames[1]
                 local specIcon = frames[2]
@@ -637,7 +672,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     end
 
     mainFrame.DungeonBackdropTexture:SetTexCoord(35/512, 291/512, 49/512, 289/512)
-
 end
 
 local function OpenLineBreakdown(self, mainAttribute, subAttribute)
@@ -652,6 +686,9 @@ end
 local showTargetsTooltip = function(self, playerObject, title)
     local targets = playerObject.targets
     local text = ""
+
+    GameCooltip:Preset(2)
+
     if (targets) then
         local targetList = {}
         for targetName, amount in pairs(targets) do
@@ -662,14 +699,22 @@ local showTargetsTooltip = function(self, playerObject, title)
         for i = 1, math.min(#targetList, 7) do
             local targetName = targetList[i][1]
             local amount = targetList[i][2]
-            text = text .. targetName .. ": " .. amount .. "\n"
+
+            GameCooltip:AddLine(targetName, amount)
+            GameCooltip:AddIcon([[Interface\Icons\Ability_Creature_Cursed_04]], 1, 1, 16, 16)
+            --text = text .. targetName .. ": " .. amount .. "\n"
         end
     end
 
-    GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-    GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. title)
-    GameTooltip:AddLine(text, 1, 1, 1, true)
-    GameTooltip:Show()
+    GameCooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+    GameCooltip:SetOption("TextSize", 10)
+    GameCooltip:SetOption("FixedWidth", 200)
+    GameCooltip:Show()
+
+    --GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+    --GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. title)
+    --GameTooltip:AddLine(text, 1, 1, 1, true)
+    --GameTooltip:Show()
 end
 
 ---@param self df_blizzbutton
@@ -810,6 +855,8 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         line:SetBackdropColor(unpack(lineColor2))
     end
 
+    addon.loot.CreateLootWidgetsInScoreboardLine(line)
+
     --player portrait
     local playerPortrait = Details:CreatePlayerPortrait(line, "$parentPortrait")
     playerPortrait.Portrait:SetSize(lineHeight-2, lineHeight-2)
@@ -863,7 +910,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         function (self, button)
             -- this one does not work yet
 
-            ---@type actordamage|combat
+            ---@type actordamage, combat
             local actor, combat = button:GetActor(DETAILS_ATTRIBUTE_DAMAGE)
 
             --indexed table with subtable with [1] spellId [2] amount
@@ -891,10 +938,15 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
                 text = text .. spellId .. ": " .. amount .. "\n"
             end
 
-            GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
-            GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. " - Damage Taken")
-            GameTooltip:AddLine(text, 1, 1, 1, true)
-            GameTooltip:Show()
+            GameCooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+            GameCooltip:SetOption("TextSize", 10)
+            GameCooltip:SetOption("FixedWidth", 200)
+            GameCooltip:Show()
+
+           --GameTooltip:SetOwner(self, "ANCHOR_TOPRIGHT")
+           --GameTooltip:SetText(detailsFramework:RemoveRealmName(playerObject:Name()) .. " - Damage Taken")
+           --GameTooltip:AddLine(text, 1, 1, 1, true)
+           --GameTooltip:Show()
         end
     )
 
@@ -950,12 +1002,14 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(math.floor(playerData.ccCasts))
     end)
 
+
     --local playerEmptyField = CreateBreakdownLabel(line)
 
     --add each widget create to the header alignment
     line:AddFrameToHeaderAlignment(playerPortrait)
     line:AddFrameToHeaderAlignment(specIcon)
     line:AddFrameToHeaderAlignment(playerName)
+    line:AddFrameToHeaderAlignment(lootAnchor)
     line:AddFrameToHeaderAlignment(playerScore)
     line:AddFrameToHeaderAlignment(playerDeaths)
     line:AddFrameToHeaderAlignment(playerDamageTaken)

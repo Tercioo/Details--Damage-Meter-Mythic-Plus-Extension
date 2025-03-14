@@ -47,6 +47,7 @@
 ---@class detailsmythicplus : table
 ---@field profile profile store the profile settings
 ---@field detailsEventListener table register and listen to Details! events
+---@field loot loot
 ---@field data table store data from the current mythic plus run
 ---@field mythicPlusBreakdown details_mythicplus_breakdown
 ---@field InitializeEvents fun() run on PLAYER_LOGIN, create the function to listen to details events
@@ -72,3 +73,4 @@
 ---@field GetMythicPlusData fun() : mythicdungeoninfo? retrieves the data from the current mythic plus run
 ---@field GetBossKillTime fun(bossSegment:combat) : number retrieves the end time() of a boss encounter segment.
 ---@field CreateBossPortraitTexture fun(parent:frame, index:number) : bosswidget create a boss portrait texture widget
+---@field IsScoreboardOpen fun() : boolean whether or not the scoreboard is shown in the screen
