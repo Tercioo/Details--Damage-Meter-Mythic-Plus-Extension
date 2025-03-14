@@ -20,7 +20,7 @@ local Translit = LibStub("LibTranslit-1.0")
 ---@field CreateBigBreakdownFrame fun():scoreboard_mainframe
 ---@field CreateLineForBigBreakdownFrame fun(parent:scoreboard_mainframe, header:scoreboard_header, index:number):scoreboard_line
 ---@field CreateActivityPanel fun(parent:scoreboard_mainframe):scoreboard_activityframe
----@field RefreshBigBreakdownFrame fun()
+---@field RefreshBigBreakdownFrame fun():boolean true when it has data, false when it does not and probably should be hidden
 ---@field MythicPlusOverallSegmentReady fun() executed when details! send the event COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field SetFontSettings fun() set the default font settings
 
@@ -164,11 +164,13 @@ local EventType = {
 
 function addon.OpenMythicPlusBreakdownBigFrame()
     local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
-    mainFrame:Show()
 
-    mythicPlusBreakdown.RefreshBigBreakdownFrame()
-
-    mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
+    if (mythicPlusBreakdown.RefreshBigBreakdownFrame()) then
+        mainFrame:Show()
+        mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
+    else
+        print("There is currently no score on the board")
+    end
 end
 
 function addon.RefreshOpenScoreBoard()
@@ -426,9 +428,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 	end
 
 	if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
-        --no mythic+ segment found
-        --mainFrame:Hide()
-        return
+        return false
     end
 
     --local mythicPlusOverallSegment = Details:GetOverallCombat()
@@ -672,6 +672,8 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     end
 
     mainFrame.DungeonBackdropTexture:SetTexCoord(35/512, 291/512, 49/512, 289/512)
+
+    return true
 end
 
 local function OpenLineBreakdown(self, mainAttribute, subAttribute)
