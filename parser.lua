@@ -30,12 +30,17 @@ function addon.StartParser()
 
     addon.data.interrupt_cast_overlap = {}
     addon.data.interrupt_cast_overlap_done = {}
+    addon.profile.last_run_data.run_start = time()
 
     parserFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     parserFrame:SetScript("OnEvent", parserFrame.OnEvent)
     parserFrame.isParsing = true
 
     private.log("Parser stared")
+end
+
+function addon.GetLastRunStart()
+    return addon.profile.last_run_data.run_start or time()
 end
 
 function addon.StopParser()

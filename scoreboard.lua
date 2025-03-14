@@ -554,12 +554,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         end
 
         local topScores = {
-            [6] = {key = "damageTaken", line = 0, best = 0},
-            [7] = {key = "dps", line = 0, best = 0},
-            [8] = {key = "hps", line = 0, best = 0},
-            [9] = {key = "interrupts", line = 0, best = 0},
-            [10] = {key = "dispels", line = 0, best = 0},
-            [11] = {key = "ccCasts", line = 0, best = 0},
+            [7] = {key = "damageTaken", line = nil, best = nil, highest = false},
+            [8] = {key = "dps", line = nil, best = nil, highest = true},
+            [9] = {key = "hps", line = nil, best = nil, highest = true},
+            [10] = {key = "interrupts", line = nil, best = nil, highest = true},
+            [11] = {key = "dispels", line = nil, best = nil, highest = true},
+            [12] = {key = "ccCasts", line = nil, best = nil, highest = true},
         }
 
         for i = 1, lineAmount do
@@ -612,7 +612,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                 specIcon:SetTexture(select(4, GetSpecializationInfoByID(playerData.spec)))
 
                 for _, value in pairs(topScores) do
-                    if (value.best < playerData[value.key]) then
+                    if (value.line == nil or (value.highest and value.best < playerData[value.key]) or (not value.highest and value.best > playerData[value.key])) then
                         value.best = playerData[value.key]
                         value.line = i
                     end
@@ -1145,7 +1145,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 local iconLabel = marker:CreateFontString("$parentIconLabel", "overlay", "GameFontNormal")
                 iconLabel:SetPoint("center", marker, "center", 0, 0)
                 iconLabel:SetJustifyH("center")
-                marker.iconLabel = iconLabel
+                marker.subFrames.iconLabel = iconLabel
 
                 local line = marker:CreateTexture("$parentMarkerLineTexture", "border")
                 line:SetColorTexture(1, 1, 1, 0.5)
@@ -1216,16 +1216,11 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             leave_combat = {0.7, 0.1, 0.1, 0.5},
         }
 
-        local allBossesSegments = addon.GetRunBossSegments()
-
         local timestamps = {}
-        local start
+        local start = addon.GetLastRunStart()
         local last
         for i = 1, #inAndOutCombatTimeline do
             local timestamp = inAndOutCombatTimeline[i].time
-            if (start == nil) then
-                start = math.min(runStartTime, timestamp)
-            end
 
             if (timestamp >= start) then
                 last = {
@@ -1235,6 +1230,10 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
 
                 timestamps[#timestamps+1] = last
             end
+        end
+
+        if (last == nil) then
+            return
         end
 
         last.time = math.max(last.time, mythicPlusData.EndedAt - start)
@@ -1251,6 +1250,11 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         local width = self:GetWidth()
         local multiplier = width / last.time
 
+        for i = 1, #self.bossWidgets do
+            self.bossWidgets[i]:Hide()
+        end
+
+        local allBossesSegments = addon.GetRunBossSegments()
         local bossWidgetIndex = 1
         for i = 1, #allBossesSegments do
             local bossSegment = allBossesSegments[i]
@@ -1263,6 +1267,8 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 if (not bossWidget) then
                     bossWidget = addon.CreateBossPortraitTexture(self, bossWidgetIndex)
                     self.bossWidgets[bossWidgetIndex] = bossWidget
+                else
+                    bossWidget:Show()
                 end
                 bossWidgetIndex = bossWidgetIndex + 1
 
@@ -1317,6 +1323,9 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             local forceDirection
             marker:SetFrameLevel(10 + 5 * i)
 
+            local iconLabel = marker.subFrames.iconLabel
+            iconLabel:Hide()
+
             marker.timestampLabel:SetText(detailsFramework:IntegerToTimer(relativeTimestamp))
 
             if (event.type == EventType.Death) then
@@ -1370,7 +1379,8 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                     marker.subFrames.icon = icon
                 end
 
-                detailsFramework:SetFontSize(marker.iconLabel, 17)
+                iconLabel:Show()
+                detailsFramework:SetFontSize(iconLabel, 17)
                 detailsFramework:SetFontSize(marker.timestampLabel, 12)
                 if (event.arguments.onTime) then
                     forceDirection = "up"
@@ -1381,10 +1391,10 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                     icon:SetPoint("center", marker, "center", 0, 0)
                     icon:Show()
 
-                    marker.iconLabel:SetText("+" .. (event.arguments.keystoneLevelsUpgrade or "1"))
-                    marker.iconLabel:SetPoint("center", marker.subFrames.icon, "center", -2, 0)
+                    iconLabel:SetText("+" .. (event.arguments.keystoneLevelsUpgrade or "1"))
+                    iconLabel:SetPoint("center", marker.subFrames.icon, "center", -2, 0)
                     detailsFramework:SetFontColor(marker.timestampLabel, 0.2, 0.8, 0.2)
-                    detailsFramework:SetFontColor(marker.iconLabel, "yellow")
+                    detailsFramework:SetFontColor(iconLabel, "yellow")
                 else
                     forceDirection = "down"
 
@@ -1394,15 +1404,14 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                     icon:SetPoint("center", marker, "center", 0, 0)
                     icon:Show()
 
-                    marker.iconLabel:SetText(":(")
-                    marker.iconLabel:SetPoint("center", marker.subFrames.icon, "center", 0, -3)
+                    iconLabel:SetText(":(")
+                    iconLabel:SetPoint("center", marker.subFrames.icon, "center", 0, -3)
                     detailsFramework:SetFontColor(marker.timestampLabel, 0.8, 0.2, 0.2)
-                    detailsFramework:SetFontColor(marker.iconLabel, 0.8, 0.2, 0.2)
+                    detailsFramework:SetFontColor(iconLabel, 0.8, 0.2, 0.2)
                 end
             else
-                marker.iconLabel:SetText("")
-                marker.iconLabel:ClearAllPoints()
-                marker.iconLabel:SetPoint("center", marker.subFrames.icon, "center")
+                iconLabel:ClearAllPoints()
+                iconLabel:SetPoint("center", marker.subFrames.icon, "center")
                 detailsFramework:SetFontColor(marker.timestampLabel, 1, 1, 1)
                 detailsFramework:SetFontSize(marker.timestampLabel, 12)
             end
