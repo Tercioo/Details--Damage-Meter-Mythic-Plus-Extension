@@ -15,3 +15,4 @@ scoreboard.lua
 events.lua
 functions.lua
 loot.lua
+slash.lua

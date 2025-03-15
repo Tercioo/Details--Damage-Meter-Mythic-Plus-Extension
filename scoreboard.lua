@@ -115,7 +115,7 @@ local mythicPlusBreakdown = {
     lines = {},
 }
 
-private.addon.mythicPlusBreakdown = mythicPlusBreakdown
+addon.mythicPlusBreakdown = mythicPlusBreakdown
 
 local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
 local GetItemIcon = GetItemIcon or C_Item.GetItemIcon
@@ -263,7 +263,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     end)
     closeButton:SetPoint("topright", readyFrame, "topright", -4, -5)
 
-    local optionsButton = detailsFramework:CreateButton(readyFrame, Details.ShowMythicPlusOptionsWindow, 14, 14, "", nil, nil, nil, nil, "$parentOptionsButton", nil, nil)
+    local optionsButton = detailsFramework:CreateButton(readyFrame, addon.ShowMythicPlusOptionsWindow, 14, 14, "", nil, nil, nil, nil, "$parentOptionsButton", nil, nil)
     optionsButton:SetPoint("right", closeButton, "left", 0, 0)
     optionsButton:SetIcon([[Interface\Buttons\UI-OptionsButton]], 14, 14, nil, {0, 1, 0, 1}, nil, 3)
 
@@ -568,7 +568,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             ---@type scoreboard_playerdata
             local playerData = data[i]
 
-            private.addon.loot.scoreboardLineCacheByName[playerData.name] = scoreboardLine
+            addon.loot.scoreboardLineCacheByName[playerData.name] = scoreboardLine
 
             --(re)set the line contents
             for j = 1, #frames do
@@ -584,7 +584,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                     frame:SetPlayerData(playerData)
                 end
 
-                private.addon.loot.UpdateUnitLoot(scoreboardLine)
+                addon.loot.UpdateUnitLoot(scoreboardLine)
             end
 
             if (playerData) then
