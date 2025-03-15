@@ -85,7 +85,7 @@ local optionsTemplate = {
 
 local mainFrameName = "DetailsMythicPlusOptionsFrame"
 
-function Details.ShowMythicPlusOptionsWindow()
+function addon.ShowMythicPlusOptionsWindow()
     mythicPlusOptions.ShowOptions()
 end
 

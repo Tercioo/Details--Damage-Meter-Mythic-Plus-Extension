@@ -39,6 +39,14 @@ function private.addon.OnLoad(self, profile) --ADDON_LOADED
     --added has been loaded
 end
 
+function private.addon.GetVersionString()
+    return C_AddOns.GetAddOnMetadata("Details_MythicPlus", "Version")
+end
+
+function private.addon.GetFullVersionString()
+    return Details.GetVersionString() .. " | " .. private.addon.GetVersionString()
+end
+
 function private.addon.OnInit(self, profile) --PLAYER_LOGIN
     --logout logs register what happened to the addon when the player logged out
     if (not profile.logout_logs) then

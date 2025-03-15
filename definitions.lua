@@ -74,3 +74,5 @@
 ---@field GetBossKillTime fun(bossSegment:combat) : number retrieves the end time() of a boss encounter segment.
 ---@field CreateBossPortraitTexture fun(parent:frame, index:number) : bosswidget create a boss portrait texture widget
 ---@field IsScoreboardOpen fun() : boolean whether or not the scoreboard is shown in the screen
+---@field GetVersionString fun() : string the version info of just this addon
+---@field GetFullVersionString fun() : string the version info of details and this addon
