@@ -8,6 +8,7 @@
 ## IconTexture: Interface\AddOns\Details\images\minimap
 
 ## X-Wago-ID: 4N2m7QGL
+## X-Curse-Project-ID: 1220909
 
 start.lua
 frames.lua
