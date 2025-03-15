@@ -674,7 +674,7 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
     Details:OpenSpecificBreakdownWindow(Details:GetCombatByUID(playerData.combatUid), playerData.name, mainAttribute, subAttribute)
 end
 
-local showTargetsTooltip = function(self, playerObject, title)
+local showTargetsTooltip = function(self, playerObject, title, attributeType)
     local targets = playerObject.targets
     local text = ""
 
@@ -695,10 +695,18 @@ local showTargetsTooltip = function(self, playerObject, title)
             local formattedAmount = Details:Format(amount)
             GameCooltip:AddLine(noRealmName, formattedAmount)
 
-            local specId = playerObject.spec
-            local bUseAlpha = false
-            local specTexture, left, right, top, bottom = Details:GetSpecIcon(specId, bUseAlpha)
-            GameCooltip:AddIcon(specTexture, 1, 1, 16, 16, left, right, top, bottom)
+            if (attributeType == DETAILS_ATTRIBUTE_HEAL) then
+                local specId = playerObject.spec
+                local bUseAlpha = false
+                local specTexture, left, right, top, bottom = Details:GetSpecIcon(specId, bUseAlpha)
+                GameCooltip:AddIcon(specTexture, 1, 1, 16, 16, left, right, top, bottom)
+            else
+                local specId = playerObject.spec
+                local bUseAlpha = false
+                local specTexture, left, right, top, bottom = Details:GetSpecIcon(specId, bUseAlpha)
+                GameCooltip:AddIcon(specTexture, 1, 1, 16, 16, left, right, top, bottom)
+            end
+
         end
     end
 
@@ -975,7 +983,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         function (self, button)
             local actor = button:GetActor(DETAILS_ATTRIBUTE_DAMAGE)
             if (actor) then
-                showTargetsTooltip(self, actor, " - Damage Done")
+                showTargetsTooltip(self, actor, " - Damage Done", DETAILS_ATTRIBUTE_DAMAGE)
             end
         end
     )
@@ -994,7 +1002,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         function (self, button)
             local actor = button:GetActor(DETAILS_ATTRIBUTE_HEAL)
             if (actor) then
-                showTargetsTooltip(self, actor, " - Healing Done")
+                showTargetsTooltip(self, actor, " - Healing Done", DETAILS_ATTRIBUTE_HEAL)
             end
         end
     )
