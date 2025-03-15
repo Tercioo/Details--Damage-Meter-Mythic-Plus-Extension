@@ -40,7 +40,7 @@ function addon.StartParser()
 end
 
 function addon.GetLastRunStart()
-    return addon.profile.last_run_data.run_start or time()
+    return addon.profile.last_run_data.run_start or time() --retuning time() here result in an empty timeline (all black), it fails in the "if (last == nil) then" check
 end
 
 function addon.StopParser()

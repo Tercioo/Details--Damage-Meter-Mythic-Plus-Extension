@@ -97,3 +97,15 @@ function addon.GetBossKillTime(bossSegment)
     end
     return 0
 end
+
+---retrieves the time() in seconds when the player received bloodlust buff.
+---@return number[]? bloodlustTime the time() in seconds when the player received bloodlust buff.
+function addon.GetBloodlustUsage()
+    local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
+    if (mythicPlusOverallSegment) then
+        local bloodlustOverall = mythicPlusOverallSegment.bloodlust_overall
+        if (bloodlustOverall) then
+            return bloodlustOverall
+        end
+    end
+end

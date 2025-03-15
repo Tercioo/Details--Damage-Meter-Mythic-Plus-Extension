@@ -12,6 +12,7 @@ frames.lua
 parser.lua
 options.lua
 scoreboard.lua
+activityframe.lua
 events.lua
 functions.lua
 loot.lua

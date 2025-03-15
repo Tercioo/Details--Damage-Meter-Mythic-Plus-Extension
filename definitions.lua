@@ -50,6 +50,8 @@
 ---@field loot loot
 ---@field data table store data from the current mythic plus run
 ---@field mythicPlusBreakdown details_mythicplus_breakdown
+---@field activityTimeline activitytimeline namespace for functions related to the activity timeline
+---@field ActivityFrame scoreboard_activityframe frame where the widgets for the activity timeline are parented to
 ---@field InitializeEvents fun() run on PLAYER_LOGIN, create the function to listen to details events
 ---@field OnMythicDungeonStart fun(...) run on COMBAT_MYTHICDUNGEON_START
 ---@field OnMythicDungeonEnd fun(...) run on COMBAT_MYTHICDUNGEON_END
@@ -76,3 +78,20 @@
 ---@field IsScoreboardOpen fun() : boolean whether or not the scoreboard is shown in the screen
 ---@field GetVersionString fun() : string the version info of just this addon
 ---@field GetFullVersionString fun() : string the version info of details and this addon
+---@field GetBloodlustUsage fun() : number[]? retrieves the time() in seconds when the player received bloodlust buff.
+---@field GetLastRunStart fun() : number retrieves the time() when the last run started
+
+---@class activitytimeline : table
+---@field UpdateBossWidgets fun(self:scoreboard_activityframe, start:number, multiplier:number) update the boss widgets showing the kill time of each boss
+---@field UpdateBloodlustWidgets fun(self:scoreboard_activityframe, start:number, multiplier:number) update the bloodlust widgets showing the time of bloodlust usage
+---@field ResetSegmentTextures fun(self:scoreboard_activityframe) reset the next index of texture to use and hide all existing textures
+---@field GetSegmentTexture fun(self:scoreboard_activityframe) : texture return a texture to be used as a segment of the activity bar
+
+---@class scoreboard_activityframe : frame
+---@field nextTextureIndex number
+---@field segmentTextures texture[]
+---@field bossWidgets bosswidget[]
+---@field InCombatTexture texture
+---@field OutOfCombatTexture texture
+---@field BackgroundTexture texture
+---@field SetActivity fun(self: scoreboard_activityframe, events: table<number, timeline_event>, inCombat: number, outOfCombat: number)

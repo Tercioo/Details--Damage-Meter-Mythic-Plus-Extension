@@ -98,17 +98,6 @@ local Translit = LibStub("LibTranslit-1.0")
 ---@field timestamp number
 ---@field arguments table
 
----@class scoreboard_activityframe : frame
----@field nextTextureIndex number
----@field segmentTextures texture[]
----@field bossWidgets bosswidget[]
----@field InCombatTexture texture
----@field OutOfCombatTexture texture
----@field BackgroundTexture texture
----@field ResetSegmentTextures fun(self:scoreboard_activityframe)
----@field GetSegmentTexture fun(self:scoreboard_activityframe):texture
----@field SetActivity fun(self: scoreboard_activityframe, events: table<number, timeline_event>, inCombat: number, outOfCombat: number)
-
 ---@type scoreboard_object
 ---@diagnostic disable-next-line: missing-fields
 local mythicPlusBreakdown = {
@@ -867,6 +856,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
 
     --player portrait
     local playerPortrait = Details:CreatePlayerPortrait(line, "$parentPortrait")
+    ---@cast playerPortrait playerportrait
     playerPortrait.Portrait:SetSize(lineHeight-2, lineHeight-2)
     playerPortrait:SetSize(lineHeight-2, lineHeight-2)
     playerPortrait.RoleIcon:SetSize(18, 18)
@@ -1056,6 +1046,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     ---@type scoreboard_activityframe
     local activityFrame = CreateFrame("frame", "$parentActivityFrame", mainFrame)
     mainFrame.ActivityFrame = activityFrame
+    addon.ActivityFrame = activityFrame
 
     activityFrame:SetHeight(4)
     activityFrame:SetPoint("topleft", mainFrame, "topleft", lineOffset * 2, activityFrameY)
@@ -1072,34 +1063,6 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     activityFrame.nextTextureIndex = 1
 
     activityFrame.bossWidgets = {}
-
-    --reset the next index of texture to use and hide all existing textures
-    activityFrame.ResetSegmentTextures = function(self)
-        activityFrame.nextTextureIndex = 1
-        --iterate among all textures and hide them
-        for i = 1, #activityFrame.segmentTextures do
-            activityFrame.segmentTextures[i]:Hide()
-        end
-    end
-
-    --return a texture to be used as a segment of the activity bar
-    activityFrame.GetSegmentTexture = function(self)
-        local currentIndex = activityFrame.nextTextureIndex
-        activityFrame.nextTextureIndex = currentIndex + 1
-
-        if (activityFrame.segmentTextures[currentIndex]) then
-            return activityFrame.segmentTextures[currentIndex]
-        end
-
-        local texture = activityFrame:CreateTexture("$parentSegmentTexture" .. currentIndex, "artwork")
-        texture:SetColorTexture(1, 1, 1, 0.5)
-        texture:SetHeight(4)
-        texture:ClearAllPoints()
-
-        activityFrame.segmentTextures[currentIndex] = texture
-
-        return texture
-    end
 
     activityFrame.PrepareEventFrames = function (self, events)
         local i = 0
@@ -1165,14 +1128,10 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         return iterator
     end
 
----@class scoreboard_activityframe : frame
-
-
---todo(tercio): show players activityTime some place in the mainFrame
+    --todo(tercio): show players activityTime some place in the mainFrame
 
     --functions
     activityFrame.SetActivity = function(self, events, inCombat, outOfCombat)
-        local runTime = addon.GetRunTime()
         local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
 
         ---@type detailsmythicplus_combatstep[]
@@ -1181,22 +1140,8 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         ---@type mythicdungeoninfo
         local mythicPlusData = mythicPlusOverallSegment:GetMythicDungeonInfo()
 
-        --get the run start time from mythicplusdata
-        local runStartTime = mythicPlusData.StartedAt
-
-        --the goal here is to iterate among the inAndOutCombatTimeline and create a texture for each segment
-        --the iterating will be in pairs, the first value is the time in combat and the second is the time out of combat
-        --then get a texture and determine if the color is green (in combat) or red (out of combat)
-        --data format: inAndOutCombatTimeline{outOfCombatTime when out of combat started, inCombatTime when the combat started, outOfCombatTime when player left combat, end so on...}
-        --outOfCombatTime has a key .time, which is the time() of when the combat ended. inCombatTime has a key .time, which is the time() of when the combat started
-
-        --time() of when the run started
-        --local runStartTime = addon.profile.last_run_data.start_time --time()
-
         --reset the segment textures
-        self:ResetSegmentTextures()
-
-        local sumOfTimes = 0 --debug
+        addon.activityTimeline.ResetSegmentTextures(self)
 
         --in case the combat ended after the m+ run ended, the in_combat may be true and need to be closed
         if (inAndOutCombatTimeline[#inAndOutCombatTimeline].in_combat == true) then
@@ -1217,11 +1162,10 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         }
 
         local timestamps = {}
-        local start = addon.GetLastRunStart()
+        local start = addon.GetLastRunStart() --returning time() of now
         local last
         for i = 1, #inAndOutCombatTimeline do
             local timestamp = inAndOutCombatTimeline[i].time
-
             if (timestamp >= start) then
                 last = {
                     time = timestamp - start,
@@ -1250,45 +1194,9 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         local width = self:GetWidth()
         local multiplier = width / last.time
 
-        for i = 1, #self.bossWidgets do
-            self.bossWidgets[i]:Hide()
-        end
+        addon.activityTimeline.UpdateBossWidgets(self, start, multiplier)
 
-        local allBossesSegments = addon.GetRunBossSegments()
-        local bossWidgetIndex = 1
-        for i = 1, #allBossesSegments do
-            local bossSegment = allBossesSegments[i]
-            local bossSegmentTexture = bossSegment:GetMythicDungeonInfo()
-            local bossSegmentTime = bossSegment:GetCombatTime()
-            local killTime = addon.GetBossKillTime(bossSegment)
-
-            if (killTime > 0) then
-                local bossWidget = self.bossWidgets[bossWidgetIndex]
-                if (not bossWidget) then
-                    bossWidget = addon.CreateBossPortraitTexture(self, bossWidgetIndex)
-                    self.bossWidgets[bossWidgetIndex] = bossWidget
-                else
-                    bossWidget:Show()
-                end
-                bossWidgetIndex = bossWidgetIndex + 1
-
-                local killTimeRelativeToStart = killTime - start
-                local xPosition = killTimeRelativeToStart * multiplier
-
-                bossWidget:SetPoint("bottomright", self, "bottomleft", xPosition, 4)
-
-                bossWidget.TimeText:SetText(detailsFramework:IntegerToTimer(killTimeRelativeToStart))
-
-                --local bossInfo = bossSegment:GetBossInfo()
-                --if (bossInfo and bossInfo.bossimage) then
-                if (bossSegment:GetBossImage()) then
-                    bossWidget.AvatarTexture:SetTexture(bossSegment:GetBossImage())
-                else
-                    --local bossAvatar = Details:GetBossPortrait(nil, nil, bossTable[2].name, bossTable[2].ej_instance_id)
-                    --bossWidget.AvatarTexture:SetTexture(bossAvatar)
-                end
-            end
-        end
+        addon.activityTimeline.UpdateBloodlustWidgets(self, start, multiplier)
 
         for i = 1, #timestamps do
             local step = timestamps[i]
@@ -1297,7 +1205,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 break
             end
 
-            local thisStepTexture = activityFrame:GetSegmentTexture()
+            local thisStepTexture = addon.activityTimeline.GetSegmentTexture(self)
 
             thisStepTexture:SetWidth((nextStep.time - step.time) * multiplier)
             thisStepTexture:SetPoint("left", activityFrame, "left", step.time * multiplier, 0)
