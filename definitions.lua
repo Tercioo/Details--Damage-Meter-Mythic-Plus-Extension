@@ -4,6 +4,14 @@
 ---@field addon detailsmythicplus
 ---@field log fun(...) log a message to the addon logs
 
+---@class rundata : table
+
+---@class playerinfo : table
+---@field name string
+---@field class number the classId (from 1 to 13), gotten from UniClass() thrid return
+---@field spec number specialization id
+---@field role number 
+
 ---@class profile : table
 ---@field when_to_automatically_open_scoreboard string which method to use to automatically open? can be LOOT_CLOSED or COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel

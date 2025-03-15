@@ -7,6 +7,8 @@
 ## Version: #@project-version@
 ## IconTexture: Interface\AddOns\Details\images\minimap
 
+## X-Wago-ID: 4N2m7QGL
+
 start.lua
 frames.lua
 parser.lua
