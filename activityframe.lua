@@ -11,6 +11,9 @@ local Translit = LibStub("LibTranslit-1.0")
 
 local activity = private.addon.activityTimeline
 
+activity.markers = {}
+activity.maxEvents = 256
+
 ---boss widgets showing the kill time of each boss
 function activity.UpdateBossWidgets(activityFrame, start, multiplier)
     for i = 1, #activityFrame.bossWidgets do
@@ -91,11 +94,11 @@ function activity.ResetSegmentTextures(activityFrame)
     end
 end
 
-function activity.RenderDeathMarker(self, event, marker)
+function activity.RenderDeathMarker(frame, event, marker)
     local preferUp = false
-    local playerPortrait = marker.subFrames.playerPortrait
+    local playerPortrait = marker.SubFrames.playerPortrait
     ---@cast playerPortrait playerportrait
-    if (not marker.subFrames.playerPortrait) then
+    if (not marker.SubFrames.playerPortrait) then
         --player portrait
         playerPortrait = Details:CreatePlayerPortrait(marker, "$parentPortrait")
         ---@cast playerPortrait playerportrait
@@ -110,7 +113,7 @@ function activity.RenderDeathMarker(self, event, marker)
         playerPortrait.Portrait:SetDesaturated(true)
         playerPortrait.RoleIcon:SetDesaturated(true)
 
-        marker.subFrames.playerPortrait = playerPortrait
+        marker.SubFrames.playerPortrait = playerPortrait
     end
 
     SetPortraitTexture(playerPortrait.Portrait, event.arguments.playerData.unitId)
@@ -133,8 +136,8 @@ function activity.RenderDeathMarker(self, event, marker)
     playerPortrait:Show()
     playerPortrait.Portrait:Show()
 
-    detailsFramework:SetFontSize(marker.timestampLabel, 12)
-    detailsFramework:SetFontColor(marker.timestampLabel, 1, 0, 0)
+    detailsFramework:SetFontSize(marker.TimestampLabel, 12)
+    detailsFramework:SetFontColor(marker.TimestampLabel, 1, 0, 0)
 
     return {
         preferUp = preferUp,
@@ -142,20 +145,20 @@ function activity.RenderDeathMarker(self, event, marker)
     }
 end
 
-function activity.RenderKeyFinishedMarker(self, event, marker)
-    local icon = marker.subFrames.icon
+function activity.RenderKeyFinishedMarker(frame, event, marker)
+    local icon = marker.SubFrames.icon
     if (not icon) then
         icon = marker:CreateTexture("$parentIcon", "artwork")
-        marker.subFrames.icon = icon
+        marker.SubFrames.icon = icon
     end
 
-    detailsFramework:SetFontSize(marker.timestampLabel, 12)
+    detailsFramework:SetFontSize(marker.TimestampLabel, 12)
     if (event.arguments.onTime) then
         icon:SetAtlas("gficon-chest-evergreen-greatvault-collect")
-        detailsFramework:SetFontColor(marker.timestampLabel, 0.2, 0.8, 0.2)
+        detailsFramework:SetFontColor(marker.TimestampLabel, 0.2, 0.8, 0.2)
     else
         icon:SetAtlas("gficon-chest-evergreen-greatvault-complete")
-        detailsFramework:SetFontColor(marker.timestampLabel, 0.8, 0.2, 0.2)
+        detailsFramework:SetFontColor(marker.TimestampLabel, 0.8, 0.2, 0.2)
     end
 
     icon:SetSize(257*0.2, 226*0.2)
@@ -167,4 +170,75 @@ function activity.RenderKeyFinishedMarker(self, event, marker)
         preferUp = nil,
         forceDirection = "up",
     }
+end
+
+function activity.PrepareEventFrames(frame, events)
+    local i = 0
+    local eventCount = #events
+    local markerCount = #activity.markers
+    local function iterator()
+        i = i + 1
+        if (i > eventCount or i > activity.maxEvents) then
+            -- hide all other markers and frames
+            if (i <= markerCount) then
+                for j = i, markerCount do
+                    activity.markers[j]:Hide()
+                    for _, subFrame in pairs(activity.markers[j].SubFrames) do
+                        subFrame:Hide()
+                    end
+                end
+            end
+            return
+        end
+
+        ---@type activitytimeline_marker
+        local marker = activity.markers[i]
+        if (not activity.markers[i]) then
+            local frameLevel = 10 + 5 * i
+            activity.markers[i] = CreateFrame("frame", "$parentEventMarker" .. i, frame, "BackdropTemplate")
+            marker = activity.markers[i]
+            marker:SetFrameLevel(frameLevel)
+            marker.SubFrames = {} -- used to track sub frames that can then all be hidden
+            marker:EnableMouse(true)
+            marker:SetSize(32, 32)
+            marker:SetScript("OnEnter", function (self)
+                self.originalFrameLevel = self:GetFrameLevel()
+                self:SetFrameLevel(self.originalFrameLevel + 50)
+                self.TimestampLabel:Show()
+                self.TimestampBackground:Show()
+            end)
+            marker:SetScript("OnLeave", function (self)
+                self:SetFrameLevel(self.originalFrameLevel)
+                self.TimestampLabel:Hide()
+                self.TimestampBackground:Hide()
+            end)
+
+            local timestampLabel = marker:CreateFontString("$parentTimestampLabel", "overlay", "GameFontNormal")
+            timestampLabel:SetJustifyH("center")
+            timestampLabel:Hide()
+            marker.TimestampLabel = timestampLabel
+
+            local timestampBackground = detailsFramework:CreateImage(marker, "", 30, 12, "artwork")
+            timestampBackground:SetColorTexture(0, 0, 0, 0.4)
+            timestampBackground:SetPoint("topleft", timestampLabel, "topleft", -2, 2)
+            timestampBackground:SetPoint("bottomright", timestampLabel, "bottomright", 2, -2)
+            timestampBackground:Hide()
+            marker.TimestampBackground = timestampBackground
+
+            local line = marker:CreateTexture("$parentMarkerLineTexture", "border")
+            line:SetColorTexture(1, 1, 1, 0.5)
+            line:SetWidth(1)
+            marker.LineTexture = line
+        end
+
+        marker:ClearAllPoints()
+        marker:Hide()
+        for _, subFrame in pairs(marker.SubFrames) do
+            subFrame:Hide()
+        end
+
+        return events[i], marker
+    end
+
+    return iterator
 end
