@@ -30,14 +30,15 @@ function addon.CreateBossPortraitTexture(parent, index)
     bossAvatar:SetScale(1.0)
     newBossWidget.AvatarTexture = bossAvatar
 
-    local verticalLine = detailsFramework:CreateImage(newBossWidget, "", 1, 25, "overlay")
-    verticalLine:SetColorTexture(1, 1, 1, 0.3)
-    verticalLine:SetPoint("bottomleft", newBossWidget, "bottomright", 0, 0)
-    newBossWidget.VerticalLine = verticalLine
-
     local timeText = detailsFramework:CreateLabel(newBossWidget)
     timeText:SetPoint("bottomright", newBossWidget, "bottomright", 0, 0)
     newBossWidget.TimeText = timeText
+
+    local verticalLine = detailsFramework:CreateImage(newBossWidget, "", 1, 25, "overlay")
+    verticalLine:SetColorTexture(1, 1, 1, 0.3)
+    verticalLine:SetPoint("bottomleft", newBossWidget, "bottomright", 0, 0)
+    verticalLine:SetPoint("topleft", timeText, "topright", 0, 0)
+    newBossWidget.VerticalLine = verticalLine
 
     local timeBackground = detailsFramework:CreateImage(newBossWidget, "", 30, 12, "artwork")
     timeBackground:SetColorTexture(0, 0, 0, 0.8)

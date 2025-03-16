@@ -89,11 +89,22 @@
 ---@field GetBloodlustUsage fun() : number[]? retrieves the time() in seconds when the player received bloodlust buff.
 ---@field GetLastRunStart fun() : number retrieves the time() when the last run started
 
+---@class activitytimeline_marker : frame
+---@field subFrames frame[]
+---@field timestampLabel frame
+---@field lineTexture frame
+
+---@class activitytimeline_marker_data : table
+---@field forceDirection string|nil up or down
+---@field preferUp boolean|nil when true it will initially try to render above the timeline
+
 ---@class activitytimeline : table
 ---@field UpdateBossWidgets fun(self:scoreboard_activityframe, start:number, multiplier:number) update the boss widgets showing the kill time of each boss
 ---@field UpdateBloodlustWidgets fun(self:scoreboard_activityframe, start:number, multiplier:number) update the bloodlust widgets showing the time of bloodlust usage
 ---@field ResetSegmentTextures fun(self:scoreboard_activityframe) reset the next index of texture to use and hide all existing textures
 ---@field GetSegmentTexture fun(self:scoreboard_activityframe) : texture return a texture to be used as a segment of the activity bar
+---@field RenderKeyFinishedMarker fun(self:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker) : activitytimeline_marker_data
+---@field RenderDeathMarker fun(self:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker) : activitytimeline_marker_data
 
 ---@class scoreboard_activityframe : frame
 ---@field nextTextureIndex number
@@ -102,4 +113,4 @@
 ---@field InCombatTexture texture
 ---@field OutOfCombatTexture texture
 ---@field BackgroundTexture texture
----@field SetActivity fun(self: scoreboard_activityframe, events: table<number, timeline_event>, inCombat: number, outOfCombat: number)
+---@field SetActivity fun(self: scoreboard_activityframe, events: timeline_event[], inCombat: number, outOfCombat: number)

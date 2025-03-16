@@ -38,6 +38,7 @@ function activity.UpdateBossWidgets(activityFrame, start, multiplier)
             local xPosition = killTimeRelativeToStart * multiplier
 
             bossWidget:SetPoint("bottomright", activityFrame, "bottomleft", xPosition, 4)
+            bossWidget:SetFrameLevel(10000 + i)
 
             bossWidget.TimeText:SetText(detailsFramework:IntegerToTimer(killTimeRelativeToStart))
 
@@ -88,4 +89,82 @@ function activity.ResetSegmentTextures(activityFrame)
     for i = 1, #activityFrame.segmentTextures do
         activityFrame.segmentTextures[i]:Hide()
     end
+end
+
+function activity.RenderDeathMarker(self, event, marker)
+    local preferUp = false
+    local playerPortrait = marker.subFrames.playerPortrait
+    ---@cast playerPortrait playerportrait
+    if (not marker.subFrames.playerPortrait) then
+        --player portrait
+        playerPortrait = Details:CreatePlayerPortrait(marker, "$parentPortrait")
+        ---@cast playerPortrait playerportrait
+        playerPortrait:ClearAllPoints()
+        playerPortrait:SetPoint("center", marker, "center", 0, 0)
+        playerPortrait.Portrait:SetSize(32, 32)
+        playerPortrait:SetSize(32, 32)
+        playerPortrait.RoleIcon:SetSize(18, 18)
+        playerPortrait.RoleIcon:ClearAllPoints()
+        playerPortrait.RoleIcon:SetPoint("bottomleft", playerPortrait.Portrait, "bottomright", -9, -2)
+
+        playerPortrait.Portrait:SetDesaturated(true)
+        playerPortrait.RoleIcon:SetDesaturated(true)
+
+        marker.subFrames.playerPortrait = playerPortrait
+    end
+
+    SetPortraitTexture(playerPortrait.Portrait, event.arguments.playerData.unitId)
+    local portraitTexture = playerPortrait.Portrait:GetTexture()
+    if (not portraitTexture) then
+        local class = event.arguments.playerData.class
+        playerPortrait.Portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
+        playerPortrait.Portrait:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+    end
+
+    local role = event.arguments.playerData.role
+    if (role == "TANK" or role == "HEALER" or role == "DAMAGER") then
+        playerPortrait.RoleIcon:SetAtlas(GetMicroIconForRole(role), TextureKitConstants.IgnoreAtlasSize)
+        playerPortrait.RoleIcon:Show()
+    else
+        playerPortrait.RoleIcon:Hide()
+    end
+
+    playerPortrait:SetFrameLevel(playerPortrait:GetParent():GetFrameLevel() - 2)
+    playerPortrait:Show()
+    playerPortrait.Portrait:Show()
+
+    detailsFramework:SetFontSize(marker.timestampLabel, 12)
+    detailsFramework:SetFontColor(marker.timestampLabel, 1, 0, 0)
+
+    return {
+        preferUp = preferUp,
+        forceDirection = nil,
+    }
+end
+
+function activity.RenderKeyFinishedMarker(self, event, marker)
+    local icon = marker.subFrames.icon
+    if (not icon) then
+        icon = marker:CreateTexture("$parentIcon", "artwork")
+        marker.subFrames.icon = icon
+    end
+
+    detailsFramework:SetFontSize(marker.timestampLabel, 12)
+    if (event.arguments.onTime) then
+        icon:SetAtlas("gficon-chest-evergreen-greatvault-collect")
+        detailsFramework:SetFontColor(marker.timestampLabel, 0.2, 0.8, 0.2)
+    else
+        icon:SetAtlas("gficon-chest-evergreen-greatvault-complete")
+        detailsFramework:SetFontColor(marker.timestampLabel, 0.8, 0.2, 0.2)
+    end
+
+    icon:SetSize(257*0.2, 226*0.2)
+    icon:ClearAllPoints()
+    icon:SetPoint("center", marker, "center", 0, 5)
+    icon:Show()
+
+    return {
+        preferUp = nil,
+        forceDirection = "up",
+    }
 end
