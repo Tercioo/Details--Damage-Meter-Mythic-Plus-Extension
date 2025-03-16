@@ -1069,72 +1069,11 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     backgroundTexture:SetAllPoints()
     activityFrame.BackgroundTexture = backgroundTexture
 
-    activityFrame.markers = {}
-    activityFrame.maxEvents = 256
     activityFrame.segmentTextures = {}
     activityFrame.nextTextureIndex = 1
 
     activityFrame.bossWidgets = {}
 
-    activityFrame.PrepareEventFrames = function (self, events)
-        local i = 0
-        local eventCount = #events
-        local markerCount = #self.markers
-        local function iterator()
-            i = i + 1
-            if (i > eventCount or i > self.maxEvents) then
-                -- hide all other markers and frames
-                if (i <= markerCount) then
-                    for j = i, markerCount do
-                        self.markers[j]:Hide()
-                        for _, subFrame in pairs(self.markers[j].subFrames) do
-                            subFrame:Hide()
-                        end
-                    end
-                end
-                return
-            end
-
-            ---@type activitytimeline_marker
-            local marker = self.markers[i]
-            if (not self.markers[i]) then
-                self.markers[i] = CreateFrame("frame", "$parentEventMarker" .. i, self, "BackdropTemplate")
-                marker = self.markers[i]
-                marker.subFrames = {} -- used to track sub frames that can then all be hidden
-                marker:EnableMouse(true)
-                marker:SetSize(32, 32)
-                marker:SetScript("OnEnter", function (self)
-                    self.originalFrameLevel = self:GetFrameLevel()
-                    self:SetFrameLevel(self.originalFrameLevel + 50)
-                    self.timestampLabel:Show()
-                end)
-                marker:SetScript("OnLeave", function (self)
-                    self:SetFrameLevel(self.originalFrameLevel)
-                    self.timestampLabel:Hide()
-                end)
-
-                local timestampLabel = marker:CreateFontString("$parentTimestampLabel", "overlay", "GameFontNormal")
-                timestampLabel:SetJustifyH("center")
-                timestampLabel:Hide()
-                marker.timestampLabel = timestampLabel
-
-                local line = marker:CreateTexture("$parentMarkerLineTexture", "border")
-                line:SetColorTexture(1, 1, 1, 0.5)
-                line:SetWidth(1)
-                marker.lineTexture = line
-            end
-
-            marker:ClearAllPoints()
-            marker:Hide()
-            for _, subFrame in pairs(marker.subFrames) do
-                subFrame:Hide()
-            end
-
-            return i, events[i], marker
-        end
-
-        return iterator
-    end
 
     --todo(tercio): show players activityTime some place in the mainFrame
 
@@ -1232,14 +1171,13 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
 
         local reservedUntil = -100
         local up = true
-        for i, event, marker in self:PrepareEventFrames(events) do
+        for event, marker in addon.activityTimeline.PrepareEventFrames(self, events) do
             local relativeTimestamp = event.timestamp - start
             local pointOnBar = relativeTimestamp * multiplier
-            marker:SetFrameLevel(10 + 5 * i)
 
-            detailsFramework:SetFontColor(marker.timestampLabel, 1, 1, 1)
-            detailsFramework:SetFontSize(marker.timestampLabel, 12)
-            marker.timestampLabel:SetText(detailsFramework:IntegerToTimer(relativeTimestamp))
+            detailsFramework:SetFontColor(marker.TimestampLabel, 1, 1, 1)
+            detailsFramework:SetFontSize(marker.TimestampLabel, 12)
+            marker.TimestampLabel:SetText(detailsFramework:IntegerToTimer(relativeTimestamp))
 
             ---@type activitytimeline_marker_data
             local markerData = {}
@@ -1265,22 +1203,21 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 reservedUntil = after
             end
 
+            marker:Show()
             marker:ClearAllPoints()
-            marker.timestampLabel:ClearAllPoints()
-            marker.lineTexture:ClearAllPoints()
+            marker.TimestampLabel:ClearAllPoints()
+            marker.LineTexture:ClearAllPoints()
             if (up) then
                 marker:SetPoint("bottom", activityFrame, "topleft", pointOnBar, 15)
-                marker.lineTexture:SetPoint("top", marker, "bottom", 0, 0)
-                marker.lineTexture:SetPoint("bottom", activityFrame, "top", 0, 0)
-                marker.timestampLabel:SetPoint("bottom", marker, "top", 0, 2)
+                marker.LineTexture:SetPoint("top", marker, "bottom", 0, 0)
+                marker.LineTexture:SetPoint("bottom", activityFrame, "top", 0, 0)
+                marker.TimestampLabel:SetPoint("bottom", marker, "top", 0, 3)
             else
                 marker:SetPoint("top", activityFrame, "bottomleft", pointOnBar, -15)
-                marker.lineTexture:SetPoint("top", marker, "top", 0, 0)
-                marker.lineTexture:SetPoint("bottom", activityFrame, "bottom", 0, 0)
-                marker.timestampLabel:SetPoint("top", marker, "bottom", 0, -2)
+                marker.LineTexture:SetPoint("top", marker, "top", 0, 0)
+                marker.LineTexture:SetPoint("bottom", activityFrame, "bottom", 0, 0)
+                marker.TimestampLabel:SetPoint("top", marker, "bottom", 0, -3)
             end
-
-            marker:Show()
         end
 
     end
