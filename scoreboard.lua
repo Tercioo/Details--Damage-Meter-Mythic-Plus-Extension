@@ -644,7 +644,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             mainFrame.OutOfCombatText:SetText("Not in Combat: " .. detailsFramework:IntegerToTimer(notInCombat))
             mainFrame.Level:SetText(mythicPlusData.Level) --the level in the big circle at the top
             if (mythicPlusData.OnTime) then
-                mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName .. " +" .. mythicPlusData.keystoneLevelsUpgrade)
+                mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName .. " +" .. mythicPlusData.KeystoneUpgradeLevels)
             else
                 mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName)
             end
