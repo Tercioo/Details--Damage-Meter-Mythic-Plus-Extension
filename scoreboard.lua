@@ -643,7 +643,11 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
             mainFrame.OutOfCombatText:SetText("Not in Combat: " .. detailsFramework:IntegerToTimer(notInCombat))
             mainFrame.Level:SetText(mythicPlusData.Level) --the level in the big circle at the top
-            mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName)
+            if (mythicPlusData.OnTime) then
+                mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName .. " +" .. mythicPlusData.keystoneLevelsUpgrade)
+            else
+                mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName)
+            end
         else
             mainFrame.ElapsedTimeText:SetText("00:00")
             mainFrame.OutOfCombatText:SetText("00:00")
@@ -1091,6 +1095,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 return
             end
 
+            ---@type activitytimeline_marker
             local marker = self.markers[i]
             if (not self.markers[i]) then
                 self.markers[i] = CreateFrame("frame", "$parentEventMarker" .. i, self, "BackdropTemplate")
@@ -1112,11 +1117,6 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 timestampLabel:SetJustifyH("center")
                 timestampLabel:Hide()
                 marker.timestampLabel = timestampLabel
-
-                local iconLabel = marker:CreateFontString("$parentIconLabel", "overlay", "GameFontNormal")
-                iconLabel:SetPoint("center", marker, "center", 0, 0)
-                iconLabel:SetJustifyH("center")
-                marker.subFrames.iconLabel = iconLabel
 
                 local line = marker:CreateTexture("$parentMarkerLineTexture", "border")
                 line:SetColorTexture(1, 1, 1, 0.5)
@@ -1235,113 +1235,30 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         for i, event, marker in self:PrepareEventFrames(events) do
             local relativeTimestamp = event.timestamp - start
             local pointOnBar = relativeTimestamp * multiplier
-            local preferUp = true
-            local forceDirection
             marker:SetFrameLevel(10 + 5 * i)
 
-            local iconLabel = marker.subFrames.iconLabel
-            iconLabel:Hide()
-
+            detailsFramework:SetFontColor(marker.timestampLabel, 1, 1, 1)
+            detailsFramework:SetFontSize(marker.timestampLabel, 12)
             marker.timestampLabel:SetText(detailsFramework:IntegerToTimer(relativeTimestamp))
 
+            ---@type activitytimeline_marker_data
+            local markerData = {}
             if (event.type == EventType.Death) then
-                preferUp = false
-                local playerPortrait = marker.subFrames.playerPortrait
-                ---@cast playerPortrait playerportrait
-                if (not marker.subFrames.playerPortrait) then
-                    --player portrait
-                    playerPortrait = Details:CreatePlayerPortrait(marker, "$parentPortrait")
-                    ---@cast playerPortrait playerportrait
-                    playerPortrait:ClearAllPoints()
-                    playerPortrait:SetPoint("center", marker, "center", 0, 0)
-                    playerPortrait.Portrait:SetSize(32, 32)
-                    playerPortrait:SetSize(32, 32)
-                    playerPortrait.RoleIcon:SetSize(18, 18)
-                    playerPortrait.RoleIcon:ClearAllPoints()
-                    playerPortrait.RoleIcon:SetPoint("bottomleft", playerPortrait.Portrait, "bottomright", -9, -2)
-
-                    playerPortrait.Portrait:SetDesaturated(true)
-                    playerPortrait.RoleIcon:SetDesaturated(true)
-
-                    marker.subFrames.playerPortrait = playerPortrait
-                end
-
-                SetPortraitTexture(playerPortrait.Portrait, event.arguments.playerData.unitId)
-                local portraitTexture = playerPortrait.Portrait:GetTexture()
-                if (not portraitTexture) then
-                    local class = event.arguments.playerData.class
-                    playerPortrait.Portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
-                    playerPortrait.Portrait:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
-                end
-
-                local role = event.arguments.playerData.role
-                if (role == "TANK" or role == "HEALER" or role == "DAMAGER") then
-                    playerPortrait.RoleIcon:SetAtlas(GetMicroIconForRole(role), TextureKitConstants.IgnoreAtlasSize)
-                    playerPortrait.RoleIcon:Show()
-                else
-                    playerPortrait.RoleIcon:Hide()
-                end
-
-                playerPortrait:SetFrameLevel(playerPortrait:GetParent():GetFrameLevel() - 2)
-                playerPortrait:Show()
-                playerPortrait.Portrait:Show()
-
-                detailsFramework:SetFontSize(marker.timestampLabel, 12)
-                detailsFramework:SetFontColor(marker.timestampLabel, 1, 0, 0)
+                markerData = addon.activityTimeline.RenderDeathMarker(self, event, marker)
             elseif event.type == EventType.KeyFinished then
-                local icon = marker.subFrames.icon
-                if (not icon) then
-                    icon = marker:CreateTexture("$parentIcon", "artwork")
-                    marker.subFrames.icon = icon
-                end
-
-                iconLabel:Show()
-                detailsFramework:SetFontSize(iconLabel, 17)
-                detailsFramework:SetFontSize(marker.timestampLabel, 12)
-                if (event.arguments.onTime) then
-                    forceDirection = "up"
-
-                    icon:SetAtlas("ChallengeMode-SpikeyStar")
-                    icon:SetSize(55, 55)
-                    icon:ClearAllPoints()
-                    icon:SetPoint("center", marker, "center", 0, 0)
-                    icon:Show()
-
-                    iconLabel:SetText("+" .. (event.arguments.keystoneLevelsUpgrade or "1"))
-                    iconLabel:SetPoint("center", marker.subFrames.icon, "center", -2, 0)
-                    detailsFramework:SetFontColor(marker.timestampLabel, 0.2, 0.8, 0.2)
-                    detailsFramework:SetFontColor(iconLabel, "yellow")
-                else
-                    forceDirection = "down"
-
-                    icon:SetAtlas("BossBanner-SkullSpikes")
-                    icon:SetSize(32, 44)
-                    icon:ClearAllPoints()
-                    icon:SetPoint("center", marker, "center", 0, 0)
-                    icon:Show()
-
-                    iconLabel:SetText(":(")
-                    iconLabel:SetPoint("center", marker.subFrames.icon, "center", 0, -3)
-                    detailsFramework:SetFontColor(marker.timestampLabel, 0.8, 0.2, 0.2)
-                    detailsFramework:SetFontColor(iconLabel, 0.8, 0.2, 0.2)
-                end
-            else
-                iconLabel:ClearAllPoints()
-                iconLabel:SetPoint("center", marker.subFrames.icon, "center")
-                detailsFramework:SetFontColor(marker.timestampLabel, 1, 1, 1)
-                detailsFramework:SetFontSize(marker.timestampLabel, 12)
+                markerData = addon.activityTimeline.RenderKeyFinishedMarker(self, event, marker)
             end
 
-            local offset = marker:GetWidth() * 0.5
+            local offset = marker:GetWidth() * 0.4
             local before = pointOnBar - offset
             local after = pointOnBar + offset
 
-            if (forceDirection) then
-                up = forceDirection == "up" and true or false
+            if (markerData.forceDirection) then
+                up = markerData.forceDirection == "up" and true or false
             elseif (before < reservedUntil) then
                 up = not up
             else
-                up = preferUp
+                up = markerData.preferUp and true or false
             end
 
             if (after > reservedUntil) then
