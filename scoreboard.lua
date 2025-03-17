@@ -722,6 +722,34 @@ local spellNumberListCooltip = function(self, actor)
     GameCooltip:Show()
 end
 
+local showCrowdControlTooltip = function(self, utilityActor)
+    --get the current combat
+    local mythicPlusOverallSegment = Details:GetCurrentCombat()
+    local spellsCastedByThisActor = mythicPlusOverallSegment:GetSpellCastTable(utilityActor:Name())
+    local amountOfCCCastsByThisActor = mythicPlusOverallSegment:GetCCCastAmount(utilityActor:Name())
+    local ccSpellNames = Details.CrowdControlSpellNamesCache
+
+    GameCooltip:Preset(2)
+
+    for spellName in pairs(ccSpellNames) do
+        if (spellsCastedByThisActor[spellName]) then
+            local amountOfCasts = spellsCastedByThisActor[spellName]
+            GameCooltip:AddLine(spellName, amountOfCasts .. " (" .. math.floor(amountOfCasts / amountOfCCCastsByThisActor * 100) .. "%)")
+
+            local spellInfo = C_Spell.GetSpellInfo(spellName)
+            if (spellInfo) then
+                GameCooltip:AddIcon(spellInfo.iconID, 1, 1, 16, 16)
+            else
+            end
+        end
+    end
+
+    GameCooltip:SetOwner(self)
+    GameCooltip:SetOption("TextSize", 10)
+    GameCooltip:SetOption("FixedWidth", 300)
+    GameCooltip:Show()
+end
+
 ---@param self df_blizzbutton
 ---@param button scoreboard_button
 local function OnEnterLineBreakdownButton(self, button)
@@ -1014,9 +1042,21 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(math.floor(playerData.dispels))
     end)
 
-    local playerCcCasts = CreateBreakdownLabel(line, function(self, playerData)
-        self:SetText(math.floor(playerData.ccCasts))
-    end)
+    local playerCrowdControlCasts = CreateBreakdownButton(
+        line,
+        -- onclick
+        function (self)
+            print("You just clicked the crowd control casts button!")
+        end,
+        -- onSetPlayerData
+        function(self, playerData)
+            self:SetText(math.floor(playerData.ccCasts))
+        end,
+        -- onMouseEnter
+        function (self, button)
+            showCrowdControlTooltip(self, button:GetActor(DETAILS_ATTRIBUTE_MISC))
+        end
+    )
 
     local lootAnchor = addon.loot.CreateLootWidgetsInScoreboardLine(line)
 
@@ -1032,7 +1072,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     line:AddFrameToHeaderAlignment(playerHps)
     line:AddFrameToHeaderAlignment(playerInterrupts)
     line:AddFrameToHeaderAlignment(playerDispels)
-    line:AddFrameToHeaderAlignment(playerCcCasts)
+    line:AddFrameToHeaderAlignment(playerCrowdControlCasts)
     --line:AddFrameToHeaderAlignment(playerEmptyField)
 
     line:AlignWithHeader(headerFrame, "left")
