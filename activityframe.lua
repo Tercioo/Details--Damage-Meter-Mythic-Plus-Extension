@@ -40,8 +40,9 @@ function activity.UpdateBossWidgets(activityFrame, start, multiplier)
             local killTimeRelativeToStart = killTime - start
             local xPosition = killTimeRelativeToStart * multiplier
 
+            bossWidget:Show()
             bossWidget:SetPoint("bottomright", activityFrame, "bottomleft", xPosition, 4)
-            bossWidget:SetFrameLevel(10000 + i)
+            bossWidget:SetFrameLevel(5000 + i)
 
             bossWidget.TimeText:SetText(detailsFramework:IntegerToTimer(killTimeRelativeToStart))
 
@@ -49,7 +50,13 @@ function activity.UpdateBossWidgets(activityFrame, start, multiplier)
             --if (bossInfo and bossInfo.bossimage) then
             if (bossSegment:GetBossImage()) then
                 bossWidget.AvatarTexture:SetTexture(bossSegment:GetBossImage())
+                bossWidget.AvatarTexture:SetSize(64, 32)
+                bossWidget.AvatarTexture:SetAlpha(1)
             else
+                -- the following 3 lines and the SetSize/SetAlpha above can be removed when a proper fallback image is available
+                bossWidget.AvatarTexture:SetAtlas("BossBanner-SkullCircle")
+                bossWidget.AvatarTexture:SetSize(36, 36)
+                bossWidget.AvatarTexture:SetAlpha(0.6)
                 --local bossAvatar = Details:GetBossPortrait(nil, nil, bossTable[2].name, bossTable[2].ej_instance_id)
                 --bossWidget.AvatarTexture:SetTexture(bossAvatar)
             end

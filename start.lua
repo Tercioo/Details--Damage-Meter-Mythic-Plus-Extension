@@ -3,7 +3,7 @@ local Details = Details
 local detailsFramework = DetailsFramework
 local _
 
-local CONST_MAX_LOGLINES = 50
+local CONST_MAX_LOGLINES = 100
 
 ---@type string, private
 local tocFileName, private = ...
@@ -108,10 +108,7 @@ function private.addon.OnInit(self, profile) --PLAYER_LOGIN
     private.log("addon loaded")
 end
 
---functions exposed to global namespace
---[[GLOBAL]] DetailsMythicPlusAddon = {}
-
-function DetailsMythicPlusAddon.ShowLogs()
+function private.addon.ShowLogs()
     --dumpt is a function from details!
     dumpt(private.addon.profile.logs)
 end
