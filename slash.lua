@@ -26,7 +26,10 @@ addon.commands = {
     end},
     open = {"Open the scoreboard", function ()
         addon.OpenMythicPlusBreakdownBigFrame()
-    end}
+    end},
+    logs = {"Show recent logs", function ()
+        addon.ShowLogs()
+    end},
 }
 
 SLASH_SCORE1, SLASH_SCORE2, SLASH_SCORE3 = "/scoreboard", "/score", "/sb"

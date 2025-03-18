@@ -1215,7 +1215,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             local markerData = {}
             if (event.type == EventType.Death) then
                 markerData = addon.activityTimeline.RenderDeathMarker(self, event, marker)
-            elseif event.type == EventType.KeyFinished then
+            elseif (event.type == EventType.KeyFinished) then
                 markerData = addon.activityTimeline.RenderKeyFinishedMarker(self, event, marker)
             end
 
