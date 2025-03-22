@@ -51,6 +51,20 @@ local optionsTemplate = {
         desc = "The amount of seconds after which the scoreboard will appear according to the setting above",
     },
     {
+        type = "range",
+        get = function () return addon.profile.scoreboard_scale end,
+        set = function (_, _, value)
+            addon.profile.scoreboard_scale = value
+            addon.RefreshOpenScoreBoard():SetScale(value)
+        end,
+        min = 0.6,
+        max = 1.6,
+        step = 0.1,
+        usedecimals = true,
+        name = "Scoreboard scale",
+        desc = "Increase or decrease the scale of the scoreboard",
+    },
+    {
         type = "toggle",
         get = function () return addon.profile.show_column_summary_in_tooltip end,
         set = function (_, _, value)
@@ -71,6 +85,16 @@ local optionsTemplate = {
         desc = "Translit Cyrillic characters to the latin alphabet",
     },
     {type = "label", get = function() return "Timeline" end, text_template = detailsFramework:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+    {
+        type = "toggle",
+        get = function () return addon.profile.show_time_sections end,
+        set = function (_, _, value)
+            addon.profile.show_time_sections = value
+            addon.RefreshOpenScoreBoard()
+        end,
+        name = "Show time labels for sections",
+        desc = "Shows time labels for sections on the timeline as a guide",
+    },
     {
         type = "toggle",
         get = function () return addon.profile.show_remaining_timeline_after_finish end,
