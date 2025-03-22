@@ -61,21 +61,22 @@ function addon.CreateTimeSection(parent, index)
     section:SetAlpha(0.6)
 
     local timeText = detailsFramework:CreateLabel(section)
-    timeText:SetPoint("bottomright", section, "bottomright", 0, 0)
+    timeText:ClearAllPoints()
+    timeText:SetPoint("bottomleft", section, "bottomleft", 4, 0)
     detailsFramework:SetFontColor(timeText, 1, 1, 1)
     detailsFramework:SetFontSize(timeText, 10)
     section.TimeText = timeText
 
     local verticalLine = detailsFramework:CreateImage(section, "", 1, 25, "overlay")
     verticalLine:SetColorTexture(1, 1, 1, 0.5)
-    verticalLine:SetPoint("bottomright", section, "bottomleft", -2, -2)
-    verticalLine:SetPoint("topright", timeText, "topleft", -2, 2)
+    verticalLine:SetPoint("bottomright", section, "bottomleft", -3, -2)
+    verticalLine:SetPoint("topright", timeText, "topleft", -3, 2)
     section.VerticalLine = verticalLine
 
     local timeBackground = detailsFramework:CreateImage(section, "", 30, 12, "artwork")
     timeBackground:SetColorTexture(0, 0, 0, 0.5)
-    timeBackground:SetPoint("topleft", timeText, "topleft", -2, 2)
-    timeBackground:SetPoint("bottomright", timeText, "bottomright", 2, -2)
+    timeBackground:SetPoint("topleft", timeText, "topleft", -3, 2)
+    timeBackground:SetPoint("bottomright", timeText, "bottomright", 3, -2)
 
     return section
 end
