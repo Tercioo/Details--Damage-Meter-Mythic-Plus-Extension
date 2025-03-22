@@ -1055,10 +1055,36 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end
     )
 
-    local playerInterrupts = CreateBreakdownLabel(line, function(self, playerData)
-        self:SetText(math.floor(playerData.interrupts))
-        self.InterruptCasts:SetText("/ " .. math.floor(playerData.interruptCasts))
-    end)
+    local playerInterrupts = CreateBreakdownButton(
+        line,
+        -- onclick
+        function (self) end,
+        -- onSetPlayerData
+        function(self, playerData)
+            self:SetText(math.floor(playerData.interrupts))
+            self.InterruptCasts:SetText("/ " .. math.floor(playerData.interruptCasts))
+        end,
+        -- onMouseEnter
+        function (self, button)
+
+            local playerData = button:GetPlayerData()
+
+            local interrupts = math.floor(playerData.interrupts)
+            local overlaps = addon.profile.last_run_data.interrupt_cast_overlap_done[playerData.name] or 0
+            local casts = math.floor(playerData.interruptCasts)
+
+            GameCooltip:Preset(2)
+            GameCooltip:AddLine("Success", interrupts)
+            GameCooltip:AddLine("Overlap", overlaps)
+            GameCooltip:AddLine("Missed", casts - overlaps - interrupts)
+            GameCooltip:AddLine("Total interrupts", casts)
+
+            GameCooltip:SetOwner(self)
+            GameCooltip:SetOption("TextSize", 10)
+            GameCooltip:SetOption("FixedWidth", 170)
+            GameCooltip:Show()
+        end
+    )
 
     playerInterrupts.InterruptCasts = CreateBreakdownLabel(line)
 
