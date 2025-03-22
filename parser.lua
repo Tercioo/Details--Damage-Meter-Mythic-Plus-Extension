@@ -100,9 +100,9 @@ function addon.CountInterruptOverlaps()
             if (not overlapData.used) then
                 local time = overlapData.time
                 local sourceName = overlapData.sourceName
-                local spellId = overlapData.spellId
-                local targetName = overlapData.targetName
-                local extraSpellID = overlapData.extraSpellID
+                --local spellId = overlapData.spellId
+                --local targetName = overlapData.targetName
+                --local extraSpellID = overlapData.extraSpellID
 
                 for j = i+1, #data do
                     ---@type interrupt_overlap
@@ -110,14 +110,14 @@ function addon.CountInterruptOverlaps()
                     if (not overlapData2.used) then
                         local time2 = overlapData2.time
                         local sourceName2 = overlapData2.sourceName
-                        local spellId2 = overlapData2.spellId
-                        local targetName2 = overlapData2.targetName
-                        local extraSpellID2 = overlapData2.extraSpellID
+                        --local spellId2 = overlapData2.spellId
+                        --local targetName2 = overlapData2.targetName
+                        --local extraSpellID2 = overlapData2.extraSpellID
 
                         if (time2 - time < 1.5) then
                             addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] or 0) + 1
                             addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName2] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName2] or 0) + 1
-                            print("Overlap: ", sourceName, targetName, C_Spell.GetSpellInfo(spellId).name, sourceName2, targetName2, "with", C_Spell.GetSpellInfo(spellId2).name)
+                            --print("Overlap: ", sourceName, targetName, C_Spell.GetSpellInfo(spellId).name, sourceName2, targetName2, "with", C_Spell.GetSpellInfo(spellId2).name)
 
                             private.log("Interrupt overlap found:", sourceName)
 
