@@ -249,14 +249,32 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     --close button at the top right of the frame
     local closeButton = detailsFramework:CreateCloseButton(readyFrame, "$parentCloseButton")
-    closeButton:SetScript("OnClick", function()
-        readyFrame:Hide()
-    end)
+    closeButton:SetScript("OnClick", function() readyFrame:Hide() end)
     closeButton:SetPoint("topright", readyFrame, "topright", -4, -5)
 
-    local optionsButton = detailsFramework:CreateButton(readyFrame, addon.ShowMythicPlusOptionsWindow, 14, 14, "", nil, nil, nil, nil, "$parentOptionsButton", nil, nil)
-    optionsButton:SetPoint("right", closeButton, "left", 0, 0)
-    optionsButton:SetIcon([[Interface\Buttons\UI-OptionsButton]], 14, 14, nil, {0, 1, 0, 1}, nil, 3)
+    local configButton = detailsFramework:CreateButton(readyFrame, addon.ShowMythicPlusOptionsWindow, 32, 32, "")
+    configButton:SetAlpha(0.823)
+    configButton:SetSize(closeButton:GetSize())
+    configButton:ClearAllPoints()
+    configButton:SetPoint("right", closeButton, "left", -3, 0)
+
+    local normalTexture = configButton:CreateTexture(nil, "overlay")
+    normalTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+    normalTexture:SetTexCoord(79/512, 113/512, 0/512, 36/512)
+    normalTexture:SetDesaturated(true)
+
+    local pushedTexture = configButton:CreateTexture(nil, "overlay")
+    pushedTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+    pushedTexture:SetTexCoord(114/512, 148/512, 0/512, 36/512)
+    pushedTexture:SetDesaturated(true)
+
+    local highlightTexture = configButton:CreateTexture(nil, "highlight")
+    highlightTexture:SetTexture([[Interface\BUTTONS\redbutton2x]], nil, nil, "TRILINEAR")
+    highlightTexture:SetTexCoord(116/256, 150/256, 0, 39/128)
+    highlightTexture:SetDesaturated(true)
+
+    configButton:SetTexture(normalTexture, highlightTexture, pushedTexture, normalTexture)
+    configButton.widget:GetNormalTexture():Show()
 
     mythicPlusBreakdown.CreateActivityPanel(readyFrame)
 
