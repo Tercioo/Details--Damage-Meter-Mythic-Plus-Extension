@@ -15,6 +15,8 @@ local defaultSettings = {
     show_column_summary_in_tooltip = true,
     show_remaining_timeline_after_finish = true,
     show_time_sections = true,
+    saved_runs = {},
+    saved_runs_limit = 10,
     scoreboard_scale = 1.0,
     translit = GetLocale() ~= "ruRU",
     logs = {},

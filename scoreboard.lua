@@ -744,7 +744,11 @@ end
 
 local showCrowdControlTooltip = function(self, utilityActor)
     --get the current combat
-    local mythicPlusOverallSegment = Details:GetCurrentCombat()
+    local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
+    if (not mythicPlusOverallSegment) then
+        return
+    end
+
     local spellsCastedByThisActor = mythicPlusOverallSegment:GetSpellCastTable(utilityActor:Name())
     local amountOfCCCastsByThisActor = mythicPlusOverallSegment:GetCCCastAmount(utilityActor:Name())
     local ccSpellNames = Details.CrowdControlSpellNamesCache
