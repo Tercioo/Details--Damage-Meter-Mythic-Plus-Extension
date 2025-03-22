@@ -12,7 +12,50 @@ local Translit = LibStub("LibTranslit-1.0")
 local activity = private.addon.activityTimeline
 
 activity.markers = {}
+activity.timeSections = {}
 activity.maxEvents = 256
+
+function activity.UpdateTimeSections(activityFrame, totalRuntime, multiplier)
+    for i = 1, #activity.timeSections do
+        activity.timeSections[i]:Hide()
+    end
+
+    if (not addon.profile.show_time_sections) then
+        return
+    end
+
+    -- aim to have 4~6 section markers
+    local length = 300
+    local step = 300
+
+    for _ = 1, 10 do
+        local division = totalRuntime / length
+        if (division < 4) then
+            if (length > step) then
+                length = length - step
+            end
+            break
+        else
+            length = length + step
+        end
+    end
+
+    for i = 1, math.ceil(totalRuntime / length) do
+        local section = activity.timeSections[i]
+        if (not section) then
+            section = addon.CreateTimeSection(activityFrame, i)
+            activity.timeSections[i] = section
+        end
+
+        local time = (i - 1) * length
+
+        section:Show()
+        section:ClearAllPoints()
+        section:SetPoint("topleft", activityFrame, "bottomleft", time * multiplier, 0)
+        section:SetFrameLevel(5000 + i)
+        section.TimeText:SetText(detailsFramework:IntegerToTimer(time))
+    end
+end
 
 ---boss widgets showing the kill time of each boss
 function activity.UpdateBossWidgets(activityFrame, start, multiplier)
@@ -41,6 +84,7 @@ function activity.UpdateBossWidgets(activityFrame, start, multiplier)
             local xPosition = killTimeRelativeToStart * multiplier
 
             bossWidget:Show()
+            bossWidget:ClearAllPoints()
             bossWidget:SetPoint("bottomright", activityFrame, "bottomleft", xPosition, 4)
             bossWidget:SetFrameLevel(5000 + i)
 
