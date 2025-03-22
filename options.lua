@@ -51,6 +51,20 @@ local optionsTemplate = {
         desc = "The amount of seconds after which the scoreboard will appear according to the setting above",
     },
     {
+        type = "range",
+        get = function () return addon.profile.scoreboard_scale end,
+        set = function (_, _, value)
+            addon.profile.scoreboard_scale = value
+            addon.RefreshOpenScoreBoard():SetScale(value)
+        end,
+        min = 0.6,
+        max = 1.6,
+        step = 0.1,
+        usedecimals = true,
+        name = "Scoreboard scale",
+        desc = "Increase or decrease the scale of the scoreboard",
+    },
+    {
         type = "toggle",
         get = function () return addon.profile.show_column_summary_in_tooltip end,
         set = function (_, _, value)

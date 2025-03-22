@@ -14,6 +14,7 @@ local defaultSettings = {
     delay_to_open_mythic_plus_breakdown_big_frame = 3,
     show_column_summary_in_tooltip = true,
     show_remaining_timeline_after_finish = true,
+    scoreboard_scale = 1.0,
     translit = GetLocale() ~= "ruRU",
     logs = {},
     font = {
@@ -33,32 +34,34 @@ local defaultSettings = {
 }
 
 private.addon = detailsFramework:CreateNewAddOn(tocFileName, "Details_MythicPlusDB", defaultSettings)
-private.addon.loot = {}
-private.addon.activityTimeline = {}
+local addon = private.addon
 
-function private.addon.OnLoad(self, profile) --ADDON_LOADED
+addon.loot = {}
+addon.activityTimeline = {}
+
+function addon.OnLoad(self, profile) --ADDON_LOADED
     --added has been loaded
 end
 
-function private.addon.GetVersionString()
+function addon.GetVersionString()
     return C_AddOns.GetAddOnMetadata("Details_MythicPlus", "Version")
 end
 
-function private.addon.GetFullVersionString()
-    return Details.GetVersionString() .. " | " .. private.addon.GetVersionString()
+function addon.GetFullVersionString()
+    return Details.GetVersionString() .. " | " .. addon.GetVersionString()
 end
 
-function private.addon.OnInit(self, profile) --PLAYER_LOGIN
+function addon.OnInit(self, profile) --PLAYER_LOGIN
     --logout logs register what happened to the addon when the player logged out
     if (not profile.logout_logs) then
         profile.logout_logs = {}
     end
     self:SetLogoutLogTable(profile.logout_logs)
 
-    private.addon.data = {}
+    addon.data = {}
 
     local detailsEventListener = Details:CreateEventListener()
-    private.addon.detailsEventListener = detailsEventListener
+    addon.detailsEventListener = detailsEventListener
 
     function private.log(...)
         local str = ""
@@ -85,7 +88,7 @@ function private.addon.OnInit(self, profile) --PLAYER_LOGIN
     detailsEventListener:RegisterEvent("COMBAT_PLAYER_ENTER")
     detailsEventListener:RegisterEvent("COMBAT_PLAYER_LEAVE")
 
-    private.addon.InitializeEvents()
+    addon.InitializeEvents()
 
     AddonCompartmentFrame:RegisterAddon({
         text = "Mythic+ Scoreboard",
@@ -102,13 +105,20 @@ function private.addon.OnInit(self, profile) --PLAYER_LOGIN
         end,
     })
 
+    -- fix/migrate settings
+
+    -- ensure people don't break the scale
+    addon.profile.scoreboard_scale = math.max(0.6, math.min(1.6, addon.profile.scoreboard_scale))
+
     -- required to create early due to the frame events
-    private.addon.CreateBigBreakdownFrame()
+    local scoreboard = addon.CreateBigBreakdownFrame()
+    scoreboard:SetScale(addon.profile.scoreboard_scale)
 
     private.log("addon loaded")
 end
 
-function private.addon.ShowLogs()
+
+function addon.ShowLogs()
     --dumpt is a function from details!
-    dumpt(private.addon.profile.logs)
+    dumpt(addon.profile.logs)
 end

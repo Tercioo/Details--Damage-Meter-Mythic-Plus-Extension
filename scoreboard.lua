@@ -168,6 +168,8 @@ function addon.RefreshOpenScoreBoard()
     if (mainFrame:IsVisible()) then
         mythicPlusBreakdown.RefreshBigBreakdownFrame()
     end
+
+    return mainFrame
 end
 
 function addon.IsScoreboardOpen()
@@ -193,7 +195,7 @@ function addon.OpenScoreBoardAtEnd()
 end
 
 function addon.CreateBigBreakdownFrame()
-    mythicPlusBreakdown.CreateBigBreakdownFrame()
+    return mythicPlusBreakdown.CreateBigBreakdownFrame()
 end
 
 function mythicPlusBreakdown.CreateBigBreakdownFrame()
