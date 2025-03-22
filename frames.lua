@@ -14,6 +14,10 @@ local Translit = LibStub("LibTranslit-1.0")
 ---@field AvatarTexture texture
 ---@field TimeText fontstring
 ---@field VerticalLine texture
+---
+---@class timesection : frame
+---@field TimeText fontstring
+---@field VerticalLine texture
 
 ---@param parent frame
 ---@param index number
@@ -31,19 +35,47 @@ function addon.CreateBossPortraitTexture(parent, index)
     newBossWidget.AvatarTexture = bossAvatar
 
     local timeText = detailsFramework:CreateLabel(newBossWidget)
-    timeText:SetPoint("bottomright", newBossWidget, "bottomright", 0, 0)
+    timeText:SetPoint("bottomright", newBossWidget, "bottomright", -2, 0)
     newBossWidget.TimeText = timeText
 
     local verticalLine = detailsFramework:CreateImage(newBossWidget, "", 1, 25, "overlay")
-    verticalLine:SetColorTexture(1, 1, 1, 0.3)
+    verticalLine:SetColorTexture(1, 1, 0, 0.5)
     verticalLine:SetPoint("bottomleft", newBossWidget, "bottomright", 0, 0)
-    verticalLine:SetPoint("topleft", timeText, "topright", 0, 0)
+    verticalLine:SetPoint("topleft", timeText, "topright", 2, 0)
     newBossWidget.VerticalLine = verticalLine
 
     local timeBackground = detailsFramework:CreateImage(newBossWidget, "", 30, 12, "artwork")
     timeBackground:SetColorTexture(0, 0, 0, 0.8)
     timeBackground:SetPoint("topleft", timeText, "topleft", -2, 2)
-    timeBackground:SetPoint("bottomright", timeText, "bottomright", 2, 0)
+    timeBackground:SetPoint("bottomright", timeText, "bottomright", 3, 0)
 
     return newBossWidget
+end
+
+---@param parent frame
+---@param index number
+---@return timesection
+function addon.CreateTimeSection(parent, index)
+    local section = CreateFrame("frame", "$parentTimeSection" .. index, parent, "BackdropTemplate")
+    section:SetSize(30, 12)
+    section:SetAlpha(0.6)
+
+    local timeText = detailsFramework:CreateLabel(section)
+    timeText:SetPoint("bottomright", section, "bottomright", 0, 0)
+    detailsFramework:SetFontColor(timeText, 1, 1, 1)
+    detailsFramework:SetFontSize(timeText, 10)
+    section.TimeText = timeText
+
+    local verticalLine = detailsFramework:CreateImage(section, "", 1, 25, "overlay")
+    verticalLine:SetColorTexture(1, 1, 1, 0.5)
+    verticalLine:SetPoint("bottomright", section, "bottomleft", -2, -2)
+    verticalLine:SetPoint("topright", timeText, "topleft", -2, 2)
+    section.VerticalLine = verticalLine
+
+    local timeBackground = detailsFramework:CreateImage(section, "", 30, 12, "artwork")
+    timeBackground:SetColorTexture(0, 0, 0, 0.5)
+    timeBackground:SetPoint("topleft", timeText, "topleft", -2, 2)
+    timeBackground:SetPoint("bottomright", timeText, "bottomright", 2, -2)
+
+    return section
 end

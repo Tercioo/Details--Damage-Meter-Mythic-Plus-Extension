@@ -14,6 +14,7 @@ local defaultSettings = {
     delay_to_open_mythic_plus_breakdown_big_frame = 3,
     show_column_summary_in_tooltip = true,
     show_remaining_timeline_after_finish = true,
+    show_time_sections = true,
     scoreboard_scale = 1.0,
     translit = GetLocale() ~= "ruRU",
     logs = {},

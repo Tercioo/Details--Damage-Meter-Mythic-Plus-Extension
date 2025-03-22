@@ -1194,8 +1194,8 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         local multiplier = width / last.time
 
         addon.activityTimeline.UpdateBossWidgets(self, start, multiplier)
-
         addon.activityTimeline.UpdateBloodlustWidgets(self, start, multiplier)
+        addon.activityTimeline.UpdateTimeSections(self, last.time, multiplier)
 
         for i = 1, #timestamps do
             local step = timestamps[i]

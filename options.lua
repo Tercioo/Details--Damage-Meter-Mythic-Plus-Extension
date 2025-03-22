@@ -87,6 +87,16 @@ local optionsTemplate = {
     {type = "label", get = function() return "Timeline" end, text_template = detailsFramework:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
     {
         type = "toggle",
+        get = function () return addon.profile.show_time_sections end,
+        set = function (_, _, value)
+            addon.profile.show_time_sections = value
+            addon.RefreshOpenScoreBoard()
+        end,
+        name = "Show time labels for sections",
+        desc = "Shows time labels for sections on the timeline as a guide",
+    },
+    {
+        type = "toggle",
         get = function () return addon.profile.show_remaining_timeline_after_finish end,
         set = function (_, _, value)
             addon.profile.show_remaining_timeline_after_finish = value

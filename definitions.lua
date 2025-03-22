@@ -9,6 +9,7 @@
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
 ---@field show_column_summary_in_tooltip boolean whether or not to show the summary in a tooltip when hovering over the column
 ---@field show_remaining_timeline_after_finish boolean whether or not to render the remaining time in a bar in a keystone after completing
+---@field show_time_sections boolean whether or not to render sections of time on the timeline
 ---@field scoreboard_scale number indicates the scale of the scoreboard window
 ---@field translit boolean translit cyrillic
 ---@field last_run_data detailsmythicplus_rundata store the data from the last run
@@ -76,6 +77,7 @@
 ---@field GetMythicPlusData fun() : mythicdungeoninfo? retrieves the data from the current mythic plus run
 ---@field GetBossKillTime fun(bossSegment:combat) : number retrieves the end time() of a boss encounter segment.
 ---@field CreateBossPortraitTexture fun(parent:frame, index:number) : bosswidget create a boss portrait texture widget
+---@field CreateTimeSection fun(parent:frame, index:number) : timesection create a time section label
 ---@field IsScoreboardOpen fun() : boolean whether or not the scoreboard is shown in the screen
 ---@field GetVersionString fun() : string the version info of just this addon
 ---@field GetFullVersionString fun() : string the version info of details and this addon
