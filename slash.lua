@@ -8,26 +8,27 @@ local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
 local _ = nil
+local L = LibStub("AceLocale-3.0"):GetLocale("Details_MythicPlus")
 
 addon.commands = {
-    [""] = {"Open the options", function ()
-        print("Opening Details! Mythic+ scoreboard options, for more information use /sb help")
+    [""] = {L["COMMAND_OPEN_OPTIONS"], function ()
+        print(string.format(L["COMMAND_OPEN_OPTIONS_PRINT"], "/sb help"))
         addon.ShowMythicPlusOptionsWindow()
     end},
-    help = {"Shows this list of commands", function ()
-        print("available commands:")
+    help = {L["COMMAND_HELP"], function ()
+        print(L["COMMAND_HELP_PRINT"])
         local sb = WrapTextInColorCode("/sb ", "0000ccff")
         for name, command in pairs(addon.commands) do
             print(sb .. (name and WrapTextInColorCode(name .. " ", "001eff00") or "") .. command[1])
         end
     end},
-    version = {"Show the version", function ()
+    version = {L["COMMAND_SHOW_VERSION"], function ()
         Details.ShowCopyValueFrame(addon.GetFullVersionString())
     end},
-    open = {"Open the scoreboard", function ()
+    open = {L["COMMAND_OPEN_SCOREBOARD"], function ()
         addon.OpenMythicPlusBreakdownBigFrame()
     end},
-    logs = {"Show recent logs", function ()
+    logs = {L["COMMAND_OPEN_LOGS"], function ()
         addon.ShowLogs()
     end},
 }

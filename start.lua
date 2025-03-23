@@ -2,6 +2,7 @@
 local Details = Details
 local detailsFramework = DetailsFramework
 local _
+local L = LibStub("AceLocale-3.0"):GetLocale("Details_MythicPlus")
 
 local CONST_MAX_LOGLINES = 100
 
@@ -94,13 +95,13 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     addon.InitializeEvents()
 
     AddonCompartmentFrame:RegisterAddon({
-        text = "Mythic+ Scoreboard",
+        text = L["ADDON_MENU_ADDONS_TITLE"],
         icon = "4352494",
         notCheckable = true,
         func = Details.OpenMythicPlusBreakdownBigFrame,
         funcOnEnter = function(button)
             MenuUtil.ShowTooltip(button, function(tooltip)
-                tooltip:SetText("Open the Details! Mythic+ scoreboard")
+                tooltip:SetText(L["ADDON_MENU_ADDONS_TOOLTIP"])
             end)
         end,
         funcOnLeave = function(button)

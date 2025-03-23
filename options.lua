@@ -11,31 +11,33 @@ local detailsFramework = _G.DetailsFramework
 local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
+local L = LibStub("AceLocale-3.0"):GetLocale("Details_MythicPlus")
 
 --templates
-local options_text_template = detailsFramework:GetTemplate ("font", "OPTIONS_FONT_TEMPLATE")
-local options_dropdown_template = detailsFramework:GetTemplate ("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
-local options_switch_template = detailsFramework:GetTemplate ("switch", "OPTIONS_CHECKBOX_TEMPLATE")
-local options_slider_template = detailsFramework:GetTemplate ("slider", "OPTIONS_SLIDER_TEMPLATE")
-local options_button_template = detailsFramework:GetTemplate ("button", "OPTIONS_BUTTON_TEMPLATE")
+local options_text_template = detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")
+local options_dropdown_template = detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
+local options_switch_template = detailsFramework:GetTemplate("switch", "OPTIONS_CHECKBOX_TEMPLATE")
+local options_slider_template = detailsFramework:GetTemplate("slider", "OPTIONS_SLIDER_TEMPLATE")
+local options_button_template = detailsFramework:GetTemplate("button", "OPTIONS_BUTTON_TEMPLATE")
+local orange_font_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_TEMPLATE")
 
 ---@type mythic_plus_options_object
 ---@diagnostic disable-next-line: missing-fields
 local mythicPlusOptions = {}
 
 local optionsTemplate = {
-    {type = "label", get = function() return "General Options" end, text_template = detailsFramework:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+    {type = "label", get = function() return L["OPTIONS_GENERAL_OPTIONS"] end, text_template = orange_font_template},
     {
         type = "select",
         get = function() return addon.profile.when_to_automatically_open_scoreboard end,
         values = function()
             local set = function (_, _, value) addon.profile.when_to_automatically_open_scoreboard = value end
             return {
-                { label = "When done looting", onclick = set, value = "LOOT_CLOSED" },
-                { label = "When the run ends", onclick = set, value = "COMBAT_MYTHICPLUS_OVERALL_READY" },
+                { label = L["OPTIONS_AUTO_OPEN_CHOICE_LOOT_CLOSED"], onclick = set, value = "LOOT_CLOSED" },
+                { label = L["OPTIONS_AUTO_OPEN_CHOICE_OVERALL_READY"], onclick = set, value = "COMBAT_MYTHICPLUS_OVERALL_READY" },
             } end,
-        name = "Automatically open scoreboard",
-        desc = "Do you want to automatically open the scoreboard when done looting the chest, or when the run itself finishes?",
+        name = L["OPTIONS_AUTO_OPEN_LABEL"],
+        desc = L["OPTIONS_AUTO_OPEN_DESC"],
     },
     {
         type = "range",
@@ -47,8 +49,8 @@ local optionsTemplate = {
         min = 0,
         max = 10,
         step = 1,
-        name = "Scoreboard open delay",
-        desc = "The amount of seconds after which the scoreboard will appear according to the setting above",
+        name = L["OPTIONS_OPEN_DELAY_LABEL"],
+        desc = L["OPTIONS_OPEN_DELAY_DESC"],
     },
     {
         type = "range",
@@ -61,8 +63,8 @@ local optionsTemplate = {
         max = 1.6,
         step = 0.1,
         usedecimals = true,
-        name = "Scoreboard scale",
-        desc = "Increase or decrease the scale of the scoreboard",
+        name = L["OPTIONS_SCOREBOARD_SCALE_LABEL"],
+        desc = L["OPTIONS_SCOREBOARD_SCALE_DESC"],
     },
     {
         type = "toggle",
@@ -71,8 +73,8 @@ local optionsTemplate = {
             addon.profile.show_column_summary_in_tooltip = value
             addon.RefreshOpenScoreBoard()
         end,
-        name = "Summary in tooltip",
-        desc = "When hovering over a column in the scoreboard it will show a summary of the breakdown",
+        name = L["OPTIONS_SHOW_TOOLTIP_SUMMARY_LABEL"],
+        desc = L["OPTIONS_SHOW_TOOLTIP_SUMMARY_DESC"],
     },
     {
         type = "toggle",
@@ -81,10 +83,10 @@ local optionsTemplate = {
             addon.profile.translit = value
             addon.RefreshOpenScoreBoard()
         end,
-        name = "Translit",
-        desc = "Translit Cyrillic characters to the latin alphabet",
+        name = L["OPTIONS_TRANSLIT_LABEL"],
+        desc = L["OPTIONS_TRANSLIT_DESC"],
     },
-    {type = "label", get = function() return "Timeline" end, text_template = detailsFramework:GetTemplate ("font", "ORANGE_FONT_TEMPLATE")},
+    {type = "label", get = function() return "Timeline" end, text_template = orange_font_template},
     {
         type = "toggle",
         get = function () return addon.profile.show_time_sections end,
@@ -92,8 +94,8 @@ local optionsTemplate = {
             addon.profile.show_time_sections = value
             addon.RefreshOpenScoreBoard()
         end,
-        name = "Show time labels for sections",
-        desc = "Shows time labels for sections on the timeline as a guide",
+        name = L["OPTIONS_SHOW_TIME_SECTIONS_LABEL"],
+        desc = L["OPTIONS_SHOW_TIME_SECTIONS_DESC"],
     },
     {
         type = "toggle",
@@ -102,8 +104,8 @@ local optionsTemplate = {
             addon.profile.show_remaining_timeline_after_finish = value
             addon.RefreshOpenScoreBoard()
         end,
-        name = "Show remaining time",
-        desc = "When a key is timed, an extra section will be added showing the time still remaining",
+        name = L["OPTIONS_SHOW_REMAINING_TIME_LABEL"],
+        desc = L["OPTIONS_SHOW_REMAINING_TIME_DESC"],
     },
 }
 
@@ -123,7 +125,7 @@ function mythicPlusOptions.InitializeOptionsWindow()
         return _G[mainFrameName]
     end
 
-    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 300, "Details! Mythic Plus Options", mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
+    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 300, L["OPTIONS_WINDOW_TITLE"], mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
     detailsFramework:MakeDraggable(optionsFrame)
     optionsFrame:SetPoint("center", UIParent, "center", 160, -50)
     detailsFramework:ApplyStandardBackdrop(optionsFrame)
