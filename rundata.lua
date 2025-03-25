@@ -24,6 +24,17 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
     local completionInfo = C_ChallengeMode.GetChallengeCompletionInfo()
     local combatTime = mythicPlusOverallSegment:GetCombatTime()
 
+    --debug
+    if (not addon.profile.last_run_data.encounter_timeline) then
+        print("Details M+ addon.profile.last_run_data.encounter_timeline is nil")
+        private.log("Details M+ addon.profile.last_run_data.encounter_timeline is nil")
+    end
+
+    if (not addon.profile.last_run_data.incombat_timeline) then
+        print("Details M+ addon.profile.last_run_data.incombat_timeline is nil")
+        private.log("Details M+ addon.profile.last_run_data.incombat_timeline is nil")
+    end
+
     ---@type runinfo
     local runInfo = {
         combatId = mythicPlusOverallSegment:GetCombatUID(),
@@ -152,8 +163,8 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                     playerInfo.totalInterrupts = utilityActorObject.interrupt
                     playerInfo.totalInterruptsCasts = mythicPlusOverallSegment:GetInterruptCastAmount(playerName)
                     playerInfo.totalCrowdControlCasts = mythicPlusOverallSegment:GetCCCastAmount(playerName)
-                    playerInfo.dispelWhat = detailsFramework.table.copy({}, utilityActorObject.dispell_oque)
-                    playerInfo.interruptWhat = detailsFramework.table.copy({}, utilityActorObject.interrompeu_oque)
+                    playerInfo.dispelWhat = detailsFramework.table.copy({}, utilityActorObject.dispell_oque or {})
+                    playerInfo.interruptWhat = detailsFramework.table.copy({}, utilityActorObject.interrompeu_oque or {})
                     playerInfo.crowdControlSpells = mythicPlusOverallSegment:GetCrowdControlSpells(playerName)
                 end
             end
