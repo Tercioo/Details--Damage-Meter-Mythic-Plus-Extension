@@ -1,5 +1,8 @@
 
 --mythic+ extension for Details! Damage Meter
+--last run: the most recent mythic+ run finished
+
+
 ---@class private : table
 ---@field addon detailsmythicplus
 ---@field log fun(...) log a message to the addon logs
@@ -79,10 +82,11 @@
 ---@field GetSelectedRunIndex fun() : number get the selected run index
 ---@field GetSelectedRun fun() : runinfo return the latest selected run info, return nil if there is no run info data
 ---@field RemoveRun fun(index:number) remove the run info from the saved runs
+---@field GetPlayerInfoFromLastRun fun(playerName:string) : playerinfo? get the player info from the last run
 
 ---@class runinfo : table
 ---@field combatId number the dungeon overall data unique combat id from details!
----@field combatdata combatdata stores the required combat data for the score board, hence the scoreboard can function even if the combat isn't available in details!
+---@field combatData combatdata stores the required combat data for the score board, hence the scoreboard can function even if the combat isn't available in details!
 ---@field encounters detailsmythicplus_encounterinfo[] the encounters timeline
 ---@field combatTimeline detailsmythicplus_combatstep[] the combat timeline
 ---@field completionInfo challengemodecompletioninfo
@@ -123,6 +127,7 @@
 ---@field guid string the player guid
 ---@field score number mythic+ score
 ---@field ilevel number the average item level of the player
+---@field loot string item link of the loot the player received
 ---@field totalDeaths number total deaths
 ---@field totalDamage number total damage done
 ---@field totalHeal number total damage done

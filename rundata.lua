@@ -38,7 +38,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
     ---@type runinfo
     local runInfo = {
         combatId = mythicPlusOverallSegment:GetCombatUID(),
-        combatdata = {
+        combatData = {
             groupMembers = {} --done
         },
         completionInfo = { --done
@@ -102,6 +102,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 spec = actorObject:Spec(),
                 role = UnitGroupRolesAssigned(actorObject:Name()),
                 guid = actorObject:GetGUID(),
+                loot = "",
                 score = 0,
                 totalDeaths = 0,
                 totalDamage = actorObject.total,
@@ -121,7 +122,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 ilevel = Details:GetItemLevelFromGuid(actorObject:GetGUID()),
             }
 
-            runInfo.combatdata.groupMembers[playerName] = playerInfo
+            runInfo.combatData.groupMembers[playerName] = playerInfo
 
             local playerDeaths = mythicPlusOverallSegment:GetPlayerDeaths(playerName)
             playerInfo.totalDeaths = #playerDeaths
@@ -228,6 +229,16 @@ function addon.RemoveRun(index)
     end
 end
 
+---return the playerinfo table from the latest run info added
+---@param playerName playername
+---@return playerinfo?
+function addon.GetPlayerInfoFromLastRun(playerName)
+    local lastRun = addon.GetLastRun()
+    if (lastRun) then
+        return lastRun.combatData.groupMembers[playerName]
+    end
+end
+
 ---return an array with run infos of all runs that match the dungeon name or dungeon id
 ---@param id string|number dungeon name, dungeon id or map id
 ---@return runinfo[]
@@ -254,7 +265,7 @@ end
 ---@return number
 function addon.GetRunAverageItemLevel(runInfo)
     local total = 0
-    for _, playerInfo in ipairs(runInfo.combatdata.groupMembers) do
+    for _, playerInfo in ipairs(runInfo.combatData.groupMembers) do
         total = total + playerInfo.ilevel
     end
     return total / 5
@@ -266,7 +277,7 @@ end
 ---@return number
 function addon.GetRunAverageDamagePerSecond(runInfo, timeType)
     local total = 0
-    for _, playerInfo in ipairs(runInfo.combatdata.groupMembers) do
+    for _, playerInfo in ipairs(runInfo.combatData.groupMembers) do
         total = total + playerInfo.totalDamage
     end
 
@@ -285,7 +296,7 @@ end
 ---@param timeType combattimetype
 function addon.GetRunAverageHealingPerSecond(runInfo, timeType)
     local total = 0
-    for _, playerInfo in ipairs(runInfo.combatdata.groupMembers) do
+    for _, playerInfo in ipairs(runInfo.combatData.groupMembers) do
         total = total + playerInfo.totalHeal
     end
 

@@ -58,6 +58,22 @@ private.addon.loot.cache = {}
 ---@type scoreboard_line[]
 private.addon.loot.scoreboardLineCacheByName = {}
 
+function private.addon.loot.ParareItemLinkToSave(itemLink)
+	--local strippedItemLink = itemLink:gsub("^|c%x%x%x%x%x%x%x%x|Hitem", "")
+	--strippedItemLink = strippedItemLink:gsub("|h", "")
+	--return strippedItemLink
+	return itemLink
+end
+
+function private.addon.loot.RestoreItemLinkFromSave(partialItemLink)
+    --local itemId = partialItemLink:match(":(%d+):")
+    --itemId = tonumber(itemId)
+	--local itemName = C_Item.GetItemInfo(itemId)
+	--local itemLink = "|cFFEEEEEE|Hitem" .. partialItemLink .. "|h"
+	--return itemLink
+	return partialItemLink
+end
+
 function private.addon.loot.UpdateUnitLoot(scoreboardLine) --player banner will be replaced by the line that shows player information, class: scoreboard_line
 	---currently being called after a updatPlayerBanner()
 	---@cast scoreboardLine scoreboard_line
@@ -170,6 +186,11 @@ lootFrame:SetScript("OnEvent", function(self, event, ...)
 					time = GetTime()
 				}
 				table.insert(private.addon.loot.cache[unitName], lootCacheTable)
+
+				private.log("Loot Received:", unitName, itemLink, effectiveILvl, itemQuality, baseItemLevel, bIsAccountBound)
+
+				local playerInfo = addon.GetPlayerInfoFromLastRun(unitName)
+				playerInfo.loot = itemLink
 
 				if (LOOT_DEBUG_MODE) then
 					Details:Msg("Loot ADDED:", unitName, itemLink, effectiveILvl, itemQuality, baseItemLevel)
