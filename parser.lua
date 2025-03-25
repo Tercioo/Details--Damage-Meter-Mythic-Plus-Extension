@@ -51,6 +51,7 @@ function addon.StopParser()
     parserFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     addon.CountInterruptOverlaps()
     parserFrame.isParsing = false
+    addon.loot.cache = {}
 
     private.log("Parser stopped")
 end

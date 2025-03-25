@@ -61,8 +61,8 @@ private.addon.loot.scoreboardLineCacheByName = {}
 function private.addon.loot.UpdateUnitLoot(scoreboardLine) --player banner will be replaced by the line that shows player information, class: scoreboard_line
 	---currently being called after a updatPlayerBanner()
 	---@cast scoreboardLine scoreboard_line
-	local unitId = scoreboardLine.unitId
-	local unitName = scoreboardLine.unitName
+	local unitId = scoreboardLine.playerData.unitId
+	local unitName = scoreboardLine.playerData.unitName
 
 	local timeNow = GetTime()
 	local lootCache = private.addon.loot.cache[unitName]
