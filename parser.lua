@@ -18,6 +18,9 @@ local addon = private.addon
 ---@field extraSpellID number
 ---@field used boolean
 
+--localization
+local L = detailsFramework.Language.GetLanguageTable(tocFileName)
+
 local parserFrame = CreateFrame("frame")
 parserFrame.isParsing = false
 

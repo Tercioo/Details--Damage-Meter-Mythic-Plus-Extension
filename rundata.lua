@@ -10,6 +10,9 @@ local addonName, private = ...
 local addon = private.addon
 local _ = nil
 
+--localization
+local L = detailsFramework.Language.GetLanguageTable(addonName)
+
 ---@alias playername string
 
 --primaryAffix seens to not exists

@@ -8,6 +8,9 @@ local _
 local tocFileName, private = ...
 local addon = private.addon
 
+--localization
+local L = detailsFramework.Language.GetLanguageTable(tocFileName)
+
 function addon.InitializeEvents()
     --event listener:
     local detailsEventListener = addon.detailsEventListener

@@ -2,12 +2,14 @@
 local Details = Details
 local detailsFramework = DetailsFramework
 local _
-local L = LibStub("AceLocale-3.0"):GetLocale("Details_MythicPlus")
 
 local CONST_MAX_LOGLINES = 100
 
 ---@type string, private
 local tocFileName, private = ...
+
+--localization
+local L = detailsFramework.Language.GetLanguageTable(tocFileName)
 
 ---@type profile
 local defaultSettings = {

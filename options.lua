@@ -11,7 +11,9 @@ local detailsFramework = _G.DetailsFramework
 local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
-local L = LibStub("AceLocale-3.0"):GetLocale("Details_MythicPlus")
+
+--localization
+local L = detailsFramework.Language.GetLanguageTable(addonName)
 
 --templates
 local options_text_template = detailsFramework:GetTemplate("font", "OPTIONS_FONT_TEMPLATE")

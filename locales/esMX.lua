@@ -1,2 +1,8 @@
-local L = LibStub("AceLocale-3.0"):NewLocale("Details_MythicPlus", "esMX")
-if not L then return end 
+do
+    local addonId = ...
+    local languageTable = DetailsFramework.Language.RegisterLanguage(addonId, "esMX")
+    local L = languageTable
+
+------------------------------------------------------------
+--@localization(locale="esMX", format="lua_additive_table")@
+end

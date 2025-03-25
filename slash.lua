@@ -8,7 +8,9 @@ local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
 local _ = nil
-local L = LibStub("AceLocale-3.0"):GetLocale("Details_MythicPlus")
+
+--localization
+local L = detailsFramework.Language.GetLanguageTable(addonName)
 
 addon.commands = {
     [""] = {L["COMMAND_OPEN_OPTIONS"], function ()

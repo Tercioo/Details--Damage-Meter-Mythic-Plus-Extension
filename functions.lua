@@ -10,6 +10,9 @@ local tocFileName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
 
+--localization
+local L = detailsFramework.Language.GetLanguageTable(tocFileName)
+
 function addon.GetInAndOutOfCombatTimeline()
     local inAndOutCombatTimeline = addon.profile.last_run_data.incombat_timeline
     return inAndOutCombatTimeline

@@ -14,7 +14,9 @@ local addonName, private = ...
 local addon = private.addon
 local _ = nil
 local Translit = LibStub("LibTranslit-1.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("Details_MythicPlus")
+
+--localization
+local L = detailsFramework.Language.GetLanguageTable(addonName)
 
 ---@class scoreboard_object : table
 ---@field lines scoreboard_line[]

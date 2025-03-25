@@ -10,6 +10,9 @@ local addon = private.addon
 local _ = nil
 local Translit = LibStub("LibTranslit-1.0")
 
+--localization
+local L = detailsFramework.Language.GetLanguageTable(addonName)
+
 local CONST_DEBUG_MODE = false
 local LOOT_DEBUG_MODE = true
 
