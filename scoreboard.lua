@@ -50,15 +50,10 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field lines table<number, scoreboard_line>
 
 ---@class scoreboard_line : button, df_headerfunctions
----@field unitId string
----@field unitName string
 ---@field NextLootSquare number
 ---@field WaitingForLootLabel loot_dot_animation
 ---@field LootSquare details_lootsquare
 ---@field LootSquares details_lootsquare[]
----@field SetPlayerData fun(self:scoreboard_line, playerData:scoreboard_playerdata)
----@field GetPlayerData fun(self:scoreboard_line):scoreboard_playerdata
----@field HasPlayerData fun(self:scoreboard_line):boolean returns true if data is attached
 ---@field StopTextDotAnimation fun(self:scoreboard_line)
 ---@field GetLootSquare fun(self: scoreboard_line):details_lootsquare
 ---@field ClearLootSquares fun(self: scoreboard_line)
@@ -117,9 +112,6 @@ local Loc = _G.LibStub("AceLocale-3.0"):GetLocale("Details")
 
 --local mythicDungeonCharts = Details222.MythicPlus.Charts.Listener
 --local mythicDungeonFrames = Details222.MythicPlus.Frames
-
-local CONST_DEBUG_MODE = false
-local LOOT_DEBUG_MODE = false
 
 --main frame settings
 local mainFrameName = "DetailsMythicPlusBreakdownFrame"
@@ -601,6 +593,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             ---@type scoreboard_playerdata
             local playerData = data[i]
 
+            scoreboardLine.playerData = playerData
             addon.loot.scoreboardLineCacheByName[playerData.name] = scoreboardLine
 
             --(re)set the line contents

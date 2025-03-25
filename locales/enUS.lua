@@ -13,6 +13,10 @@ do
     L["COMMAND_SHOW_VERSION"] = "Show the version in a popup"
     L["COMMAND_OPEN_SCOREBOARD"] = "Open the scoreboard"
     L["COMMAND_OPEN_LOGS"] = "Show recent logs"
+    L["COMMAND_LIST_RUN_HISTORY"] = "List recent runs"
+    L["COMMAND_LIST_RUN_HISTORY_NO_RUNS"] = "There are currently no saved runs"
+    L["COMMAND_CLEAR_RUN_HISTORY"] = "Clear recent runs history"
+    L["COMMAND_CLEAR_RUN_HISTORY_DONE"] = "Cleared the history of %s run(s)"
 
     L["OPTIONS_WINDOW_TITLE"] = "Details! Mythic+ Options"
     L["OPTIONS_GENERAL_OPTIONS"] = "General Options"
