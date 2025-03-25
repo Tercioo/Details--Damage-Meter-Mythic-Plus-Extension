@@ -17,6 +17,7 @@ local defaultSettings = {
     show_time_sections = true,
     saved_runs = {},
     saved_runs_limit = 10,
+    saved_runs_selected_index = 1,
     scoreboard_scale = 1.0,
     translit = GetLocale() ~= "ruRU",
     logs = {},

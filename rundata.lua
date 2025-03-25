@@ -14,64 +14,6 @@ local _ = nil
 
 --primaryAffix seens to not exists
 --local dungeonName, id, timeLimit, texture, backgroundTexture = C_ChallengeMode.GetMapUIInfo(challengemodecompletioninfo.mapChallengeModeID)
----@class runinfo : table
----@field combatId number the dungeon overall data unique combat id from details!
----@field combatdata combatdata stores the required combat data for the score board, hence the scoreboard can function even if the combat isn't available in details!
----@field completionInfo challengemodecompletioninfo
----@field timeWithoutDeaths number total time in seconds the run took without counting the time lost by player deaths
----@field timeInCombat number total time in seconds the run took in combat
----@field dungeonName string the name of the dungeon
----@field dungeonId number former DungeonID, this is the id from C_ChallengeMode.GetMapUIInfo
----@field dungeonTexture number gotten from the the 4th result of C_ChallengeMode.GetMapUIInfo
----@field dungeonBackgroundTexture number gotten from the the 5th result of C_ChallengeMode.GetMapUIInfo
----@field timeLimit number the time limit for the run in seconds
----@field startTime number the time() when the run started
----@field endTime number the time() when the run ended
----@field mapId number completionInfo.mapChallengeModeID or Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
-
----@class challengemodecompletioninfo : table store the data from the GetChallengeCompletionInfo() plus some extra data
----@field mapChallengeModeID number the map id
----@field level number the keystone level
----@field time number seconds+milliseconds, could be nil if the run doesn't completes, need to be divided by 1000 to get the seconds
----@field onTime boolean true if the run finished on time
----@field keystoneUpgradeLevels number how many levels the keystone was upgraded (only possible if onTime is true)
----@field practiceRun boolean true if the run was a practice run
----@field oldOverallDungeonScore number the old score
----@field newOverallDungeonScore number the new score
----@field isEligibleForScore boolean true if the run is eligible for score
----@field isMapRecord boolean true if the run is a record for the map
----@field isAffixRecord boolean true if the run is a record for the affix
----@field members challengemodeplayerinfo[]> the players in the group
-
----@class challengemodeplayerinfo : table
----@field name string
----@field memberGUID string
-
----@class playerinfo : table information about a player from details!
----@field name string full name (with realm) if not is a cross realm player
----@field class class the classId (from 1 to 13) gotten from UniClass() thrid return
----@field spec number specialization id
----@field role role name of the role
----@field guid string the player guid
----@field score number mythic+ score
----@field totalDeaths number total deaths
----@field totalDamage number total damage done
----@field totalHeal number total damage done
----@field totalDamageTaken number total damage taken
----@field totalHealTaken number total damage taken
----@field totalDispels number total dispels
----@field totalInterrupts number total of sucessful interrupts
----@field totalInterruptsCasts number total amount of casts of interrupt spells
----@field totalCrowdControlCasts number total amount of casts of crowd control spells
----@field healDoneBySpells table<spellid, number>[] heal done by spells, a table with indexed subtables where the first index is the spellid and the second is the total heal done by that spell
----@field damageDoneBySpells table<spellid, number>[] damage done by spells, a table with indexed subtables where the first index is the spellid and the second is the total damage done by that spell
----@field damageTakenFromSpells table<spellid, number> damage taken from spells
----@field dispelWhat table<spellid, number> which debuffs the player dispelled
----@field interruptWhat table<spellid, number> which spells the player interrupted
----@field crowdControlSpells table<spellid, number> which spells the player casted that are crowd control
-
----@class combatdata : table
----@field groupMembers table<playername, playerinfo>
 
 ---runs on details! event COMBAT_MYTHICPLUS_OVERALL_READY
 function addon.CreateRunInfo(mythicPlusOverallSegment)
@@ -99,6 +41,8 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             isAffixRecord = completionInfo.isAffixRecord,
             members = completionInfo.members,
         },
+        encounters = detailsFramework.table.copy({}, addon.profile.last_run_data.encounter_timeline),
+        combatTimeline = detailsFramework.table.copy({}, addon.profile.last_run_data.incombat_timeline),
         timeInCombat = combatTime,
         timeWithoutDeaths = 0,
         dungeonName = "", --done
@@ -160,6 +104,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 dispelWhat  = {}, --done
                 interruptWhat = {}, --done
                 crowdControlSpells = {}, --done
+                ilevel = Details:GetItemLevelFromGuid(actorObject:GetGUID()),
             }
 
             runInfo.combatdata.groupMembers[playerName] = playerInfo
@@ -215,7 +160,144 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
     return runInfo
 end
 
+---return an array with all data from the saved runs
+---@return runinfo[]
+function addon.GetSavedRuns()
+    return addon.profile.saved_runs
+end
 
+---return the run info for the last run finished
+---@return runinfo
+function addon.GetLastRun()
+    return addon.profile.saved_runs[1]
+end
 
+---set the index of the latest selected run info
+---@param index number
+function addon.SetSelectedRunIndex(index)
+    addon.profile.saved_runs_selected_index = index
+    --call refresh on the score board
+    addon.RefreshOpenScoreBoard()
+end
 
+---get the index of the latest selected run info
+---@return number
+function addon.GetSelectedRunIndex()
+    return addon.profile.saved_runs_selected_index
+end
 
+---return the latest selected run info, return nil if there is no run info data
+---@return runinfo?
+function addon.GetSelectedRun()
+    local savedRuns = addon.GetSavedRuns()
+    local selectedRunIndex = addon.GetSelectedRunIndex()
+    local runInfo = savedRuns[selectedRunIndex]
+    if (runInfo == nil) then
+        --if no run is selected, select the first run
+        addon.SetSelectedRunIndex(1)
+        selectedRunIndex = 1
+    end
+    return savedRuns[selectedRunIndex]
+end
+
+---remove the run info from the saved runs
+---@param index number
+function addon.RemoveRun(index)
+    local currentSelectedIndex = addon.GetSelectedRunIndex()
+
+    table.remove(addon.profile.saved_runs, index)
+
+    if (currentSelectedIndex == index) then
+        addon.SetSelectedRunIndex(1)
+    elseif (currentSelectedIndex > index) then
+        addon.SetSelectedRunIndex(currentSelectedIndex - 1)
+    end
+end
+
+---return an array with run infos of all runs that match the dungeon name or dungeon id
+---@param id string|number dungeon name, dungeon id or map id
+---@return runinfo[]
+function addon.GetDungeonRunsById(id)
+    local runs = {}
+    local savedRuns = addon.GetSavedRuns()
+    for _, runInfo in ipairs(savedRuns) do
+        if (runInfo.dungeonName == id or runInfo.dungeonId == id or runInfo.mapId == id) then
+            table.insert(runs, runInfo)
+        end
+    end
+    return runs
+end
+
+---return the date when the run ended in format of a string with hour:minute day as number/month as 3letters/year as number
+---@param runInfo runinfo
+---@return string
+function addon.GetRunDate(runInfo)
+    return date("%H:%M %d/%b/%Y", runInfo.endTime)
+end
+
+---return the average item level of the 5 players in the run
+---@param runInfo runinfo
+---@return number
+function addon.GetRunAverageItemLevel(runInfo)
+    local total = 0
+    for _, playerInfo in ipairs(runInfo.combatdata.groupMembers) do
+        total = total + playerInfo.ilevel
+    end
+    return total / 5
+end
+
+---return the average damage per second
+---@param runInfo runinfo
+---@param timeType combattimetype
+---@return number
+function addon.GetRunAverageDamagePerSecond(runInfo, timeType)
+    local total = 0
+    for _, playerInfo in ipairs(runInfo.combatdata.groupMembers) do
+        total = total + playerInfo.totalDamage
+    end
+
+    if (addon.Enum.CombatType.RunRime == timeType) then
+        return total / (runInfo.endTime - runInfo.startTime)
+    elseif (addon.Enum.CombatType.CombatTime == timeType) then
+        return total / runInfo.timeInCombat
+    end
+
+    --default return as run time
+    return total / (runInfo.endTime - runInfo.startTime)
+end
+
+---return the average healing per second
+---@param runInfo runinfo
+---@param timeType combattimetype
+function addon.GetRunAverageHealingPerSecond(runInfo, timeType)
+    local total = 0
+    for _, playerInfo in ipairs(runInfo.combatdata.groupMembers) do
+        total = total + playerInfo.totalHeal
+    end
+
+    if (addon.Enum.CombatType.RunRime == timeType) then
+        return total / (runInfo.endTime - runInfo.startTime)
+    elseif (addon.Enum.CombatType.CombatTime == timeType) then
+        return total / runInfo.timeInCombat
+    end
+
+    --default return as run time
+    return total / (runInfo.endTime - runInfo.startTime)
+end
+
+---return the run info with highest score for a dungeon
+---@param id string|number dungeon name, dungeon id or map id
+---@return runinfo?
+function addon.GetRunInfoForHighestScoreById(id)
+    local highestScore = 0
+    local highestScoreRun = nil
+    for _, runInfo in ipairs(addon.GetSavedRuns()) do
+        if (runInfo.dungeonName == id or runInfo.dungeonId == id or runInfo.mapId == id) then
+            if (runInfo.completionInfo.newOverallDungeonScore > highestScore) then
+                highestScore = runInfo.completionInfo.newOverallDungeonScore
+                highestScoreRun = runInfo
+            end
+        end
+    end
+    return highestScoreRun
+end

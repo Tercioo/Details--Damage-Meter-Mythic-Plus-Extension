@@ -33,9 +33,16 @@ function addon.InitializeEvents()
     function addon.OnMythicPlusOverallReady(...)
         local mythicPlusOverallSegment = Details:GetCurrentCombat()
 
-        --local runInfo = addon.CreateRunInfo(mythicPlusOverallSegment)
-        --table.insert(addon.profile.saved_runs, 1, runInfo)
-        --table.remove(addon.profile.saved_runs, addon.profile.saved_runs_limit+1)
+        local okay, errorText = pcall(function()
+            local runInfo = addon.CreateRunInfo(mythicPlusOverallSegment)
+            table.insert(addon.profile.saved_runs, 1, runInfo)
+            table.remove(addon.profile.saved_runs, addon.profile.saved_runs_limit+1)
+        end)
+
+        if (not okay) then
+            private.log("Error on CreateRunInfo(): ", errorText)
+            print("Error on CreateRunInfo(): ", errorText)
+        end
 
         private.addon.mythicPlusBreakdown.MythicPlusOverallSegmentReady()
     end

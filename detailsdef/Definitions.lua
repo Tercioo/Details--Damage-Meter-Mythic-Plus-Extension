@@ -257,6 +257,8 @@ DETAILS_SEGMENTTYPE_TRAININGDUMMY = true
 ---@field bossimage texturepath|number?
 
 ---@class details
+---@field encounter_table table store the encounter data for the current encounter
+---@field boss1_health_percent number store the health percentage (one to zero) of the boss1
 ---@field pets table<guid, petinfo> store the pet guid as the key and the petinfo as the value
 ---@field SpellTableMixin spelltablemixin
 ---@field BreakdownWindowFrame breakdownwindow
@@ -311,10 +313,9 @@ DETAILS_SEGMENTTYPE_TRAININGDUMMY = true
 ---@field UnpackMythicDungeonInfo fun(self: details, mythicDungeonInfo: mythicdungeoninfo) : boolean, segmentid, number, number, number, string, number, string, number, number, number unpack the mythic dungeon info and return the values
 ---@field CreateRightClickToCloseLabel fun(self: details, parent: frame) : df_label return a df_label with the text "Right click to close", need to set point
 ---@field IsValidActor fun(self: details, actor: actor) : boolean return true if the actor is valid
+---@field GetCrowdControlSpells fun(self: details) : table<spellname, boolean> return a table of crowd control spells
 ---@field 
 ---@field 
----@field 
-
 
 
 ---@class detailseventlistener : table
@@ -380,6 +381,11 @@ DETAILS_SEGMENTTYPE_TRAININGDUMMY = true
 ---@field playerTalents table<actorname, string> [playerName] = "talent string"
 ---@field bossName string? the name of the boss, if the combat has no unitId "boss1", this value is nil
 ---@field context string? for the context manager
+---@field combat_id number
+---@field timeStart number time() when the combat started
+---@field timeEnd number time() when the combat ended
+---@field bloodlust number[]? combat time of when the player received a bloodlust/heroism
+---@field bloodlust_overall number[]? exists only in segments that received a merge, uses time()
 ---@field 
 ---@field __call table
 ---@field __index table
@@ -420,7 +426,8 @@ DETAILS_SEGMENTTYPE_TRAININGDUMMY = true
 ---@field PhaseData table
 ---@field player_last_events table<string, table[]> record the latest events of each player, latter used to build the death log
 ---@field
----@field GetCCCastAmount fun(self: combat, actorName: string) : number
+---@field GetCrowdControlSpells fun(self: combat, actorName: string) : table<string, number> return the amount of casts of crowd control spell by an actor
+---@field GetCCCastAmount fun(self: combat, actorName: string) : number returns the number of crowd control casts made by the specified actor
 ---@field GetInterruptCastAmount fun(self: combat, actorName: string) : number
 ---@field LockActivityTime fun(self: combat)
 ---@field AddCombat fun(self: combat, givingCombat: combat, bSetStartDate:boolean?, bSetEndDate:boolean?)
@@ -587,7 +594,7 @@ DETAILS_SEGMENTTYPE_TRAININGDUMMY = true
 ---@field IsGroupPlayer fun(actor: actor) : boolean return true if the actor is a player in the group (or was in the group during the combat)
 ---@field GetSpellContainer fun(actor: actor, containerType: "debuff"|"buff"|"spell"|"cooldowns"|"dispel") : spellcontainer
 ---@field Class fun(actor: actor) : string get the ingame class of the actor
----@field Spec fun(actor: actor) : string get the ingame spec of the actor
+---@field Spec fun(actor: actor) : number get the ingame spec of the actor
 ---@field Name fun(actor: actor) : string get the name of the actor
 ---@field Tempo fun(actor: actor) : number get the activity or effective time of the actor
 ---@field GetPets fun(actor: actor) : table<number, string> get a table with all pet names that belong to the player
@@ -638,7 +645,7 @@ DETAILS_SEGMENTTYPE_TRAININGDUMMY = true
 ---@field dispell_spells spellcontainer
 ---@field dispell_targets table<string, number> [targetName] = amount
 ---@field dispell_oque table<number, number> [spellId] = amount, amount of times the actor dispelled the spellId
-
+---@field interrompeu_oque table<number, number> [spellId] = amount, amount of times the actor interrupted the spellId
 --interrupt_targets interrupt_spells interrompeu_oque
 --cc_break_targets cc_break_spells cc_break_oque
 

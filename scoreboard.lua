@@ -258,6 +258,27 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     configButton:ClearAllPoints()
     configButton:SetPoint("right", closeButton, "left", -3, 0)
 
+    --dropdown to select the runInfo to show
+    local buildRunInfoList = function()
+        ---@type dropdownoption[]
+        local runInfoList = {}
+        local savedRuns = addon.GetSavedRuns()
+        for i = 1, #savedRuns do
+            local runInfo = savedRuns[i]
+            runInfoList[#runInfoList+1] = {
+                label = runInfo.dungeonName .. " " .. runInfo.completionInfo.level .. " (" .. addon.GetRunDate(runInfo) .. ")",
+                value = i,
+                onclick = function()
+                    addon.SetSelectedRunIndex(i)
+                end,
+            }
+        end
+        return runInfoList
+    end
+
+    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 150, 20, "selectRunInfoDropdown", _, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+    runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
+
     local normalTexture = configButton:CreateTexture(nil, "overlay")
     normalTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
     normalTexture:SetTexCoord(79/512, 113/512, 0/512, 36/512)

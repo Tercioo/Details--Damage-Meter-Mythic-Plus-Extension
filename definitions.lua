@@ -4,9 +4,17 @@
 ---@field addon detailsmythicplus
 ---@field log fun(...) log a message to the addon logs
 
+---@class combattimetype : table
+---@field RunRime number
+---@field CombatTime number
+
+---@class enum : table
+---@field CombatType combattimetype
+
 ---@class profile : table
 ---@field saved_runs runinfo[] store the saved runs
 ---@field saved_runs_limit number limit of saved runs
+---@field saved_runs_selected_index number index of the selected run
 ---@field when_to_automatically_open_scoreboard string which method to use to automatically open? can be LOOT_CLOSED or COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
 ---@field show_column_summary_in_tooltip boolean whether or not to show the summary in a tooltip when hovering over the column
@@ -18,6 +26,121 @@
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
+
+---@class detailsmythicplus : table
+---@field profile profile store the profile settings
+---@field detailsEventListener table register and listen to Details! events
+---@field loot loot
+---@field data table store data from the current mythic plus run
+---@field Enum enum
+---@field selectedRunInfo runinfo currently run info in use (showing the data in the scoreboard), if any
+---@field mythicPlusBreakdown details_mythicplus_breakdown
+---@field activityTimeline activitytimeline namespace for functions related to the activity timeline
+---@field ActivityFrame scoreboard_activityframe frame where the widgets for the activity timeline are parented to
+---@field InitializeEvents fun() run on PLAYER_LOGIN, create the function to listen to details events
+---@field OnMythicDungeonStart fun(...) run on COMBAT_MYTHICDUNGEON_START
+---@field OnMythicDungeonEnd fun(...) run on COMBAT_MYTHICDUNGEON_END
+---@field OnMythicPlusOverallReady fun(...) run on COMBAT_MYTHICPLUS_OVERALL_READY
+---@field OnEncounterStart fun(...) run on COMBAT_ENCOUNTER_START
+---@field OnEncounterEnd fun(...) run on COMBAT_ENCOUNTER_END
+---@field OnPlayerEnterCombat fun(...) run on COMBAT_PLAYER_ENTER
+---@field OnPlayerLeaveCombat fun(...) run on COMBAT_PLAYER_LEAVE
+---@field StartParser fun() start the combatlog parser
+---@field StopParser fun() stop the combatlog parser
+---@field IsParsing fun():boolean whether or parsing at the moment
+---@field CreateRunInfo fun(segment:combat) : runinfo create a run info from the mythic+ overall segment
+---@field OpenMythicPlusBreakdownBigFrame fun() open the mythic plus breakdown big frame
+---@field RefreshOpenScoreBoard fun():scoreboard_mainframe Refreshes the score board, but only if it's visible
+---@field OpenScoreBoardAtEnd fun() Opens the scoreboard with the configured delay, at the end of a run
+---@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment
+---@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player
+---@field GetInAndOutOfCombatTimeline fun() : detailsmythicplus_combatstep[] return the in and out of combat timeline
+---@field GetRunTime fun() : number return the run time of the last run
+---@field GetMythicPlusOverallSegment fun() : combat return the latest mythic+ overall segment from details!
+---@field GetRunBossSegments fun() : combat[] retrieves the segments of a Mythic+ run that correspond to boss encounters.
+---@field GetMythicPlusData fun() : mythicdungeoninfo? retrieves the data from the current mythic plus run
+---@field GetBossKillTime fun(bossSegment:combat) : number retrieves the end time() of a boss encounter segment.
+---@field CreateBossPortraitTexture fun(parent:frame, index:number) : bosswidget create a boss portrait texture widget
+---@field CreateTimeSection fun(parent:frame, index:number) : timesection create a time section label
+---@field IsScoreboardOpen fun() : boolean whether or not the scoreboard is shown in the screen
+---@field GetVersionString fun() : string the version info of just this addon
+---@field GetFullVersionString fun() : string the version info of details and this addon
+---@field GetBloodlustUsage fun() : number[]? retrieves the time() in seconds when the player received bloodlust buff.
+---@field GetLastRunStart fun() : number retrieves the time() when the last run started
+---@field GetSavedRuns fun() : runinfo[] return an array with all data from the saved runs
+---@field GetLastRun fun() : runinfo return the run info for the last run finished
+---@field GetDungeonRunsById fun(id:string|number) : runinfo[] return an array with run infos of all runs that match the dungeon name or dungeon id
+---@field GetRunDate fun(runInfo:runinfo) : string return the date when the run ended in format of a string with hour:minute day as number/month as 3letters/year as number
+---@field GetRunAverageItemLevel fun(runInfo:runinfo) : number return the average item level of the 5 players in the run
+---@field GetRunAverageDamagePerSecond fun(runInfo:runinfo, timeType:combattimetype) : number return the average damage per second
+---@field GetRunAverageHealingPerSecond fun(runInfo:runinfo, timeType:combattimetype) : number return the average healing per second
+---@field GetRunInfoForHighestScoreById fun(id:string|number) : runinfo? return the runinfo with the highest score of all runs that match the dungeon name or dungeon id, nil if no dungeon found
+---@field SetSelectedRunIndex fun(index:number) set the selected run index
+---@field GetSelectedRunIndex fun() : number get the selected run index
+---@field GetSelectedRun fun() : runinfo return the latest selected run info, return nil if there is no run info data
+---@field RemoveRun fun(index:number) remove the run info from the saved runs
+
+---@class runinfo : table
+---@field combatId number the dungeon overall data unique combat id from details!
+---@field combatdata combatdata stores the required combat data for the score board, hence the scoreboard can function even if the combat isn't available in details!
+---@field encounters detailsmythicplus_encounterinfo[] the encounters timeline
+---@field combatTimeline detailsmythicplus_combatstep[] the combat timeline
+---@field completionInfo challengemodecompletioninfo
+---@field timeWithoutDeaths number total time in seconds the run took without counting the time lost by player deaths
+---@field timeInCombat number total time in seconds the run took in combat
+---@field dungeonName string the name of the dungeon
+---@field dungeonId number former DungeonID, this is the id from C_ChallengeMode.GetMapUIInfo
+---@field dungeonTexture number gotten from the the 4th result of C_ChallengeMode.GetMapUIInfo
+---@field dungeonBackgroundTexture number gotten from the the 5th result of C_ChallengeMode.GetMapUIInfo
+---@field timeLimit number the time limit for the run in seconds
+---@field startTime number the time() when the run started
+---@field endTime number the time() when the run ended
+---@field mapId number completionInfo.mapChallengeModeID or Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
+
+---@class challengemodecompletioninfo : table store the data from the GetChallengeCompletionInfo() plus some extra data
+---@field mapChallengeModeID number the map id
+---@field level number the keystone level
+---@field time number seconds+milliseconds, could be nil if the run doesn't completes, need to be divided by 1000 to get the seconds
+---@field onTime boolean true if the run finished on time
+---@field keystoneUpgradeLevels number how many levels the keystone was upgraded (only possible if onTime is true)
+---@field practiceRun boolean true if the run was a practice run
+---@field oldOverallDungeonScore number the old score
+---@field newOverallDungeonScore number the new score
+---@field isEligibleForScore boolean true if the run is eligible for score
+---@field isMapRecord boolean true if the run is a record for the map
+---@field isAffixRecord boolean true if the run is a record for the affix
+---@field members challengemodeplayerinfo[]> the players in the group
+
+---@class challengemodeplayerinfo : table
+---@field name string
+---@field memberGUID string
+
+---@class playerinfo : table information about a player from details!
+---@field name string full name (with realm) if not is a cross realm player
+---@field class class the classId (from 1 to 13) gotten from UniClass() thrid return
+---@field spec number specialization id
+---@field role role name of the role
+---@field guid string the player guid
+---@field score number mythic+ score
+---@field ilevel number the average item level of the player
+---@field totalDeaths number total deaths
+---@field totalDamage number total damage done
+---@field totalHeal number total damage done
+---@field totalDamageTaken number total damage taken
+---@field totalHealTaken number total damage taken
+---@field totalDispels number total dispels
+---@field totalInterrupts number total of sucessful interrupts
+---@field totalInterruptsCasts number total amount of casts of interrupt spells
+---@field totalCrowdControlCasts number total amount of casts of crowd control spells
+---@field healDoneBySpells table<spellid, number>[] heal done by spells, a table with indexed subtables where the first index is the spellid and the second is the total heal done by that spell
+---@field damageDoneBySpells table<spellid, number>[] damage done by spells, a table with indexed subtables where the first index is the spellid and the second is the total damage done by that spell
+---@field damageTakenFromSpells table<spellid, number> damage taken from spells
+---@field dispelWhat table<spellid, number> which debuffs the player dispelled
+---@field interruptWhat table<spellid, number> which spells the player interrupted
+---@field crowdControlSpells table<spellid, number> which spells the player casted that are crowd control
+
+---@class combatdata : table
+---@field groupMembers table<playername, playerinfo>
 
 ---@class fontsettings : table
 ---@field row_size number
@@ -47,44 +170,6 @@
 ---@field startTime number time() of when the encounter started
 ---@field endTime number time() of when the encounter ended (if the encounter did not ended yet, this value is zero)
 ---@field defeated boolean true if the boss has been killed
-
----@class detailsmythicplus : table
----@field profile profile store the profile settings
----@field detailsEventListener table register and listen to Details! events
----@field loot loot
----@field data table store data from the current mythic plus run
----@field mythicPlusBreakdown details_mythicplus_breakdown
----@field activityTimeline activitytimeline namespace for functions related to the activity timeline
----@field ActivityFrame scoreboard_activityframe frame where the widgets for the activity timeline are parented to
----@field InitializeEvents fun() run on PLAYER_LOGIN, create the function to listen to details events
----@field OnMythicDungeonStart fun(...) run on COMBAT_MYTHICDUNGEON_START
----@field OnMythicDungeonEnd fun(...) run on COMBAT_MYTHICDUNGEON_END
----@field OnMythicPlusOverallReady fun(...) run on COMBAT_MYTHICPLUS_OVERALL_READY
----@field OnEncounterStart fun(...) run on COMBAT_ENCOUNTER_START
----@field OnEncounterEnd fun(...) run on COMBAT_ENCOUNTER_END
----@field OnPlayerEnterCombat fun(...) run on COMBAT_PLAYER_ENTER
----@field OnPlayerLeaveCombat fun(...) run on COMBAT_PLAYER_LEAVE
----@field StartParser fun() start the combatlog parser
----@field StopParser fun() stop the combatlog parser
----@field IsParsing fun():boolean whether or parsing at the moment
----@field OpenMythicPlusBreakdownBigFrame fun() open the mythic plus breakdown big frame
----@field RefreshOpenScoreBoard fun():scoreboard_mainframe Refreshes the score board, but only if it's visible
----@field OpenScoreBoardAtEnd fun() Opens the scoreboard with the configured delay, at the end of a run
----@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment
----@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player
----@field GetInAndOutOfCombatTimeline fun() : detailsmythicplus_combatstep[] return the in and out of combat timeline
----@field GetRunTime fun() : number return the run time of the last run
----@field GetMythicPlusOverallSegment fun() : combat return the latest mythic+ overall segment from details!
----@field GetRunBossSegments fun() : combat[] retrieves the segments of a Mythic+ run that correspond to boss encounters.
----@field GetMythicPlusData fun() : mythicdungeoninfo? retrieves the data from the current mythic plus run
----@field GetBossKillTime fun(bossSegment:combat) : number retrieves the end time() of a boss encounter segment.
----@field CreateBossPortraitTexture fun(parent:frame, index:number) : bosswidget create a boss portrait texture widget
----@field CreateTimeSection fun(parent:frame, index:number) : timesection create a time section label
----@field IsScoreboardOpen fun() : boolean whether or not the scoreboard is shown in the screen
----@field GetVersionString fun() : string the version info of just this addon
----@field GetFullVersionString fun() : string the version info of details and this addon
----@field GetBloodlustUsage fun() : number[]? retrieves the time() in seconds when the player received bloodlust buff.
----@field GetLastRunStart fun() : number retrieves the time() when the last run started
 
 ---@class activitytimeline_marker : frame
 ---@field SubFrames frame[]
