@@ -10,6 +10,18 @@
 ## X-Wago-ID: 4N2m7QGL
 ## X-Curse-Project-ID: 1220909
 
+locales\enUS.lua
+locales\deDE.lua
+locales\esES.lua
+locales\esMX.lua
+locales\frFR.lua
+locales\itIT.lua
+locales\koKR.lua
+locales\ptBR.lua
+locales\ruRU.lua
+locales\zhCN.lua
+locales\zhTW.lua
+
 start.lua
 frames.lua
 parser.lua

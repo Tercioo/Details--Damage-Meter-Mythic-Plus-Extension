@@ -14,6 +14,7 @@ local addonName, private = ...
 local addon = private.addon
 local _ = nil
 local Translit = LibStub("LibTranslit-1.0")
+local L = LibStub("AceLocale-3.0"):GetLocale("Details_MythicPlus")
 
 ---@class scoreboard_object : table
 ---@field lines scoreboard_line[]
@@ -158,7 +159,7 @@ function addon.OpenMythicPlusBreakdownBigFrame()
         mainFrame:Show()
         mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
     else
-        print("There is currently no score on the board")
+        print(L["SCOREBOARD_NO_SCORE_AVAILABLE"])
     end
 end
 
@@ -373,16 +374,16 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     local headerTable = {
         {text = "", width = 60}, --player portrait
         {text = "", width = 25}, --spec icon
-        {text = "Player Name", width = 110},
-        {text = "M+ Score", width = 90},
-        {text = "Loot", width = 80},
-        {text = "Deaths", width = 80},
-        {text = "Damage Taken", width = 100},
-        {text = "DPS", width = 100},
-        {text = "HPS", width = 100},
-        {text = "Interrupts", width = 100},
-        {text = "Dispels", width = 80},
-        {text = "CC Casts", width = 80},
+        {text = L["SCOREBOARD_TITLE_PLAYER_NAME"], width = 110},
+        {text = L["SCOREBOARD_TITLE_SCORE"], width = 90},
+        {text = L["SCOREBOARD_TITLE_LOOT"], width = 80},
+        {text = L["SCOREBOARD_TITLE_DEATHS"], width = 80},
+        {text = L["SCOREBOARD_TITLE_DAMAGE_TAKEN"], width = 100},
+        {text = L["SCOREBOARD_TITLE_DPS"], width = 100},
+        {text = L["SCOREBOARD_TITLE_HPS"], width = 100},
+        {text = L["SCOREBOARD_TITLE_INTERRUPTS"], width = 100},
+        {text = L["SCOREBOARD_TITLE_DISPELS"], width = 80},
+        {text = L["SCOREBOARD_TITLE_CC_CASTS"], width = 80},
         --{text = "", width = 250},
     }
     local headerOptions = {
@@ -682,7 +683,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             mainFrame.ActivityFrame:SetActivity(events, combatTime, notInCombat)
 
             mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
-            mainFrame.OutOfCombatText:SetText("Not in Combat: " .. detailsFramework:IntegerToTimer(notInCombat))
+            mainFrame.OutOfCombatText:SetText(L["SCOREBOARD_NOT_IN_COMBAT_LABEL"] .. ": " .. detailsFramework:IntegerToTimer(notInCombat))
             mainFrame.Level:SetText(mythicPlusData.Level) --the level in the big circle at the top
             if (mythicPlusData.OnTime) then
                 mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName .. " +" .. mythicPlusData.KeystoneUpgradeLevels)
@@ -693,7 +694,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
             mainFrame.ElapsedTimeText:SetText("00:00")
             mainFrame.OutOfCombatText:SetText("00:00")
             mainFrame.Level:SetText("0")
-            mainFrame.DungeonNameFontstring:SetText("Unknown Dungeon")
+            mainFrame.DungeonNameFontstring:SetText(L["SCOREBOARD_UNKNOWN_DUNGEON_LABEL"])
         end
     end
 
@@ -756,7 +757,7 @@ local spellNumberListCooltip = function(self, actor)
     end
 
     GameCooltip:AddLine("")
-    GameCooltip:AddLine("Click to open breakdown", nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
     GameCooltip:SetOwner(self)
     GameCooltip:SetOption("TextSize", 10)
     GameCooltip:SetOption("FixedWidth", 300)
@@ -1037,7 +1038,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             end
 
             GameCooltip:AddLine("")
-            GameCooltip:AddLine("Click to open breakdown", nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
             GameCooltip:SetOwner(self)
             GameCooltip:SetOption("TextSize", 10)
             GameCooltip:SetOption("FixedWidth", 300)
@@ -1095,10 +1096,10 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             local casts = math.floor(playerData.interruptCasts)
 
             GameCooltip:Preset(2)
-            GameCooltip:AddLine("Success", interrupts)
-            GameCooltip:AddLine("Overlap", overlaps)
-            GameCooltip:AddLine("Missed", casts - overlaps - interrupts)
-            GameCooltip:AddLine("Total interrupts", casts)
+            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_SUCCESS_LABEL"], interrupts)
+            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_OVERLAP_LABEL"], overlaps)
+            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_MISSED_LABEL"], casts - overlaps - interrupts)
+            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_TOTAL_LABEL"], casts)
 
             GameCooltip:SetOwner(self)
             GameCooltip:SetOption("TextSize", 10)
@@ -1116,9 +1117,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     local playerCrowdControlCasts = CreateBreakdownButton(
         line,
         -- onclick
-        function (self)
-            print("You just clicked the crowd control casts button!")
-        end,
+        function (self) end,
         -- onSetPlayerData
         function(self, playerData)
             self:SetText(math.floor(playerData.ccCasts))
