@@ -74,6 +74,7 @@
 ---@field GetLastRun fun() : runinfo return the run info for the last run finished
 ---@field GetDungeonRunsById fun(id:string|number) : runinfo[] return an array with run infos of all runs that match the dungeon name or dungeon id
 ---@field GetRunDate fun(runInfo:runinfo) : string return the date when the run ended in format of a string with hour:minute day as number/month as 3letters/year as number
+---@field FormatRunDescription fun(runInfo:runinfo) : string returns the run description in a single string
 ---@field GetRunAverageItemLevel fun(runInfo:runinfo) : number return the average item level of the 5 players in the run
 ---@field GetRunAverageDamagePerSecond fun(runInfo:runinfo, timeType:combattimetype) : number return the average damage per second
 ---@field GetRunAverageHealingPerSecond fun(runInfo:runinfo, timeType:combattimetype) : number return the average healing per second

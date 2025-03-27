@@ -41,7 +41,7 @@ addon.commands = {
         end
         for i = total, 1, -1 do
             local runInfo = runs[i]
-            print(i .. ". " .. runInfo.dungeonName .. " " .. runInfo.completionInfo.level .. " (" .. addon.GetRunDate(runInfo) .. ")")
+            print(i .. ". " .. addon.FormatRunDescription(runInfo))
         end
     end},
     ["history-clear"] = {L["COMMAND_CLEAR_RUN_HISTORY"], function ()

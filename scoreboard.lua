@@ -261,7 +261,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         for i = 1, #savedRuns do
             local runInfo = savedRuns[i]
             runInfoList[#runInfoList+1] = {
-                label = runInfo.dungeonName .. " " .. runInfo.completionInfo.level .. " (" .. addon.GetRunDate(runInfo) .. ")",
+                label = addon.FormatRunDescription(runInfo),
                 value = i,
                 onclick = function()
                     addon.SetSelectedRunIndex(i)
