@@ -393,20 +393,20 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     readyFrame:SetWidth(headerFrame:GetWidth() + mainFramePaddingHorizontal * 2)
 
     do --mythic+ run data
-		--clock texture and icon to show the wasted time (time out of combat)
-		local outOfCombatIcon = readyFrame:CreateTexture("$parentOutOfCombatIcon", "artwork", nil, 2)
-		outOfCombatIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
-		outOfCombatIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
-		outOfCombatIcon:SetVertexColor(detailsFramework:ParseColors("orangered"))
-		readyFrame.OutOfCombatIcon = outOfCombatIcon
+        --clock texture and icon to show the wasted time (time out of combat)
+        local outOfCombatIcon = readyFrame:CreateTexture("$parentOutOfCombatIcon", "artwork", nil, 2)
+        outOfCombatIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+        outOfCombatIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
+        outOfCombatIcon:SetVertexColor(detailsFramework:ParseColors("orangered"))
+        readyFrame.OutOfCombatIcon = outOfCombatIcon
 
-		local outOfCombatText = readyFrame:CreateFontString("$parentOutOfCombatText", "artwork", "GameFontNormal")
-		outOfCombatText:SetTextColor(1, 1, 1)
-		detailsFramework:SetFontSize(outOfCombatText, 11)
-		detailsFramework:SetFontColor(outOfCombatText, "orangered")
-		outOfCombatText:SetText("00:00")
-		outOfCombatText:SetPoint("left", outOfCombatIcon, "right", 6, -3)
-		readyFrame.OutOfCombatText = outOfCombatText
+        local outOfCombatText = readyFrame:CreateFontString("$parentOutOfCombatText", "artwork", "GameFontNormal")
+        outOfCombatText:SetTextColor(1, 1, 1)
+        detailsFramework:SetFontSize(outOfCombatText, 11)
+        detailsFramework:SetFontColor(outOfCombatText, "orangered")
+        outOfCombatText:SetText("00:00")
+        outOfCombatText:SetPoint("left", outOfCombatIcon, "right", 6, -3)
+        readyFrame.OutOfCombatText = outOfCombatText
 
         local buttonSize = 24
 
@@ -435,24 +435,24 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     local mythicPlusOverallSegment = Details:GetCurrentCombat()
 
     --hide the lootSquare
-	--for i = 1, #readyFrame.PlayerBanners do
-	--	readyFrame.PlayerBanners[i]:ClearLootSquares()
-	--end
+    for i = 1, #mainFrame.PlayerBanners do
+        mainFrame.PlayerBanners[i]:ClearLootSquares()
+    end
 
 
-	if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
-		--get a table with all segments
-		local segmentsTable = Details:GetCombatSegments()
-		for i = 1, #segmentsTable do
-			local segment = segmentsTable[i]
-			if (segment:GetCombatType() == DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
-				mythicPlusOverallSegment = segment
-				break
-			end
-		end
-	end
+    if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
+        --get a table with all segments
+        local segmentsTable = Details:GetCombatSegments()
+        for i = 1, #segmentsTable do
+            local segment = segmentsTable[i]
+            if (segment:GetCombatType() == DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
+                mythicPlusOverallSegment = segment
+                break
+            end
+        end
+    end
 
-	if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
+    if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
         return false
     end
 
@@ -694,7 +694,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
     end
 
     ---@type details_instanceinfo
-	local instanceInfo = mythicPlusData and Details:GetInstanceInfo(mythicPlusData.MapID) or Details:GetInstanceInfo(Details:GetCurrentCombat().mapId)
+    local instanceInfo = mythicPlusData and Details:GetInstanceInfo(mythicPlusData.MapID) or Details:GetInstanceInfo(Details:GetCurrentCombat().mapId)
     if (instanceInfo) then
         mainFrame.DungeonBackdropTexture:SetTexture(instanceInfo.iconLore)
     else
