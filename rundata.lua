@@ -20,7 +20,6 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 
 ---runs on details! event COMBAT_MYTHICPLUS_OVERALL_READY
 function addon.CreateRunInfo(mythicPlusOverallSegment)
-
     local completionInfo = C_ChallengeMode.GetChallengeCompletionInfo()
     local combatTime = mythicPlusOverallSegment:GetCombatTime()
 
@@ -96,6 +95,9 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 guid = actorObject:GetGUID(),
                 loot = "",
                 score = 0,
+                activityTimeDamage = 0,
+                activityTimeHeal = 0,
+                scorePrevious = 0,
                 totalDeaths = 0,
                 totalDamage = actorObject.total,
                 totalHeal = 0,
@@ -110,14 +112,37 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 damageDoneBySpells  = {}, --done
                 dispelWhat  = {}, --done
                 interruptWhat = {}, --done
+                interruptCastOverlapDone = addon.profile.last_run_data.interrupt_cast_overlap_done[playerName] or 0,
                 crowdControlSpells = {}, --done
                 ilevel = Details:GetItemLevelFromGuid(actorObject:GetGUID()),
+                deathEvents = {},
             }
 
             runInfo.combatData.groupMembers[playerName] = playerInfo
 
+            if (type(actorObject.mrating) == "table") then
+                actorObject.mrating = actorObject.mrating.currentSeasonScore
+            end
+            local score = actorObject.mrating or 0
+            playerInfo.score = score
+            playerInfo.scorePrevious = Details.PlayerRatings[playerName] or score
+
+            playerInfo.activityTimeDamage = actorObject:Tempo()
+
             local playerDeaths = mythicPlusOverallSegment:GetPlayerDeaths(playerName)
             playerInfo.totalDeaths = #playerDeaths
+
+            local deathTable = mythicPlusOverallSegment:GetDeaths()
+            for i = 1, #deathTable do
+                local thisDeathTable = deathTable[i]
+                if (thisDeathTable[3] == playerName) then --index 3 carry the name of the player that died
+                    playerInfo.deathEvents[#playerInfo.deathEvents+1] = {
+                        type = addon.Enum.ScoreboardEventType.Death,
+                        timestamp = thisDeathTable[2],
+                        arguments = {}, --playerData = playerInfo, can't assign here as it will save playerInfo twice in the saved variables (or cause a loop)
+                    }
+                end
+            end
 
             --spell damage done
             local spellsUsed = actorObject:GetActorSpells()
@@ -135,6 +160,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 if (healActorObject:Name() == playerName) then
                     playerInfo.totalHeal = healActorObject.total
                     playerInfo.totalHealTaken = healActorObject.healing_taken
+                    playerInfo.activityTimeHeal = actorObject:Tempo()
 
                     --spell heal done
                     local temp = {}
