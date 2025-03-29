@@ -50,6 +50,7 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field lines table<number, scoreboard_line>
 
 ---@class scoreboard_line : button, df_headerfunctions
+---@field playerData scoreboard_playerdata
 ---@field NextLootSquare number
 ---@field WaitingForLootLabel loot_dot_animation
 ---@field LootSquare details_lootsquare
@@ -62,6 +63,7 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 
 ---@class scoreboard_button : df_button
 ---@field PlayerData table
+---@field InterruptCasts fontstring
 ---@field SetPlayerData fun(self:scoreboard_button, playerData:scoreboard_playerdata)
 ---@field GetPlayerData fun(self:scoreboard_button):scoreboard_playerdata
 ---@field HasPlayerData fun(self:scoreboard_button):boolean returns true if data is attached
@@ -138,13 +140,6 @@ local activityFrameY = headerY - 90 + (lineHeight * lineAmount * -1)
 ---the table is filled when the main frame is created
 ---@type table<string, boolean>
 local interruptSpellNameCache = {}
-
-local EventType = {
-    EncounterStart = "EncounterStart",
-    EncounterEnd = "EncounterEnd",
-    Death = "Death",
-    KeyFinished = "KeyFinished",
-}
 
 function addon.OpenMythicPlusBreakdownBigFrame()
     local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
@@ -432,144 +427,82 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
     mythicPlusBreakdown.SetFontSettings()
 
-    local mythicPlusOverallSegment = Details:GetCurrentCombat()
+    --local mythicPlusOverallSegment = Details:GetCurrentCombat()
 
     --hide the lootSquare
-    for i = 1, #mainFrame.PlayerBanners do
-        mainFrame.PlayerBanners[i]:ClearLootSquares()
-    end
+    --for i = 1, #mainFrame.PlayerBanners do
+    --    mainFrame.PlayerBanners[i]:ClearLootSquares()
+    --end
 
-
-    if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
-        --get a table with all segments
-        local segmentsTable = Details:GetCombatSegments()
-        for i = 1, #segmentsTable do
-            local segment = segmentsTable[i]
-            if (segment:GetCombatType() == DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
-                mythicPlusOverallSegment = segment
-                break
-            end
-        end
-    end
-
-    if (mythicPlusOverallSegment:GetCombatType() ~= DETAILS_SEGMENTTYPE_MYTHICDUNGEON_OVERALL) then
+    local runData = addon.GetSelectedRun()
+	if (not runData) then
         return false
     end
 
-    --local mythicPlusOverallSegment = Details:GetOverallCombat()
-    local combatTime = mythicPlusOverallSegment:GetCombatTime()
+    local combatTime = runData.timeInCombat
 
-    local damageContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_DAMAGE)
-    local healingContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_HEAL)
-    local utilityContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_MISC)
-
+    ---@type scoreboard_playerdata[]
     local data = {}
-
+    ---@type timeline_event[]
     local events = {}
 
+    local runPlayerData = runData.combatData.groupMembers
+
     do --code for filling the 5 player lines
-        for _, actorObject in damageContainer:ListActors() do
-            ---@cast actorObject actor
-            if (actorObject:IsGroupPlayer()) then
-                local unitId
-                for i = 1, #Details.PartyUnits do
-                    if (Details:GetFullName(Details.PartyUnits[i]) == actorObject.nome) then
-                        unitId = Details.PartyUnits[i]
-                    end
-                end
-                unitId = unitId or actorObject.nome
-
-                if (type(actorObject.mrating) == "table") then
-                    actorObject.mrating = actorObject.mrating.currentSeasonScore
-                end
-
-                local rating = actorObject.mrating or 0
-                local ratingColor = C_ChallengeMode.GetDungeonScoreRarityColor(rating)
-                if (not ratingColor) then
-                    ratingColor = _G["HIGHLIGHT_FONT_COLOR"]
-                end
-
-                ---@cast actorObject actordamage
-
-                ---@type scoreboard_playerdata
-                local thisPlayerData = {
-                    name = actorObject.nome,
-                    class = actorObject.classe,
-                    spec = actorObject.spec,
-                    role = actorObject.role or UnitGroupRolesAssigned(unitId),
-                    score = rating,
-                    previousScore = Details.PlayerRatings[Details:GetFullName(unitId)] or rating,
-                    scoreColor = ratingColor,
-                    deaths = 0,
-                    damageTaken = actorObject.damage_taken,
-                    dps = actorObject.total / combatTime,
-                    activityTimeDamage = actorObject:Tempo(),
-                    activityTimeHeal = 0, --place holder for now, is setted when iterating the healingContainer
-                    hps = 0,
-                    interrupts = 0,
-                    interruptCasts = mythicPlusOverallSegment:GetInterruptCastAmount(actorObject.nome),
-                    dispels = 0,
-                    ccCasts = mythicPlusOverallSegment:GetCCCastAmount(actorObject.nome),
-                    unitId = unitId,
-                    unitName = actorObject.nome,
-                    combatUid = mythicPlusOverallSegment:GetCombatUID(),
-                }
-
-                if (thisPlayerData.role == "NONE") then
-                    thisPlayerData.role = "DAMAGER"
-                end
-
-                local deathAmount = 0
-                local deathTable = mythicPlusOverallSegment:GetDeaths()
-                for i = 1, #deathTable do
-                    local thisDeathTable = deathTable[i]
-                    local playerName = thisDeathTable[3]
-                    if (playerName == actorObject.nome) then
-                        deathAmount = deathAmount + 1
-                        events[#events+1] = {
-                            type = EventType.Death,
-                            timestamp = thisDeathTable[2],
-                            arguments = {playerData = thisPlayerData},
-                        }
-                    end
-                end
-
-                thisPlayerData.deaths = deathAmount
-
-                data[#data+1] = thisPlayerData
-            end
-        end
-
-        for _, actorObject in healingContainer:ListActors() do
-            local playerData
-            for i = 1, #data do
-                if (data[i].name == actorObject.nome) then
-                    playerData = data[i]
-                    break
+        for playerName, playerInfo in pairs(runPlayerData) do
+            local unitId
+            for i = 1, #Details.PartyUnits do
+                if (Details:GetFullName(Details.PartyUnits[i]) == playerName) then
+                    unitId = Details.PartyUnits[i]
                 end
             end
+            unitId = unitId or playerName
 
-            if (playerData) then
-                ---@cast actorObject actorheal
-                playerData.hps = actorObject.total / combatTime
-                playerData.activityTimeHeal = actorObject:Tempo()
-            end
-        end
-
-        for _, actorObject in utilityContainer:ListActors() do
-            local playerData
-            for i = 1, #data do
-                if (data[i].name == actorObject.nome) then
-                    playerData = data[i]
-                    break
-                end
+            local score = playerInfo.score or 0
+            local ratingColor = C_ChallengeMode.GetDungeonScoreRarityColor(score)
+            if (not ratingColor) then
+                ratingColor = _G["HIGHLIGHT_FONT_COLOR"]
             end
 
-            if (playerData) then
-                ---@cast actorObject actorutility
-                playerData.interrupts = actorObject.interrupt or 0
-                playerData.dispels = actorObject.dispell or 0
+            ---@type scoreboard_playerdata
+            local thisPlayerData = {
+                name = playerName,
+                unitName = playerName,
+                class = playerInfo.class,
+                spec = playerInfo.spec,
+                role = playerInfo.role or UnitGroupRolesAssigned(unitId),
+                score = score,
+                unitId = unitId,
+                previousScore = playerInfo.scorePrevious or score or 0,
+                scoreColor = ratingColor,
+                damageTaken = playerInfo.totalDamageTaken or 0,
+                dps = playerInfo.totalDamage / combatTime,
+                hps = playerInfo.totalHeal / combatTime,
+                activityTimeDamage = playerInfo.activityTimeDamage or combatTime,
+                activityTimeHeal = playerInfo.activityTimeHeal or combatTime,
+                interrupts = playerInfo.totalInterrupts or 0,
+                interruptCasts = playerInfo.totalInterruptsCasts or 0,
+                dispels = playerInfo.totalDispels or 0,
+                ccCasts = playerInfo.totalCrowdControlCasts,
+                deaths = playerInfo.totalDeaths,
+                combatUid = runData.combatId,
+            }
+
+            if (thisPlayerData.role == "NONE") then
+                thisPlayerData.role = "DAMAGER"
             end
+
+            --to render the event for deaths, it is required 'playerInfo' into the playerInfo.deathEvents[x].arguments.'playerData' field
+            --as the scoreboard cannot change the database (in this case assigning thisPlayerData to playerInfo.deathEvents[x].arguments.'playerData')
+            --we need to copy the deathEvents table and assign the playerData to each event
+            local deathEventsTableCopy = detailsFramework.table.copy({}, playerInfo.deathEvents)
+            for i = 1, #deathEventsTableCopy do
+                local thisDeathEventCopied = deathEventsTableCopy[i]
+                thisDeathEventCopied.arguments.playerData = thisPlayerData
+            end
+            detailsFramework.table.append(events, deathEventsTableCopy)
+
+            data[#data+1] = thisPlayerData
         end
 
         table.sort(data, function(t1, t2) return t1.role > t2.role end)
@@ -664,7 +597,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
             if (mythicPlusData.EndedAt) then
                 events[#events+1] = {
-                    type = EventType.KeyFinished,
+                    type = addon.Enum.ScoreboardEventType.KeyFinished,
                     timestamp = mythicPlusData.EndedAt,
                     arguments = {
                         onTime = mythicPlusData.OnTime,
@@ -855,27 +788,33 @@ local function CreateBreakdownButton(line, onClick, onSetPlayerData, onMouseEnte
     button.button.text.originalColor = {button.button.text:GetTextColor()}
 
     button.OnMouseEnter = onMouseEnter
+
     function button.SetPlayerData(self, playerData)
         self.PlayerData = playerData
         if (playerData ~= nil) then
             onSetPlayerData(self, playerData)
         end
     end
+
     function button.HasPlayerData(self)
         return self.PlayerData ~= nil
     end
+
     function button.GetPlayerData(self)
         return self.PlayerData
     end
+
     function button.GetActor(self, actorMainAttribute)
         local playerData = self:GetPlayerData()
         if (not playerData) then
             return
         end
+
         local combat = Details:GetCombatByUID(playerData.combatUid)
         if (not combat) then
             return
         end
+
         return combat:GetActor(actorMainAttribute, playerData.name), combat
     end
 
@@ -954,6 +893,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     end)
 
     local playerScore = CreateBreakdownLabel(line, function(self, playerData)
+        ---@cast playerData scoreboard_playerdata
         self:SetText(playerData.score)
         local gainedScore = playerData.score - playerData.previousScore
         local text = ""
@@ -975,47 +915,27 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     local playerDamageTaken = CreateBreakdownButton(
         line,
         -- onclick
+        ---@param self scoreboard_button
         function (self)
             OpenLineBreakdown(self, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGETAKEN)
         end,
         -- onSetPlayerData
+        ---@param self scoreboard_button
+        ---@param playerData scoreboard_playerdata
         function(self, playerData)
             self:SetText(Details:Format(math.floor(playerData.damageTaken)))
         end,
         -- onMouseEnter
+        ---@param self frame
+        ---@param button scoreboard_button
         function (self, button)
-            ---@type actordamage, combat
-            local actor, combat = button:GetActor(DETAILS_ATTRIBUTE_DAMAGE)
-
             ---@class spell_hit_player : table
             ---@field spellId number
             ---@field amount number
             ---@field damagerName string
 
             ---@type spell_hit_player[]
-            local spellsThatHitThisPlayer = {}
-
-            for damagerName in pairs (actor.damage_from) do
-                local damagerObject = combat:GetActor(DETAILS_ATTRIBUTE_DAMAGE, damagerName)
-                if (damagerObject) then
-                    for spellId, spellTable in pairs(damagerObject:GetSpellList()) do
-                        if (spellTable.targets and spellTable.targets[actor:Name()]) then
-                            local amount = spellTable.targets[actor:Name()]
-                            if (amount > 0) then
-                                ---@type spell_hit_player
-                                local spellThatHitThePlayer = {
-                                    spellId = spellId,
-                                    amount = amount,
-                                    damagerName = damagerObject:Name(),
-                                }
-                                spellsThatHitThisPlayer[#spellsThatHitThisPlayer+1] = spellThatHitThePlayer
-                            end
-                        end
-                    end
-                end
-            end
-
-            table.sort(spellsThatHitThisPlayer, function(t1, t2) return t1.amount > t2.amount end)
+            local spellsThatHitThisPlayer = button.PlayerData.spellsThatHitThisPlayer
 
             GameCooltip:Preset(2)
 
@@ -1049,6 +969,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end,
         -- onSetPlayerData
         function(self, playerData)
+            ---@cast playerData scoreboard_playerdata
             self:SetText(Details:Format(math.floor(playerData.dps)))
         end,
         function (self, button)
@@ -1064,6 +985,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end,
         -- onSetPlayerData
         function(self, playerData)
+            ---@cast playerData scoreboard_playerdata
             self:SetText(Details:Format(math.floor(playerData.hps)))
         end,
         -- onMouseEnter
@@ -1078,16 +1000,16 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         function (self) end,
         -- onSetPlayerData
         function(self, playerData)
+            ---@cast playerData scoreboard_playerdata
             self:SetText(math.floor(playerData.interrupts))
             self.InterruptCasts:SetText("/ " .. math.floor(playerData.interruptCasts))
         end,
         -- onMouseEnter
         function (self, button)
-
             local playerData = button:GetPlayerData()
 
             local interrupts = math.floor(playerData.interrupts)
-            local overlaps = addon.profile.last_run_data.interrupt_cast_overlap_done[playerData.name] or 0
+            local overlaps = playerData.interruptCastOverlapDone or 0
             local casts = math.floor(playerData.interruptCasts)
 
             GameCooltip:Preset(2)
@@ -1115,6 +1037,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         function (self) end,
         -- onSetPlayerData
         function(self, playerData)
+            ---@cast playerData scoreboard_playerdata
             self:SetText(math.floor(playerData.ccCasts))
         end,
         -- onMouseEnter
@@ -1278,9 +1201,9 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
 
             ---@type activitytimeline_marker_data
             local markerData = {}
-            if (event.type == EventType.Death) then
+            if (event.type == addon.Enum.ScoreboardEventType.Death) then
                 markerData = addon.activityTimeline.RenderDeathMarker(self, event, marker)
-            elseif (event.type == EventType.KeyFinished) then
+            elseif (event.type == addon.Enum.ScoreboardEventType.KeyFinished) then
                 markerData = addon.activityTimeline.RenderKeyFinishedMarker(self, event, marker)
             end
 

@@ -95,6 +95,22 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     detailsEventListener:RegisterEvent("COMBAT_PLAYER_ENTER")
     detailsEventListener:RegisterEvent("COMBAT_PLAYER_LEAVE")
 
+    --initialize enums
+    addon.Enum = {
+        --used to identify the type of run
+        CombatType = {
+            RunRime = 1,
+            CombatTime = 2,
+        },
+        --used to identify the type of event
+        ScoreboardEventType = {
+            EncounterStart = "EncounterStart",
+            EncounterEnd = "EncounterEnd",
+            Death = "Death",
+            KeyFinished = "KeyFinished",
+        },
+    }
+
     addon.InitializeEvents()
 
     AddonCompartmentFrame:RegisterAddon({

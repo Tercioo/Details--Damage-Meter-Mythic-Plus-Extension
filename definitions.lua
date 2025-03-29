@@ -11,8 +11,21 @@
 ---@field RunRime number
 ---@field CombatTime number
 
+---@class scoreboard_eventtype : table
+---@field EncounterStart scoreboard_eventtypes
+---@field EncounterEnd scoreboard_eventtypes
+---@field Death scoreboard_eventtypes
+---@field KeyFinished scoreboard_eventtypes
+
+---@alias scoreboard_eventtypes
+---| "EncounterStart"
+---| "EncounterEnd"
+---| "Death"
+---| "KeyFinished"
+
 ---@class enum : table
 ---@field CombatType combattimetype
+---@field ScoreboardEventType scoreboard_eventtype
 
 ---@class profile : table
 ---@field saved_runs runinfo[] store the saved runs
@@ -126,9 +139,13 @@
 ---@field spec number specialization id
 ---@field role role name of the role
 ---@field guid string the player guid
+---@field activityTimeDamage number the time in seconds the player was in combat
+---@field activityTimeHeal number the time in seconds the player was in combat
 ---@field score number mythic+ score
+---@field scorePrevious number mythic+ score the player had at the start of the run
 ---@field ilevel number the average item level of the player
 ---@field loot string item link of the loot the player received
+---@field deathEvents timeline_event[]
 ---@field totalDeaths number total deaths
 ---@field totalDamage number total damage done
 ---@field totalHeal number total damage done
@@ -140,9 +157,10 @@
 ---@field totalCrowdControlCasts number total amount of casts of crowd control spells
 ---@field healDoneBySpells table<spellid, number>[] heal done by spells, a table with indexed subtables where the first index is the spellid and the second is the total heal done by that spell
 ---@field damageDoneBySpells table<spellid, number>[] damage done by spells, a table with indexed subtables where the first index is the spellid and the second is the total damage done by that spell
----@field damageTakenFromSpells table<spellid, number> damage taken from spells
+---@field damageTakenFromSpells spell_hit_player[] damage taken from spells
 ---@field dispelWhat table<spellid, number> which debuffs the player dispelled
 ---@field interruptWhat table<spellid, number> which spells the player interrupted
+---@field interruptCastOverlapDone number how many times the player attempted to interrupt a spell with another player
 ---@field crowdControlSpells table<spellid, number> which spells the player casted that are crowd control
 
 ---@class combatdata : table
