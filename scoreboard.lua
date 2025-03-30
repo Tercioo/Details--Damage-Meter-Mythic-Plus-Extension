@@ -258,9 +258,27 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         return runInfoList
     end
 
-    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 150, 20, "selectRunInfoDropdown", _, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 230, 20, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
     readyFrame.RunInfoDropdown = runInfoDropdown
+
+    hooksecurefunc(runInfoDropdown, "Selected", function(self, thisOption)
+        local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime = thisOption.label:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)")
+
+        onTime = "1" and true or false
+
+        dungeonId = tonumber(dungeonId)
+
+        if (dungeonId == 370) then
+            dungeonName = dungeonName:gsub("^.+%-", "")
+        end
+
+        --limit dungeon name to 22 letters
+        local resizedDungeonName = dungeonName:sub(1, 22)
+
+        self.label:SetText(resizedDungeonName .. " +" .. keyLevel .. " (" .. timeString .. ")")
+    end)
+    --DropDownMetaFunctions:Selected(thisOption)
 
     runInfoDropdown.widget:HookScript("OnMouseDown", function(self)
         local dropdown = self.MyObject
@@ -300,12 +318,18 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
                 local label1 = menuFrame.label
                 local text = label1:GetText()
 
-                local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString = text:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)")
+                local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime = text:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)")
 
                 label1:SetText(dungeonName)
                 menuFrame.label2:SetText(keyLevel)
                 menuFrame.label3:SetText(detailsFramework:IntegerToTimer(runTime))
-                menuFrame.label4:SetText("+" .. keyUpgradeLevels)
+
+                if (tonumber(keyUpgradeLevels) > 0) then
+                    menuFrame.label4:SetText("+" .. keyUpgradeLevels)
+                else
+                    menuFrame.label4:SetText("")
+                end
+
                 menuFrame.label5:SetText(timeString)
             end
         end

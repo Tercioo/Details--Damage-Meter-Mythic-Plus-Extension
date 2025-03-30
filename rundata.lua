@@ -280,7 +280,7 @@ end
 
 ---return a table with data to be used in the dropdown menu to select which run to show in the scoreboard
 ---@param runInfo runinfo
----@return table dropdownData dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString
+---@return table dropdownData dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId
 function addon.GetDropdownRunDescription(runInfo)
     --Operation: Mechagon - Workshop (2) | 20:10 (+3) | 4 hours ago
     local dungeonName = runInfo.dungeonName
@@ -305,8 +305,11 @@ function addon.GetDropdownRunDescription(runInfo)
 
     local keyLevel = runInfo.completionInfo.level or 0
     local keyUpgradeLevels = runInfo.completionInfo.keystoneUpgradeLevels or 0
+    local mapId = runInfo.mapId or 0
+    local dungeonId = runInfo.dungeonId or 0
+    local onTime = runInfo.completionInfo.onTime or false
 
-    return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString}
+    return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime and 1 or 0}
 end
 
 function addon.FormatRunDescription(runInfo)
