@@ -634,7 +634,12 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
         return
     end
 
-    Details:OpenSpecificBreakdownWindow(Details:GetCombatByUID(playerData.combatUid), playerData.name, mainAttribute, subAttribute)
+    local combat = Details:GetCombatByUID(playerData.combatUid)
+    if (not combat) then
+        return
+    end
+
+    Details:OpenSpecificBreakdownWindow(combat, playerData.name, mainAttribute, subAttribute)
 end
 
 local spellNumberListCooltip = function(self, actor)
