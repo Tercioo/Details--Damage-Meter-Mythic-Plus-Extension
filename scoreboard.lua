@@ -589,49 +589,49 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
         end
     end
 
-    local mythicPlusData = mythicPlusOverallSegment:GetMythicDungeonInfo()
-    if (mythicPlusData) then
-        local runTime = addon.GetRunTime()
-        if (runTime) then
-            local notInCombat = runTime - combatTime
 
-            if (mythicPlusData.EndedAt) then
-                events[#events+1] = {
-                    type = addon.Enum.ScoreboardEventType.KeyFinished,
-                    timestamp = mythicPlusData.EndedAt,
-                    arguments = {
-                        onTime = mythicPlusData.OnTime,
-                        keystoneLevelsUpgrade = mythicPlusData.KeystoneUpgradeLevels,
-                    },
-                }
-            end
+    local runTime = runData.completionInfo.time
+    if (runTime) then --runTime can be nil if the run is not completed
+        runTime = runData.completionInfo.time / 1000
+        local notInCombat = runTime - combatTime
 
-            table.sort(events, function(t1, t2) return t1.timestamp < t2.timestamp end)
-
-            mainFrame.ActivityFrame:SetActivity(events, combatTime, notInCombat)
-
-            mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
-            mainFrame.OutOfCombatText:SetText(L["SCOREBOARD_NOT_IN_COMBAT_LABEL"] .. ": " .. detailsFramework:IntegerToTimer(notInCombat))
-            mainFrame.Level:SetText(mythicPlusData.Level) --the level in the big circle at the top
-            if (mythicPlusData.OnTime) then
-                mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName .. " +" .. mythicPlusData.KeystoneUpgradeLevels)
-            else
-                mainFrame.DungeonNameFontstring:SetText(mythicPlusData.DungeonName)
-            end
-        else
-            mainFrame.ElapsedTimeText:SetText("00:00")
-            mainFrame.OutOfCombatText:SetText("00:00")
-            mainFrame.Level:SetText("0")
-            mainFrame.DungeonNameFontstring:SetText(L["SCOREBOARD_UNKNOWN_DUNGEON_LABEL"])
+        if (runData.endTime) then
+            events[#events+1] = {
+                type = addon.Enum.ScoreboardEventType.KeyFinished,
+                timestamp = runData.endTime,
+                arguments = {
+                    onTime = runData.completionInfo.onTime,
+                    keystoneLevelsUpgrade = runData.completionInfo.keystoneUpgradeLevels,
+                },
+            }
         end
+
+        table.sort(events, function(t1, t2) return t1.timestamp < t2.timestamp end)
+
+        mainFrame.ActivityFrame:SetActivity(events, combatTime, notInCombat)
+
+        mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
+        mainFrame.OutOfCombatText:SetText(L["SCOREBOARD_NOT_IN_COMBAT_LABEL"] .. ": " .. detailsFramework:IntegerToTimer(notInCombat))
+        mainFrame.Level:SetText(runData.completionInfo.level) --the level in the big circle at the top
+        if (runData.completionInfo.onTime) then
+            mainFrame.DungeonNameFontstring:SetText(runData.dungeonName .. " +" .. runData.completionInfo.keystoneUpgradeLevels)
+        else
+            mainFrame.DungeonNameFontstring:SetText(runData.dungeonName)
+        end
+    else
+        mainFrame.ElapsedTimeText:SetText("00:00")
+        mainFrame.OutOfCombatText:SetText("00:00")
+        mainFrame.Level:SetText("0")
+        mainFrame.DungeonNameFontstring:SetText(L["SCOREBOARD_UNKNOWN_DUNGEON_LABEL"])
     end
 
+
     ---@type details_instanceinfo
-    local instanceInfo = mythicPlusData and Details:GetInstanceInfo(mythicPlusData.MapID) or Details:GetInstanceInfo(Details:GetCurrentCombat().mapId)
+    local instanceInfo = runData and Details:GetInstanceInfo(runData.mapId)
     if (instanceInfo) then
         mainFrame.DungeonBackdropTexture:SetTexture(instanceInfo.iconLore)
     else
-        mainFrame.DungeonBackdropTexture:SetTexture(mythicPlusOverallSegment.is_mythic_dungeon.DungeonTexture)
+        mainFrame.DungeonBackdropTexture:SetTexture(runData.dungeonBackgroundTexture)
     end
 
     mainFrame.DungeonBackdropTexture:SetTexCoord(35/512, 291/512, 49/512, 289/512)
