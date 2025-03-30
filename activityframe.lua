@@ -61,21 +61,16 @@ function activity.UpdateTimeSections(activityFrame, totalRuntime, multiplier)
 end
 
 ---boss widgets showing the kill time of each boss
-function activity.UpdateBossWidgets(activityFrame, start, multiplier)
+---@param runData runinfo
+function activity.UpdateBossWidgets(activityFrame, runData, multiplier)
     for i = 1, #activityFrame.bossWidgets do
         activityFrame.bossWidgets[i]:Hide()
     end
 
-    local allBossesSegments = addon.GetRunBossSegments()
     local bossWidgetIndex = 1
-
-    for i = 1, #allBossesSegments do
-        local bossSegment = allBossesSegments[i]
-        local bossSegmentTexture = bossSegment:GetMythicDungeonInfo()
-        local bossSegmentTime = bossSegment:GetCombatTime()
-        local killTime = addon.GetBossKillTime(bossSegment)
-
-        if (killTime > 0) then
+    for i = 1, #runData.encounters do
+        local encounter = runData.encounters[i]
+        if (encounter.defeated) then
             local bossWidget = activityFrame.bossWidgets[bossWidgetIndex]
             if (not bossWidget) then
                 bossWidget = addon.CreateBossPortraitTexture(activityFrame, bossWidgetIndex)
@@ -83,7 +78,7 @@ function activity.UpdateBossWidgets(activityFrame, start, multiplier)
             end
             bossWidgetIndex = bossWidgetIndex + 1
 
-            local killTimeRelativeToStart = killTime - start
+            local killTimeRelativeToStart = encounter.endTime - runData.startTime
             local xPosition = killTimeRelativeToStart * multiplier
 
             bossWidget:Show()
@@ -92,11 +87,9 @@ function activity.UpdateBossWidgets(activityFrame, start, multiplier)
             bossWidget:SetFrameLevel(5000 + i)
 
             bossWidget.TimeText:SetText(detailsFramework:IntegerToTimer(killTimeRelativeToStart))
-
-            --local bossInfo = bossSegment:GetBossInfo()
-            --if (bossInfo and bossInfo.bossimage) then
-            if (bossSegment:GetBossImage()) then
-                bossWidget.AvatarTexture:SetTexture(bossSegment:GetBossImage())
+            local encounterInfo = Details:GetEncounterInfo(encounter.dungeonEncounterId)
+            if (encounterInfo and encounterInfo.creatureIcon) then
+                bossWidget.AvatarTexture:SetTexture(encounterInfo.creatureIcon)
                 bossWidget.AvatarTexture:SetSize(64, 32)
                 bossWidget.AvatarTexture:SetAlpha(1)
             else
@@ -104,20 +97,13 @@ function activity.UpdateBossWidgets(activityFrame, start, multiplier)
                 bossWidget.AvatarTexture:SetAtlas("BossBanner-SkullCircle")
                 bossWidget.AvatarTexture:SetSize(36, 36)
                 bossWidget.AvatarTexture:SetAlpha(0.6)
-                --local bossAvatar = Details:GetBossPortrait(nil, nil, bossTable[2].name, bossTable[2].ej_instance_id)
-                --bossWidget.AvatarTexture:SetTexture(bossAvatar)
             end
         end
     end
 end
 
-function activity.UpdateBloodlustWidgets(activityFrame, start, multiplier)
-    local bloodlustUsage = addon.GetBloodlustUsage()
-    if (bloodlustUsage) then
-        for i = 1, #bloodlustUsage do
-            local timeOfUsage = bloodlustUsage[i]
-        end
-    end
+function activity.UpdateBloodlustWidgets(activityFrame, runData, multiplier)
+    -- todo: implement into runData
 end
 
 --return a texture to be used as a segment of the activity bar

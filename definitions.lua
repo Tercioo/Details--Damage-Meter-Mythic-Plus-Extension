@@ -38,7 +38,7 @@
 ---@field show_time_sections boolean whether or not to render sections of time on the timeline
 ---@field scoreboard_scale number indicates the scale of the scoreboard window
 ---@field translit boolean translit cyrillic
----@field last_run_data detailsmythicplus_rundata store the data from the last run
+---@field last_run_data detailsmythicplus_run_data store the data from the last run
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
@@ -70,12 +70,6 @@
 ---@field OpenScoreBoardAtEnd fun() Opens the scoreboard with the configured delay, at the end of a run
 ---@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment
 ---@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player
----@field GetInAndOutOfCombatTimeline fun() : detailsmythicplus_combatstep[] return the in and out of combat timeline
----@field GetRunTime fun() : number return the run time of the last run
----@field GetMythicPlusOverallSegment fun() : combat return the latest mythic+ overall segment from details!
----@field GetRunBossSegments fun() : combat[] retrieves the segments of a Mythic+ run that correspond to boss encounters.
----@field GetMythicPlusData fun() : mythicdungeoninfo? retrieves the data from the current mythic plus run
----@field GetBossKillTime fun(bossSegment:combat) : number retrieves the end time() of a boss encounter segment.
 ---@field CreateBossPortraitTexture fun(parent:frame, index:number) : bosswidget create a boss portrait texture widget
 ---@field CreateTimeSection fun(parent:frame, index:number) : timesection create a time section label
 ---@field IsScoreboardOpen fun() : boolean whether or not the scoreboard is shown in the screen
@@ -175,7 +169,7 @@
 ---@field standout_color any
 ---@field standout_outline string
 
----@class detailsmythicplus_rundata : table
+---@class detailsmythicplus_run_data : table
 ---@field start_time number
 ---@field end_time number
 ---@field incombat_timeline detailsmythicplus_combatstep[] first table tells the group left table, second when entered in combat, third when left combat, and so on
@@ -208,8 +202,8 @@
 ---@class activitytimeline : table
 ---@field markers activitytimeline_marker[]
 ---@field maxEvents number
----@field UpdateBossWidgets fun(self:scoreboard_activityframe, start:number, multiplier:number) update the boss widgets showing the kill time of each boss
----@field UpdateBloodlustWidgets fun(self:scoreboard_activityframe, start:number, multiplier:number) update the bloodlust widgets showing the time of bloodlust usage
+---@field UpdateBossWidgets fun(self:scoreboard_activityframe, runData:runinfo, multiplier:number) update the boss widgets showing the kill time of each boss
+---@field UpdateBloodlustWidgets fun(self:scoreboard_activityframe, runData:runinfo, multiplier:number) update the bloodlust widgets showing the time of bloodlust usage
 ---@field ResetSegmentTextures fun(self:scoreboard_activityframe) reset the next index of texture to use and hide all existing textures
 ---@field GetSegmentTexture fun(self:scoreboard_activityframe) : texture return a texture to be used as a segment of the activity bar
 ---@field RenderKeyFinishedMarker fun(frame:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker) : activitytimeline_marker_data
@@ -223,4 +217,4 @@
 ---@field InCombatTexture texture
 ---@field OutOfCombatTexture texture
 ---@field BackgroundTexture texture
----@field SetActivity fun(self: scoreboard_activityframe, events: timeline_event[], inCombat: number, outOfCombat: number)
+---@field SetActivity fun(self: scoreboard_activityframe, events: timeline_event[], runData: runinfo)
