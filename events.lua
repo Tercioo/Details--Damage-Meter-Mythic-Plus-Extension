@@ -40,6 +40,7 @@ function addon.InitializeEvents()
             local runInfo = addon.CreateRunInfo(mythicPlusOverallSegment)
             table.insert(addon.profile.saved_runs, 1, runInfo)
             table.remove(addon.profile.saved_runs, addon.profile.saved_runs_limit+1)
+            addon.SetSelectedRunIndex(1)
         end)
 
         if (not okay) then
@@ -54,12 +55,25 @@ function addon.InitializeEvents()
         addon.profile.last_run_data.start_time = time()
         --store the first value in the in combat timeline.
         addon.profile.last_run_data.incombat_timeline = {{time = time(), in_combat = false}}
-        addon.profile.last_run_data.encounter_timeline = {} --todo(tercio): need to insert the bosses here
+        addon.profile.last_run_data.encounter_timeline = {}
         addon.StartParser()
     end
 
     function addon.OnMythicDungeonEnd(...)
         addon.profile.last_run_data.end_time = time()
+        local combatTimeline = addon.profile.last_run_data.incombat_timeline
+
+        --in case the combat ended after the m+ run ended, the in_combat may be true and need to be closed
+        if (combatTimeline[#combatTimeline].in_combat == true) then
+            --check if the previous segment has the same time, if so, can be an extra segment created by details! after the last combat finished and this can be ignored
+            if (combatTimeline[#combatTimeline -1].time == combatTimeline[#combatTimeline].time) then
+                --remove this last segment
+                table.remove(combatTimeline)
+            else
+                table.insert(combatTimeline, { time = math.floor(addon.profile.last_run_data.end_time), in_combat = false})
+            end
+        end
+
         addon.StopParser()
     end
 

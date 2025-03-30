@@ -23,20 +23,20 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field CreateBigBreakdownFrame fun():scoreboard_mainframe
 ---@field CreateLineForBigBreakdownFrame fun(parent:scoreboard_mainframe, header:scoreboard_header, index:number):scoreboard_line
 ---@field CreateActivityPanel fun(parent:scoreboard_mainframe):scoreboard_activityframe
----@field RefreshBigBreakdownFrame fun():boolean true when it has data, false when it does not and probably should be hidden
+---@field RefreshBigBreakdownFrame fun(mainFrame:scoreboard_mainframe, runData:runinfo):boolean true when it has data, false when it does not and probably should be hidden
 ---@field MythicPlusOverallSegmentReady fun() executed when details! send the event COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field SetFontSettings fun() set the default font settings
 
 ---@class scoreboard_mainframe : frame
 ---@field HeaderFrame scoreboard_header
 ---@field ActivityFrame scoreboard_activityframe
+---@field RunInfoDropdown df_dropdown
 ---@field DungeonNameFontstring fontstring
 ---@field DungeonBackdropTexture texture
 ---@field ElapsedTimeText fontstring
 ---@field OutOfCombatIcon texture
 ---@field OutOfCombatText fontstring
 ---@field SandTimeIcon texture
----@field KeylevelText fontstring
 ---@field StrongArmIcon texture
 ---@field RatingLabel fontstring
 ---@field LeftFiligree texture
@@ -107,15 +107,6 @@ local mythicPlusBreakdown = {
 
 addon.mythicPlusBreakdown = mythicPlusBreakdown
 
-local GetItemInfo = GetItemInfo or C_Item.GetItemInfo
-local GetItemIcon = GetItemIcon or C_Item.GetItemIcon
-local GetDetailedItemLevelInfo = GetDetailedItemLevelInfo or C_Item.GetDetailedItemLevelInfo
-
-local Loc = _G.LibStub("AceLocale-3.0"):GetLocale("Details")
-
---local mythicDungeonCharts = Details222.MythicPlus.Charts.Listener
---local mythicDungeonFrames = Details222.MythicPlus.Frames
-
 --main frame settings
 local mainFrameName = "DetailsMythicPlusBreakdownFrame"
 local mainFrameHeight = 452
@@ -137,27 +128,27 @@ local lineBackdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], til
 
 local activityFrameY = headerY - 90 + (lineHeight * lineAmount * -1)
 
----store spell names of interrupt spells
----the table is filled when the main frame is created
----@type table<string, boolean>
-local interruptSpellNameCache = {}
-
 function addon.OpenMythicPlusBreakdownBigFrame()
     local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
+    if (mainFrame:IsVisible()) then
+        return
+    end
 
-    if (mythicPlusBreakdown.RefreshBigBreakdownFrame()) then
-        mainFrame:Show()
-        mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
-    else
+    local runData = addon.GetSelectedRun()
+    if (not runData) then
         print(L["SCOREBOARD_NO_SCORE_AVAILABLE"])
     end
+
+    mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
+    mainFrame:Show()
+    mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
 end
 
 function addon.RefreshOpenScoreBoard()
     local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     if (mainFrame:IsVisible()) then
-        mythicPlusBreakdown.RefreshBigBreakdownFrame()
+        mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, addon.GetSelectedRun())
     end
 
     return mainFrame
@@ -269,6 +260,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 150, 20, "selectRunInfoDropdown", _, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
+    readyFrame.RunInfoDropdown = runInfoDropdown
 
     local normalTexture = configButton:CreateTexture(nil, "overlay")
     normalTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
@@ -420,25 +412,19 @@ end
 
 --this function get the overall mythic+ segment created after a mythic+ run has finished
 --then it fill the lines with data from the overall segment
-function mythicPlusBreakdown.RefreshBigBreakdownFrame()
-    ---@type scoreboard_mainframe
-    local mainFrame = _G[mainFrameName]
+---@param mainFrame scoreboard_mainframe
+---@param runData runinfo
+function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
     local headerFrame = mainFrame.HeaderFrame
     local lines = headerFrame.lines
 
+    mainFrame.RunInfoDropdown:Select(addon.GetSelectedRunIndex(), nil, nil, false)
     mythicPlusBreakdown.SetFontSettings()
-
-    --local mythicPlusOverallSegment = Details:GetCurrentCombat()
 
     --hide the lootSquare
     --for i = 1, #mainFrame.PlayerBanners do
     --    mainFrame.PlayerBanners[i]:ClearLootSquares()
     --end
-
-    local runData = addon.GetSelectedRun()
-	if (not runData) then
-        return false
-    end
 
     local combatTime = runData.timeInCombat
 
@@ -611,7 +597,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
 
         table.sort(events, function(t1, t2) return t1.timestamp < t2.timestamp end)
 
-        mainFrame.ActivityFrame:SetActivity(events, combatTime, notInCombat)
+        mainFrame.ActivityFrame:SetActivity(events, runData)
 
         mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
         mainFrame.OutOfCombatText:SetText(L["SCOREBOARD_NOT_IN_COMBAT_LABEL"] .. ": " .. detailsFramework:IntegerToTimer(notInCombat))
@@ -648,10 +634,15 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
         return
     end
 
-    Details:OpenSpecificBreakdownWindow(Details:GetCombatByUID(playerData.combatUid), playerData.name, mainAttribute, subAttribute)
+    local combat = Details:GetCombatByUID(playerData.combatUid)
+    if (not combat) then
+        return
+    end
+
+    Details:OpenSpecificBreakdownWindow(combat, playerData.name, mainAttribute, subAttribute)
 end
 
-local spellNumberListCooltip = function(self, actor)
+local spellNumberListCooltip = function(self, playerData, actor)
     if (not actor) then
         return
     end
@@ -687,8 +678,10 @@ local spellNumberListCooltip = function(self, actor)
         end
     end
 
-    GameCooltip:AddLine("")
-    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+    if (Details:GetCombatByUID(playerData.combatUid)) then
+        GameCooltip:AddLine("")
+        GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+    end
     GameCooltip:SetOwner(self)
     GameCooltip:SetOption("TextSize", 10)
     GameCooltip:SetOption("FixedWidth", 300)
@@ -696,25 +689,18 @@ local spellNumberListCooltip = function(self, actor)
 end
 
 ---@param self scoreboard_button
-local showCrowdControlTooltip = function(self, utilityActor)
-    --get the current combat
-    local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
-    if (not mythicPlusOverallSegment) then
+local showCrowdControlTooltip = function(self)
+    local playerData = self:GetPlayerData()
+    if (playerData.ccCasts == 0) then
         return
     end
-
-    local playerData = self:GetPlayerData()
-    local amountOfCCCastsByThisActor = playerData.interruptCasts
-
-    --local spellsCastedByThisActor = mythicPlusOverallSegment:GetSpellCastTable(utilityActor:Name())
-    --local ccSpellNames = Details.CrowdControlSpellNamesCache
 
     local spellsUsed = playerData.ccSpellsUsed
 
     GameCooltip:Preset(2)
 
     for spellName, totalUses in pairs(spellsUsed) do
-        GameCooltip:AddLine(spellName, totalUses .. " (" .. math.floor(totalUses / amountOfCCCastsByThisActor * 100) .. "%)")
+        GameCooltip:AddLine(spellName, totalUses .. " (" .. math.floor(totalUses / playerData.ccCasts * 100) .. "%)")
 
         local spellInfo = C_Spell.GetSpellInfo(spellName)
         if (spellInfo) then
@@ -959,8 +945,10 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
                 end
             end
 
-            GameCooltip:AddLine("")
-            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+            if (Details:GetCombatByUID(playerData.combatUid)) then
+                GameCooltip:AddLine("")
+                GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+            end
             GameCooltip:SetOwner(self)
             GameCooltip:SetOption("TextSize", 10)
             GameCooltip:SetOption("FixedWidth", 300)
@@ -980,7 +968,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             self:SetText(Details:Format(math.floor(playerData.dps)))
         end,
         function (self, button)
-            spellNumberListCooltip(self, button:GetActor(DETAILS_ATTRIBUTE_DAMAGE))
+            spellNumberListCooltip(self, button:GetPlayerData(), button:GetActor(DETAILS_ATTRIBUTE_DAMAGE))
         end
     )
 
@@ -997,7 +985,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end,
         -- onMouseEnter
         function (self, button)
-            spellNumberListCooltip(self, button:GetActor(DETAILS_ATTRIBUTE_HEAL))
+            spellNumberListCooltip(self, button:GetPlayerData(), button:GetActor(DETAILS_ATTRIBUTE_HEAL))
         end
     )
 
@@ -1014,10 +1002,12 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         -- onMouseEnter
         function (self, button)
             local playerData = button:GetPlayerData()
-
             local interrupts = math.floor(playerData.interrupts)
             local overlaps = playerData.interruptCastOverlapDone or 0
             local casts = math.floor(playerData.interruptCasts)
+            if (casts == 0) then
+                return
+            end
 
             GameCooltip:Preset(2)
             GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_SUCCESS_LABEL"], interrupts)
@@ -1049,7 +1039,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end,
         -- onMouseEnter
         function (self, button)
-            showCrowdControlTooltip(button, button:GetActor(DETAILS_ATTRIBUTE_MISC))
+            showCrowdControlTooltip(button)
         end
     )
 
@@ -1105,28 +1095,10 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     --todo(tercio): show players activityTime some place in the mainFrame
 
     --functions
-    activityFrame.SetActivity = function(self, events, inCombat, outOfCombat)
-        local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
-
-        ---@type detailsmythicplus_combatstep[]
-        local inAndOutCombatTimeline = addon.GetInAndOutOfCombatTimeline()
-
-        ---@type mythicdungeoninfo
-        local mythicPlusData = mythicPlusOverallSegment:GetMythicDungeonInfo()
-
+    ---@param runData runinfo
+    activityFrame.SetActivity = function(self, events, runData)
         --reset the segment textures
         addon.activityTimeline.ResetSegmentTextures(self)
-
-        --in case the combat ended after the m+ run ended, the in_combat may be true and need to be closed
-        if (inAndOutCombatTimeline[#inAndOutCombatTimeline].in_combat == true) then
-            --check if the previous segment has the same time, if so, can be an extra segment created by details! after the last combat finished and this can be ignored
-            if (inAndOutCombatTimeline[#inAndOutCombatTimeline-1].time == inAndOutCombatTimeline[#inAndOutCombatTimeline].time) then
-                --remove this last segment
-                table.remove(inAndOutCombatTimeline)
-            else
-                table.insert(inAndOutCombatTimeline, {time = math.floor(mythicPlusData.EndedAt), in_combat = false})
-            end
-        end
 
         ---@type table<string, table<number, number, number, number>>
         local eventColors = {
@@ -1135,15 +1107,16 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             leave_combat = {0.7, 0.1, 0.1, 0.5},
         }
 
+        ---@type detailsmythicplus_combatstep[]
+        local combatTimeline = runData.combatTimeline
         local timestamps = {}
-        local start = addon.GetLastRunStart() --returning time() of now
         local last
-        for i = 1, #inAndOutCombatTimeline do
-            local timestamp = inAndOutCombatTimeline[i].time
-            if (timestamp >= start) then
+        for i = 1, #combatTimeline do
+            local timestamp = combatTimeline[i].time
+            if (timestamp >= runData.startTime) then
                 last = {
-                    time = timestamp - start,
-                    event = inAndOutCombatTimeline[i].in_combat and "enter_combat" or "leave_combat"
+                    time = timestamp - runData.startTime,
+                    event = combatTimeline[i].in_combat and "enter_combat" or "leave_combat"
                 }
 
                 timestamps[#timestamps+1] = last
@@ -1154,11 +1127,10 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             return
         end
 
-        last.time = math.max(last.time, mythicPlusData.EndedAt - start)
-
-        if (addon.profile.show_remaining_timeline_after_finish and mythicPlusData.TimeLimit and last.time < mythicPlusData.TimeLimit) then
+        last.time = math.max(last.time, runData.endTime - runData.startTime)
+        if (addon.profile.show_remaining_timeline_after_finish and runData.timeLimit and last.time < runData.timeLimit) then
             last = {
-                time = mythicPlusData.TimeLimit,
+                time = runData.timeLimit,
                 event = "time_limit",
             }
 
@@ -1168,8 +1140,8 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         local width = self:GetWidth()
         local multiplier = width / last.time
 
-        addon.activityTimeline.UpdateBossWidgets(self, start, multiplier)
-        addon.activityTimeline.UpdateBloodlustWidgets(self, start, multiplier)
+        addon.activityTimeline.UpdateBossWidgets(self, runData, multiplier)
+        addon.activityTimeline.UpdateBloodlustWidgets(self, runData, multiplier)
         addon.activityTimeline.UpdateTimeSections(self, last.time, multiplier)
 
         for i = 1, #timestamps do
@@ -1199,7 +1171,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         local reservedUntil = -100
         local up = true
         for event, marker in addon.activityTimeline.PrepareEventFrames(self, events) do
-            local relativeTimestamp = event.timestamp - start
+            local relativeTimestamp = event.timestamp - runData.startTime
             local pointOnBar = relativeTimestamp * multiplier
 
             detailsFramework:SetFontColor(marker.TimestampLabel, 1, 1, 1)
