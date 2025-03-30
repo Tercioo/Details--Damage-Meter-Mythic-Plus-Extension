@@ -278,6 +278,37 @@ function addon.GetRunDate(runInfo)
     return date("%H:%M %d/%b/%Y", runInfo.endTime)
 end
 
+---return a table with data to be used in the dropdown menu to select which run to show in the scoreboard
+---@param runInfo runinfo
+---@return table dropdownData dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString
+function addon.GetDropdownRunDescription(runInfo)
+    --Operation: Mechagon - Workshop (2) | 20:10 (+3) | 4 hours ago
+    local dungeonName = runInfo.dungeonName
+    local runTime = runInfo.endTime - runInfo.startTime
+    local secondsAgo = time() - runInfo.endTime
+
+    --if the run time is less than 1 hour, show the time in minutes
+    --if the run is less than 24 hours, show the time in hours
+    --if the run is more than 24 hours, show the time in days
+    --if the run is more than 7 days, show the data using addon.GetRunDate(runInfo)
+
+    local timeString = ""
+    if (secondsAgo < 3600) then
+        timeString = string.format("%d minutes ago", math.floor(secondsAgo / 60))
+    elseif (secondsAgo < 86400) then
+        timeString = string.format("%d hours ago", math.floor(secondsAgo / 3600))
+    elseif (secondsAgo < 604800) then
+        timeString = string.format("%d days ago", math.floor(secondsAgo / 86400))
+    else
+        timeString = addon.GetRunDate(runInfo)
+    end
+
+    local keyLevel = runInfo.completionInfo.level or 0
+    local keyUpgradeLevels = runInfo.completionInfo.keystoneUpgradeLevels or 0
+
+    return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString}
+end
+
 function addon.FormatRunDescription(runInfo)
     return string.format("%s (%d) - %s", runInfo.dungeonName, runInfo.completionInfo.level, addon.GetRunDate(runInfo))
 end

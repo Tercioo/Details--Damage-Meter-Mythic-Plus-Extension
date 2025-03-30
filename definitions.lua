@@ -91,6 +91,8 @@
 ---@field GetSelectedRun fun() : runinfo return the latest selected run info, return nil if there is no run info data
 ---@field RemoveRun fun(index:number) remove the run info from the saved runs
 ---@field GetPlayerInfoFromLastRun fun(playerName:string) : playerinfo? get the player info from the last run
+---@field GetDropdownRunDescription fun(runInfo:runinfo) : table indexed table containing: [1] dungeonName, [2] keyLevel, [3] runTime, [4] keyUpgradeLevels, [5] timeString
+
 
 ---@class runinfo : table
 ---@field combatId number the dungeon overall data unique combat id from details!

@@ -248,7 +248,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         for i = 1, #savedRuns do
             local runInfo = savedRuns[i]
             runInfoList[#runInfoList+1] = {
-                label = addon.FormatRunDescription(runInfo),
+                label = table.concat(addon.GetDropdownRunDescription(runInfo), "@"),
                 value = i,
                 onclick = function()
                     addon.SetSelectedRunIndex(i)
@@ -261,6 +261,55 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 150, 20, "selectRunInfoDropdown", _, detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
     readyFrame.RunInfoDropdown = runInfoDropdown
+
+    runInfoDropdown.widget:HookScript("OnMouseDown", function(self)
+        local dropdown = self.MyObject
+
+        if (not dropdown.opened) then
+            return
+        end
+
+        local menuFrames = dropdown.menus
+
+        for i = 1, #menuFrames do
+            local menuFrame = menuFrames[i]
+            if (menuFrame and menuFrame:IsShown()) then
+                if (not menuFrame.label2) then
+                    menuFrame.label2 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+                    menuFrame.label3 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+                    menuFrame.label4 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+                    menuFrame.label5 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+
+                    menuFrame.label2:SetPoint("left", menuFrame, "left", 200, 0)
+                    menuFrame.label3:SetPoint("left", menuFrame, "left", 220, 0)
+                    menuFrame.label4:SetPoint("left", menuFrame, "left", 260, 0)
+                    menuFrame.label5:SetPoint("left", menuFrame, "left", 285, 0)
+
+                    local fontFace, fontSize, fontFlags = menuFrame.label:GetFont()
+                    menuFrame.label2:SetFont(fontFace, fontSize, fontFlags)
+                    menuFrame.label3:SetFont(fontFace, fontSize, fontFlags)
+                    menuFrame.label4:SetFont(fontFace, fontSize, fontFlags)
+                    menuFrame.label5:SetFont(fontFace, fontSize, fontFlags)
+                    menuFrame.label2:SetTextColor(menuFrame.label:GetTextColor())
+                    menuFrame.label3:SetTextColor(menuFrame.label:GetTextColor())
+                    menuFrame.label4:SetTextColor(menuFrame.label:GetTextColor())
+                    menuFrame.label5:SetTextColor(menuFrame.label:GetTextColor())
+                end
+
+                ---@type fontstring
+                local label1 = menuFrame.label
+                local text = label1:GetText()
+
+                local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString = text:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)")
+
+                label1:SetText(dungeonName)
+                menuFrame.label2:SetText(keyLevel)
+                menuFrame.label3:SetText(detailsFramework:IntegerToTimer(runTime))
+                menuFrame.label4:SetText("+" .. keyUpgradeLevels)
+                menuFrame.label5:SetText(timeString)
+            end
+        end
+    end)
 
     local normalTexture = configButton:CreateTexture(nil, "overlay")
     normalTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
