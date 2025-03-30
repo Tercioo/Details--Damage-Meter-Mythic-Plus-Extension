@@ -642,7 +642,7 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
     Details:OpenSpecificBreakdownWindow(combat, playerData.name, mainAttribute, subAttribute)
 end
 
-local spellNumberListCooltip = function(self, actor)
+local spellNumberListCooltip = function(self, playerData, actor)
     if (not actor) then
         return
     end
@@ -678,8 +678,10 @@ local spellNumberListCooltip = function(self, actor)
         end
     end
 
-    GameCooltip:AddLine("")
-    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+    if (Details:GetCombatByUID(playerData.combatUid)) then
+        GameCooltip:AddLine("")
+        GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+    end
     GameCooltip:SetOwner(self)
     GameCooltip:SetOption("TextSize", 10)
     GameCooltip:SetOption("FixedWidth", 300)
@@ -943,8 +945,10 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
                 end
             end
 
-            GameCooltip:AddLine("")
-            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+            if (Details:GetCombatByUID(playerData.combatUid)) then
+                GameCooltip:AddLine("")
+                GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+            end
             GameCooltip:SetOwner(self)
             GameCooltip:SetOption("TextSize", 10)
             GameCooltip:SetOption("FixedWidth", 300)
@@ -964,7 +968,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             self:SetText(Details:Format(math.floor(playerData.dps)))
         end,
         function (self, button)
-            spellNumberListCooltip(self, button:GetActor(DETAILS_ATTRIBUTE_DAMAGE))
+            spellNumberListCooltip(self, button:GetPlayerData(), button:GetActor(DETAILS_ATTRIBUTE_DAMAGE))
         end
     )
 
@@ -981,7 +985,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end,
         -- onMouseEnter
         function (self, button)
-            spellNumberListCooltip(self, button:GetActor(DETAILS_ATTRIBUTE_HEAL))
+            spellNumberListCooltip(self, button:GetPlayerData(), button:GetActor(DETAILS_ATTRIBUTE_HEAL))
         end
     )
 
