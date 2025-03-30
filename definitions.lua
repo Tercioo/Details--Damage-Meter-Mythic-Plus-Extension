@@ -161,7 +161,7 @@
 ---@field dispelWhat table<spellid, number> which debuffs the player dispelled
 ---@field interruptWhat table<spellid, number> which spells the player interrupted
 ---@field interruptCastOverlapDone number how many times the player attempted to interrupt a spell with another player
----@field crowdControlSpells table<spellid, number> which spells the player casted that are crowd control
+---@field crowdControlSpells table<spellname, number> which spells the player casted that are crowd control
 
 ---@class combatdata : table
 ---@field groupMembers table<playername, playerinfo>

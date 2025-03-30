@@ -62,7 +62,7 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 
 
 ---@class scoreboard_button : df_button
----@field PlayerData table
+---@field PlayerData scoreboard_playerdata
 ---@field InterruptCasts fontstring
 ---@field SetPlayerData fun(self:scoreboard_button, playerData:scoreboard_playerdata)
 ---@field GetPlayerData fun(self:scoreboard_button):scoreboard_playerdata
@@ -92,6 +92,7 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field combatUid number
 ---@field activityTimeDamage number
 ---@field activityTimeHeal number
+---@field damageTakenFromSpells spell_hit_player[]
 
 ---@class timeline_event : table
 ---@field type string
@@ -476,6 +477,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                 previousScore = playerInfo.scorePrevious or score or 0,
                 scoreColor = ratingColor,
                 damageTaken = playerInfo.totalDamageTaken or 0,
+                damageTakenFromSpells = playerInfo.damageTakenFromSpells,
                 dps = playerInfo.totalDamage / combatTime,
                 hps = playerInfo.totalHeal / combatTime,
                 activityTimeDamage = playerInfo.activityTimeDamage or combatTime,
@@ -484,6 +486,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame()
                 interruptCasts = playerInfo.totalInterruptsCasts or 0,
                 dispels = playerInfo.totalDispels or 0,
                 ccCasts = playerInfo.totalCrowdControlCasts,
+                ccSpellsUsed = playerInfo.crowdControlSpells,
                 deaths = playerInfo.totalDeaths,
                 combatUid = runData.combatId,
             }
@@ -692,6 +695,7 @@ local spellNumberListCooltip = function(self, actor)
     GameCooltip:Show()
 end
 
+---@param self scoreboard_button
 local showCrowdControlTooltip = function(self, utilityActor)
     --get the current combat
     local mythicPlusOverallSegment = addon.GetMythicPlusOverallSegment()
@@ -699,26 +703,27 @@ local showCrowdControlTooltip = function(self, utilityActor)
         return
     end
 
-    local spellsCastedByThisActor = mythicPlusOverallSegment:GetSpellCastTable(utilityActor:Name())
-    local amountOfCCCastsByThisActor = mythicPlusOverallSegment:GetCCCastAmount(utilityActor:Name())
-    local ccSpellNames = Details.CrowdControlSpellNamesCache
+    local playerData = self:GetPlayerData()
+    local amountOfCCCastsByThisActor = playerData.interruptCasts
+
+    --local spellsCastedByThisActor = mythicPlusOverallSegment:GetSpellCastTable(utilityActor:Name())
+    --local ccSpellNames = Details.CrowdControlSpellNamesCache
+
+    local spellsUsed = playerData.ccSpellsUsed
 
     GameCooltip:Preset(2)
 
-    for spellName in pairs(ccSpellNames) do
-        if (spellsCastedByThisActor[spellName]) then
-            local amountOfCasts = spellsCastedByThisActor[spellName]
-            GameCooltip:AddLine(spellName, amountOfCasts .. " (" .. math.floor(amountOfCasts / amountOfCCCastsByThisActor * 100) .. "%)")
+    for spellName, totalUses in pairs(spellsUsed) do
+        GameCooltip:AddLine(spellName, totalUses .. " (" .. math.floor(totalUses / amountOfCCCastsByThisActor * 100) .. "%)")
 
-            local spellInfo = C_Spell.GetSpellInfo(spellName)
-            if (spellInfo) then
-                GameCooltip:AddIcon(spellInfo.iconID, 1, 1, 16, 16)
-            else
-            end
+        local spellInfo = C_Spell.GetSpellInfo(spellName)
+        if (spellInfo) then
+            GameCooltip:AddIcon(spellInfo.iconID, 1, 1, 16, 16)
+        else
         end
     end
 
-    GameCooltip:SetOwner(self)
+    GameCooltip:SetOwner(self.widget)
     GameCooltip:SetOption("TextSize", 10)
     GameCooltip:SetOption("FixedWidth", 300)
     GameCooltip:Show()
@@ -934,8 +939,10 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             ---@field amount number
             ---@field damagerName string
 
+            local playerData = button:GetPlayerData()
+
             ---@type spell_hit_player[]
-            local spellsThatHitThisPlayer = button.PlayerData.spellsThatHitThisPlayer
+            local spellsThatHitThisPlayer = playerData.damageTakenFromSpells
 
             GameCooltip:Preset(2)
 
@@ -1042,7 +1049,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end,
         -- onMouseEnter
         function (self, button)
-            showCrowdControlTooltip(self, button:GetActor(DETAILS_ATTRIBUTE_MISC))
+            showCrowdControlTooltip(button, button:GetActor(DETAILS_ATTRIBUTE_MISC))
         end
     )
 
