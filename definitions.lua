@@ -172,6 +172,7 @@
 ---@field standout_outline string
 
 ---@class detailsmythicplus_run_data : table
+---@field map_id number
 ---@field start_time number
 ---@field end_time number
 ---@field incombat_timeline detailsmythicplus_combatstep[] first table tells the group left table, second when entered in combat, third when left combat, and so on

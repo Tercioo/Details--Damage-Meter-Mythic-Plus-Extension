@@ -53,6 +53,7 @@ function addon.InitializeEvents()
 
     function addon.OnMythicDungeonStart(...)
         addon.profile.last_run_data.start_time = time()
+        addon.profile.last_run_data.map_id = Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
         --store the first value in the in combat timeline.
         addon.profile.last_run_data.incombat_timeline = {{time = time(), in_combat = false}}
         addon.profile.last_run_data.encounter_timeline = {}
