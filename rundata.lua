@@ -65,7 +65,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
         timeLimit = 0, --done
         startTime = addon.profile.last_run_data.start_time,
         endTime = time(),
-        mapId = completionInfo.mapChallengeModeID or Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID(),
+        mapId = completionInfo.mapChallengeModeID or addon.profile.last_run_data.map_id,
     }
 
     local dungeonName, id, timeLimit, texture, backgroundTexture = C_ChallengeMode.GetMapUIInfo(runInfo.mapId)
