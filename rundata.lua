@@ -21,6 +21,11 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---runs on details! event COMBAT_MYTHICPLUS_OVERALL_READY
 function addon.CreateRunInfo(mythicPlusOverallSegment)
     local completionInfo = C_ChallengeMode.GetChallengeCompletionInfo()
+    if (completionInfo.mapChallengeModeID == 0) then
+        private.log("Missing completionInfo.mapChallengeModeID, possibly due to and error or reload after the key completed")
+        return
+    end
+
     local combatTime = mythicPlusOverallSegment:GetCombatTime()
 
     --debug

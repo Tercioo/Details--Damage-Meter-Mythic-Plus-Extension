@@ -56,6 +56,7 @@ do
     L["SCOREBOARD_TOOLTIP_INTERRUPT_OVERLAP_LABEL"] = "Overlap"
     L["SCOREBOARD_TOOLTIP_INTERRUPT_MISSED_LABEL"] = "Missed"
     L["SCOREBOARD_TOOLTIP_INTERRUPT_TOTAL_LABEL"] = "Total interrupts"
+    L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"] = "Removed %d corrupt run(s) from history."
 
     ------------------------------------------------------------
     --@localization(locale="enUS", format="lua_additive_table")@
