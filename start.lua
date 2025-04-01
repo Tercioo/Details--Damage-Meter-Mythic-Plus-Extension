@@ -43,7 +43,6 @@ local defaultSettings = {
 private.addon = detailsFramework:CreateNewAddOn(tocFileName, "Details_MythicPlusDB", defaultSettings)
 local addon = private.addon
 
-addon.loot = {}
 addon.activityTimeline = {}
 
 function addon.OnLoad(self, profile) --ADDON_LOADED

@@ -93,6 +93,7 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field activityTimeDamage number
 ---@field activityTimeHeal number
 ---@field damageTakenFromSpells spell_hit_player[]
+---@field loot string|nil
 
 ---@class timeline_event : table
 ---@field type string
@@ -137,10 +138,10 @@ function addon.OpenMythicPlusBreakdownBigFrame()
     local runData = addon.GetSelectedRun()
     if (not runData) then
         print(L["SCOREBOARD_NO_SCORE_AVAILABLE"])
-    else
-        mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
+        return
     end
-    
+
+    mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
     mainFrame:Show()
     mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
 end
@@ -181,6 +182,33 @@ function addon.CreateBigBreakdownFrame()
     return mythicPlusBreakdown.CreateBigBreakdownFrame()
 end
 
+local LOOT_DEBUG_MODE = true
+local SaveLoot = function(itemLink, unitName)
+    local playerName = Ambiguate(unitName, "none")
+
+    local lastRun = addon.GetLastRun()
+    if (not lastRun) then
+        return
+    end
+
+    local effectiveILvl, _, baseItemLevel = C_Item.GetDetailedItemLevelInfo(itemLink)
+    local bIsAccountBound = C_Item.IsItemBindToAccountUntilEquip(itemLink)
+    local averageItemLevel = addon.GetRunAverageItemLevel(lastRun)
+
+    if (effectiveILvl > averageItemLevel * 0.75 and baseItemLevel > 5 and not bIsAccountBound) then --avoid showing loot that isn't items
+        private.log("Loot Received:", playerName, itemLink, effectiveILvl, baseItemLevel, bIsAccountBound)
+        lastRun.combatData.groupMembers[playerName].loot = itemLink
+
+        if (LOOT_DEBUG_MODE) then
+            Details:Msg("Loot ADDED:", playerName, itemLink, effectiveILvl, baseItemLevel)
+        end
+
+        addon.RefreshOpenScoreBoard()
+    elseif (LOOT_DEBUG_MODE) then
+        Details:Msg("Loot SKIPPED:", playerName, itemLink, effectiveILvl, baseItemLevel, bIsAccountBound)
+    end
+end
+
 function mythicPlusBreakdown.CreateBigBreakdownFrame()
     --quick exit if the frame already exists
     if (_G[mainFrameName]) then
@@ -206,14 +234,19 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         elseif (event == "CHALLENGE_MODE_COMPLETED") then
             self:RegisterEvent("LOOT_CLOSED")
             self:RegisterEvent("PLAYER_ENTERING_WORLD")
+            self:RegisterEvent("ENCOUNTER_LOOT_RECEIVED")
             self:UnregisterEvent("CHALLENGE_MODE_COMPLETED")
         elseif (event == "PLAYER_ENTERING_WORLD") then
             local isLogin, isReload = ...
             if (not isLogin and not isReload) then
                 self:UnregisterEvent("LOOT_CLOSED")
                 self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+                self:UnregisterEvent("ENCOUNTER_LOOT_RECEIVED")
                 self:RegisterEvent("CHALLENGE_MODE_COMPLETED")
             end
+        elseif (event == "ENCOUNTER_LOOT_RECEIVED") then
+            local _, _, itemLink, _, unitName = ...
+            SaveLoot(itemLink, unitName)
         end
     end)
 
@@ -543,12 +576,14 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
                 activityTimeDamage = playerInfo.activityTimeDamage or combatTime,
                 activityTimeHeal = playerInfo.activityTimeHeal or combatTime,
                 interrupts = playerInfo.totalInterrupts or 0,
+                interruptCastOverlapDone = playerInfo.interruptCastOverlapDone or 0,
                 interruptCasts = playerInfo.totalInterruptsCasts or 0,
                 dispels = playerInfo.totalDispels or 0,
                 ccCasts = playerInfo.totalCrowdControlCasts,
                 ccSpellsUsed = playerInfo.crowdControlSpells,
                 deaths = playerInfo.totalDeaths,
                 combatUid = runData.combatId,
+                loot = playerInfo.loot,
             }
 
             if (thisPlayerData.role == "NONE") then
@@ -589,9 +624,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
             ---@type scoreboard_playerdata
             local playerData = data[i]
 
-            scoreboardLine.playerData = playerData
-            addon.loot.scoreboardLineCacheByName[playerData.name] = scoreboardLine
-
             --(re)set the line contents
             for j = 1, #frames do
                 local frame = frames[j]
@@ -605,8 +637,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
                 if (frame.SetPlayerData) then
                     frame:SetPlayerData(playerData)
                 end
-
-                addon.loot.UpdateUnitLoot(scoreboardLine)
             end
 
             if (playerData) then
@@ -916,6 +946,88 @@ local function CreateBreakdownLabel(line, onSetPlayerData)
     return label
 end
 
+---@param scoreboardLine scoreboard_line
+local CreateLootSquare = function(scoreboardLine)
+    ---@type details_lootsquare
+    local lootSquare = CreateFrame("frame", "$parentLootSquare", scoreboardLine)
+    lootSquare:SetSize(46, 46)
+    lootSquare:SetFrameLevel(scoreboardLine:GetFrameLevel()+10)
+    lootSquare:Hide()
+
+    function lootSquare.SetPlayerData(self, playerData)
+        if (not playerData.loot or playerData.loot == "") then
+            self:Hide()
+        end
+
+        local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType,
+        itemSubType, itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID,
+        subclassID, bindType, expansionID, setID, isCraftingReagent = C_Item.GetItemInfo(playerData.loot)
+        if (itemName == nil) then
+            return
+        end
+
+        local rarityColor = --[[GLOBAL]] ITEM_QUALITY_COLORS[itemQuality]
+        self.itemLink = playerData.loot
+        self.LootIcon:SetTexture(itemTexture)
+        self.LootIconBorder:SetVertexColor(rarityColor.r, rarityColor.g, rarityColor.b, 1)
+        self.LootItemLevel:SetText(select(1, C_Item.GetDetailedItemLevelInfo(playerData.loot)) or "0")
+
+        --update size
+        self.LootIcon:SetSize(32, 32)
+        self.LootIconBorder:SetSize(32, 32)
+        self:Show()
+    end
+
+    lootSquare:SetScript("OnEnter", function(self)
+        if (self.itemLink) then
+            GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
+            GameTooltip:SetHyperlink(self.itemLink)
+            GameTooltip:Show()
+
+            self:SetScript("OnUpdate", function()
+                if (IsShiftKeyDown()) then
+                    GameTooltip_ShowCompareItem()
+                else
+                    GameTooltip_HideShoppingTooltips(GameTooltip)
+                end
+            end)
+        end
+    end)
+
+    lootSquare:SetScript("OnLeave", function(self)
+        GameTooltip:Hide()
+        self:SetScript("OnUpdate", nil)
+    end)
+
+    local lootIcon = lootSquare:CreateTexture("$parentLootIcon", "artwork")
+    lootIcon:SetSize(46, 46)
+    lootIcon:SetPoint("center", lootSquare, "center", 0, 0)
+    lootIcon:SetTexture([[Interface\ICONS\INV_Misc_QuestionMark]])
+    lootSquare.LootIcon = lootIcon
+
+    local lootIconBorder = lootSquare:CreateTexture("$parentLootSquareBorder", "overlay")
+    lootIconBorder:SetTexture([[Interface\COMMON\WhiteIconFrame]])
+    lootIconBorder:SetTexCoord(0, 1, 0, 1)
+    lootIconBorder:SetSize(46, 46)
+    lootIconBorder:SetPoint("center", lootIcon, "center", 0, 0)
+    lootSquare.LootIconBorder = lootIconBorder
+
+    local lootItemLevel = lootSquare:CreateFontString("$parentLootItemLevel", "overlay", "GameFontNormal")
+    lootItemLevel:SetPoint("bottom", lootSquare, "bottom", 0, 0)
+    lootItemLevel:SetTextColor(1, 1, 1)
+    detailsFramework:SetFontSize(lootItemLevel, 11)
+    lootSquare.LootItemLevel = lootItemLevel
+
+    local lootItemLevelBackgroundTexture = lootSquare:CreateTexture("$parentItemLevelBackgroundTexture", "artwork")
+    lootItemLevelBackgroundTexture:SetTexture([[Interface\Cooldown\LoC-ShadowBG]])
+    lootItemLevelBackgroundTexture:SetPoint("bottomleft", lootSquare, "bottomleft", -7, 1)
+    lootItemLevelBackgroundTexture:SetPoint("bottomright", lootSquare, "bottomright", 7, -11)
+    lootItemLevelBackgroundTexture:SetHeight(10)
+    lootSquare.LootItemLevelBackgroundTexture = lootItemLevelBackgroundTexture
+
+    return lootSquare
+end
+
 function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFrame, index)
     ---@type scoreboard_line
     local line = CreateFrame("button", "$parentLine" .. index, mainFrame, "BackdropTemplate")
@@ -933,8 +1045,6 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     else
         line:SetBackdropColor(unpack(lineColor2))
     end
-
-    addon.loot.CreateLootWidgetsInScoreboardLine(line)
 
     --player portrait
     local playerPortrait = Details:CreatePlayerPortrait(line, "$parentPortrait")
@@ -972,6 +1082,8 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(text)
         self:SetTextColor(playerData.scoreColor.r, playerData.scoreColor.g, playerData.scoreColor.b)
     end)
+
+    local lootAnchor = CreateLootSquare(line)
 
     local playerDeaths = CreateBreakdownLabel(line, function(self, playerData)
         self:SetText(playerData.deaths)
@@ -1117,8 +1229,6 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end
     )
 
-    local lootAnchor = addon.loot.CreateLootWidgetsInScoreboardLine(line)
-
     --add each widget create to the header alignment
     line:AddFrameToHeaderAlignment(playerPortrait)
     line:AddFrameToHeaderAlignment(specIcon)
@@ -1132,7 +1242,6 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     line:AddFrameToHeaderAlignment(playerInterrupts)
     line:AddFrameToHeaderAlignment(playerDispels)
     line:AddFrameToHeaderAlignment(playerCrowdControlCasts)
-    --line:AddFrameToHeaderAlignment(playerEmptyField)
 
     line:AlignWithHeader(headerFrame, "left")
 

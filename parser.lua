@@ -27,8 +27,6 @@ local parserFrame = CreateFrame("frame")
 parserFrame.isParsing = false
 
 function addon.StartParser()
-    print("+ Mythic Dungeon Start")
-
     --this data need to survive a /reload
     addon.profile.last_run_data.interrupt_spells_cast = {}
     addon.profile.last_run_data.interrupt_cast_overlap_done = {}
@@ -44,16 +42,10 @@ function addon.StartParser()
     private.log("Parser stared")
 end
 
-function addon.GetLastRunStart()
-    return addon.profile.last_run_data.run_start or time() --retuning time() here result in an empty timeline (all black), it fails in the "if (last == nil) then" check
-end
-
 function addon.StopParser()
-    print("- Mythic Dungeon Stopped")
     parserFrame:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     addon.CountInterruptOverlaps()
     parserFrame.isParsing = false
-    addon.loot.cache = {}
 
     private.log("Parser stopped")
 end

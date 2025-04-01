@@ -76,7 +76,6 @@
 ---@field GetVersionString fun() : string the version info of just this addon
 ---@field GetFullVersionString fun() : string the version info of details and this addon
 ---@field GetBloodlustUsage fun() : number[]? retrieves the time() in seconds when the player received bloodlust buff.
----@field GetLastRunStart fun() : number retrieves the time() when the last run started
 ---@field GetSavedRuns fun() : runinfo[] return an array with all data from the saved runs
 ---@field GetLastRun fun() : runinfo return the run info for the last run finished
 ---@field GetDungeonRunsById fun(id:string|number) : runinfo[] return an array with run infos of all runs that match the dungeon name or dungeon id
@@ -90,7 +89,6 @@
 ---@field GetSelectedRunIndex fun() : number get the selected run index
 ---@field GetSelectedRun fun() : runinfo return the latest selected run info, return nil if there is no run info data
 ---@field RemoveRun fun(index:number) remove the run info from the saved runs
----@field GetPlayerInfoFromLastRun fun(playerName:string) : playerinfo? get the player info from the last run
 ---@field GetDropdownRunDescription fun(runInfo:runinfo) : table indexed table containing: [1] dungeonName, [2] keyLevel, [3] runTime, [4] keyUpgradeLevels, [5] timeString, [6] onTime [7] mapId [8] dungeonId
 
 

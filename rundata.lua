@@ -247,16 +247,6 @@ function addon.RemoveRun(index)
     end
 end
 
----return the playerinfo table from the latest run info added
----@param playerName playername
----@return playerinfo?
-function addon.GetPlayerInfoFromLastRun(playerName)
-    local lastRun = addon.GetLastRun()
-    if (lastRun) then
-        return lastRun.combatData.groupMembers[playerName]
-    end
-end
-
 ---return an array with run infos of all runs that match the dungeon name or dungeon id
 ---@param id string|number dungeon name, dungeon id or map id
 ---@return runinfo[]
