@@ -30,6 +30,5 @@ scoreboard.lua
 activityframe.lua
 events.lua
 functions.lua
-loot.lua
 slash.lua
 rundata.lua
