@@ -148,49 +148,5 @@ function addon.CountInterruptOverlaps()
                 end
             end
         end
-
-        --[=[
-        --doesn't work as intended, as value1 and value2 are marked as used, a third attempt wouldn't count
-        for i = 1, #interruptCastsOnTarget do
-            ---@type interrupt_overlap
-            local player1InterruptAttempt = interruptCastsOnTarget[i]
-
-            if (not player1InterruptAttempt.used) then
-                local time = player1InterruptAttempt.time
-                local sourceName = player1InterruptAttempt.sourceName
-                local player1Interrupted = player1InterruptAttempt.interrupted
-
-                for j = i+1, #interruptCastsOnTarget do
-                    ---@type interrupt_overlap
-                    local player2InterruptAttempt = interruptCastsOnTarget[j]
-                    if (not player2InterruptAttempt.used) then
-                        local time2 = player2InterruptAttempt.time
-                        local sourceName2 = player2InterruptAttempt.sourceName
-                        local player2Interrupted = player2InterruptAttempt.interrupted
-
-                        if (time2 - time < 1.5) then
-                            --add the overlap if the interrupt attempt fail to interrupt
-                            if (not player1Interrupted) then
-                                addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] or 0) + 1
-                            end
-                            if (not player2Interrupted) then
-                                addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName2] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName2] or 0) + 1
-                            end
-
-                            --print("Overlap: ", sourceName, targetName, C_Spell.GetSpellInfo(spellId).name, sourceName2, targetName2, "with", C_Spell.GetSpellInfo(spellId2).name)
-                            private.log("Interrupt overlap found:", sourceName)
-
-                            player1InterruptAttempt.used = true
-                            player2InterruptAttempt.used = true
-                        else
-                            break
-                        end
-                    else
-                        break
-                    end
-                end
-            end
-        end
-        --]=]
     end
 end
