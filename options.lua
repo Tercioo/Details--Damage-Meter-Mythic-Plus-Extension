@@ -88,7 +88,21 @@ local optionsTemplate = {
         name = L["OPTIONS_TRANSLIT_LABEL"],
         desc = L["OPTIONS_TRANSLIT_DESC"],
     },
-    {type = "label", get = function() return "Timeline" end, text_template = orange_font_template},
+    {type = "label", get = function() return L["OPTIONS_SAVING"] end, text_template = orange_font_template},
+    {
+        type = "range",
+        get = function () return addon.profile.saved_runs_limit end,
+        set = function (_, _, value)
+            addon.profile.saved_runs_limit = value
+            addon.RefreshOpenScoreBoard()
+        end,
+        min = 5,
+        max = 30,
+        step = 1,
+        name = L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"],
+        desc = L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"],
+    },
+    {type = "label", get = function() return L["OPTIONS_SECTION_TIMELINE"] end, text_template = orange_font_template},
     {
         type = "toggle",
         get = function () return addon.profile.show_time_sections end,

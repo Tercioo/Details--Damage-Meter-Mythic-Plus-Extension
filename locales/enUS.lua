@@ -31,7 +31,11 @@ do
     L["OPTIONS_SCOREBOARD_SCALE_DESC"] = "Increase or decrease the scale of the scoreboard"
     L["OPTIONS_SHOW_TOOLTIP_SUMMARY_LABEL"] = "Summary in tooltip"
     L["OPTIONS_SHOW_TOOLTIP_SUMMARY_DESC"] = "When hovering over a column in the scoreboard it will show a summary of the breakdown"
+    L["OPTIONS_SECTION_TIMELINE"] = "Timeline"
     L["OPTIONS_TRANSLIT_LABEL"] = "Translit"
+    L["OPTIONS_SAVING"] = "Saving"
+    L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"] = "Runs to keep"
+    L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"] = "The amount of runs to save. Existing history larger than this amount will be removed upon next reload or login. Larger amounts might slightly increase loading time."
     L["OPTIONS_TRANSLIT_DESC"] = "Translit Cyrillic characters to the latin alphabet"
     L["OPTIONS_SHOW_TIME_SECTIONS_LABEL"] = "Show time labels for sections"
     L["OPTIONS_SHOW_TIME_SECTIONS_DESC"] = "Shows time labels for sections on the timeline as a guide"
@@ -57,6 +61,7 @@ do
     L["SCOREBOARD_TOOLTIP_INTERRUPT_MISSED_LABEL"] = "Missed"
     L["SCOREBOARD_TOOLTIP_INTERRUPT_TOTAL_LABEL"] = "Total interrupts"
     L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"] = "Removed %d corrupt run(s) from history."
+    L["ADDON_STARTUP_REMOVED_TOO_MANY_HISTORY"] = "Removed %d run(s) from history after detecting too many saved runs."
 
     ------------------------------------------------------------
     --@localization(locale="enUS", format="lua_additive_table")@
