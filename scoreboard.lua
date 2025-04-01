@@ -137,9 +137,10 @@ function addon.OpenMythicPlusBreakdownBigFrame()
     local runData = addon.GetSelectedRun()
     if (not runData) then
         print(L["SCOREBOARD_NO_SCORE_AVAILABLE"])
+    else
+        mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
     end
-
-    mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
+    
     mainFrame:Show()
     mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
 end
