@@ -67,10 +67,13 @@ local parserFunctions = {
                     if (detailsFramework.Math.IsNearlyEqual(time, interruptAttempt.time, 0.1)) then
                         --mark as a success interrupt
                         interruptAttempt.interrupted = true
+                        private.log("Interrupt success:", sourceName, "on", targetGUID)
                         break
                     end
                 end
             end
+        else
+            private.log("No interrupts casts on target", targetGUID)
         end
     end,
 
@@ -92,7 +95,7 @@ local parserFunctions = {
             --store the interrupt attempt in a table
             table.insert(addon.profile.last_run_data.interrupt_spells_cast[targetGUID], spellOverlapData)
 
-            private.log("Interrupt cast:", sourceName)
+            private.log("Interrupt cast:", sourceName, "on", targetGUID)
         end
     end
 }
@@ -113,6 +116,9 @@ function addon.CountInterruptOverlaps()
         --this is a table of tables, where each table is a cluster of interrupts
         local interruptClusters = {}
 
+        private.log("CountInterruptOverlaps() cluster created for", targetGUID, "Interrupts on this target:", #interruptCastsOnTarget)
+
+        --find interrupts that are attempted on the same target within 1.5 seconds
         for i = 1, #interruptCastsOnTarget do
             ---@type interrupt_overlap
             local interruptAttempt = interruptCastsOnTarget[i]
@@ -121,26 +127,35 @@ function addon.CountInterruptOverlaps()
             for j = i+1, #interruptCastsOnTarget do
                 ---@type interrupt_overlap
                 local nextInterruptAttempt = interruptCastsOnTarget[j]
+                private.log("loop", j, interruptAttempt.time, nextInterruptAttempt.time, detailsFramework.Math.IsNearlyEqual(nextInterruptAttempt.time, interruptAttempt.time, 1.5))
                 if (detailsFramework.Math.IsNearlyEqual(interruptAttempt.time, nextInterruptAttempt.time, 1.5)) then
                     --add to the cluster
                     table.insert(interruptClusters[interruptAttempt], nextInterruptAttempt)
                 else
                     i = i + #interruptClusters[interruptAttempt] - 1
+                    private.log("loop broken", j, "new I:", i)
                     break
                 end
             end
         end
 
+        private.log("Interrupts clusters found on this target:", #interruptClusters)
+
         for index, clusterOfInterrupts in ipairs(interruptClusters) do
             --check if the cluster has more than 1 interrupt attempt
             if (#clusterOfInterrupts > 1) then
                 --iterate among the cluster and add a overlap if those interrupts without success
+                private.log("This cluster size:", #clusterOfInterrupts)
+
                 for i = 1, #clusterOfInterrupts do
                     ---@type interrupt_overlap
                     local interruptAttempt = clusterOfInterrupts[i]
                     if (not interruptAttempt.interrupted) then
                         local sourceName = interruptAttempt.sourceName
                         addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] or 0) + 1
+                        private.log("Added an overlap for player:", sourceName, "total overlaps:", addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName])
+                    else
+                        private.log("This player interrupted the spell:", interruptAttempt.sourceName)
                     end
                 end
             end
