@@ -955,27 +955,24 @@ local CreateLootSquare = function(scoreboardLine)
     lootSquare:Hide()
 
     function lootSquare.SetPlayerData(self, playerData)
+        self:Hide()
         if (not playerData.loot or playerData.loot == "") then
-            self:Hide()
-        end
-
-        local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType,
-        itemSubType, itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID,
-        subclassID, bindType, expansionID, setID, isCraftingReagent = C_Item.GetItemInfo(playerData.loot)
-        if (itemName == nil) then
             return
         end
 
-        local rarityColor = --[[GLOBAL]] ITEM_QUALITY_COLORS[itemQuality]
-        self.itemLink = playerData.loot
-        self.LootIcon:SetTexture(itemTexture)
-        self.LootIconBorder:SetVertexColor(rarityColor.r, rarityColor.g, rarityColor.b, 1)
-        self.LootItemLevel:SetText(select(1, C_Item.GetDetailedItemLevelInfo(playerData.loot)) or "0")
+        local item = Item:CreateFromItemLink(playerData.loot)
+        item:ContinueOnItemLoad(function()
+            local r, g, b = C_Item.GetItemQualityColor(item:GetItemQuality())
+            self.itemLink = playerData.loot
+            self.LootIcon:SetTexture(item:GetItemIcon())
+            self.LootIconBorder:SetVertexColor(r, g, b, 1)
+            self.LootItemLevel:SetText(item:GetCurrentItemLevel())
 
-        --update size
-        self.LootIcon:SetSize(32, 32)
-        self.LootIconBorder:SetSize(32, 32)
-        self:Show()
+            --update size
+            self.LootIcon:SetSize(32, 32)
+            self.LootIconBorder:SetSize(32, 32)
+            self:Show()
+        end)
     end
 
     lootSquare:SetScript("OnEnter", function(self)
