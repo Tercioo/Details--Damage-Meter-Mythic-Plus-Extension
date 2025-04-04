@@ -38,17 +38,20 @@ function addon.InitializeEvents()
 
         local okay, errorText = pcall(function()
             local runInfo = addon.CreateRunInfo(mythicPlusOverallSegment)
-            table.insert(addon.profile.saved_runs, 1, runInfo)
-            table.remove(addon.profile.saved_runs, addon.profile.saved_runs_limit+1)
-            addon.SetSelectedRunIndex(1)
+            if (runInfo) then
+                table.insert(addon.profile.saved_runs, 1, runInfo)
+                table.remove(addon.profile.saved_runs, addon.profile.saved_runs_limit+1)
+                addon.SetSelectedRunIndex(1)
+
+                if (addon.profile.when_to_automatically_open_scoreboard == "COMBAT_MYTHICPLUS_OVERALL_READY") then
+                    addon.OpenScoreBoardAtEnd()
+                end
+            end
         end)
 
         if (not okay) then
             private.log("Error on CreateRunInfo(): ", errorText)
-            print("Error on CreateRunInfo(): ", errorText)
         end
-
-        private.addon.mythicPlusBreakdown.MythicPlusOverallSegmentReady()
     end
 
     function addon.OnMythicDungeonStart(...)
