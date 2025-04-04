@@ -68,7 +68,6 @@
 ---@field OpenMythicPlusBreakdownBigFrame fun() open the mythic plus breakdown big frame
 ---@field RefreshOpenScoreBoard fun():scoreboard_mainframe Refreshes the score board, but only if it's visible
 ---@field OpenScoreBoardAtEnd fun() Opens the scoreboard with the configured delay, at the end of a run
----@field MythicPlusOverallSegmentReady fun() executed after the run is done and details! has the m+ overall segment
 ---@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player
 ---@field CreateBossPortraitTexture fun(parent:frame, index:number) : bosswidget create a boss portrait texture widget
 ---@field CreateTimeSection fun(parent:frame, index:number) : timesection create a time section label

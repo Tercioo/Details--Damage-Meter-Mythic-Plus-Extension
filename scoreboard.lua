@@ -24,7 +24,6 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field CreateLineForBigBreakdownFrame fun(parent:scoreboard_mainframe, header:scoreboard_header, index:number):scoreboard_line
 ---@field CreateActivityPanel fun(parent:scoreboard_mainframe):scoreboard_activityframe
 ---@field RefreshBigBreakdownFrame fun(mainFrame:scoreboard_mainframe, runData:runinfo):boolean true when it has data, false when it does not and probably should be hidden
----@field MythicPlusOverallSegmentReady fun() executed when details! send the event COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field SetFontSettings fun() set the default font settings
 
 ---@class scoreboard_mainframe : frame
@@ -165,12 +164,6 @@ end
 
 function Details.OpenMythicPlusBreakdownBigFrame()
     addon.OpenMythicPlusBreakdownBigFrame()
-end
-
-function mythicPlusBreakdown.MythicPlusOverallSegmentReady()
-    if (addon.profile.when_to_automatically_open_scoreboard == "COMBAT_MYTHICPLUS_OVERALL_READY") then
-        addon.OpenScoreBoardAtEnd()
-    end
 end
 
 function addon.OpenScoreBoardAtEnd()
