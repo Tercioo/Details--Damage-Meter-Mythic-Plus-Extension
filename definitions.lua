@@ -39,6 +39,8 @@
 ---@field scoreboard_scale number indicates the scale of the scoreboard window
 ---@field translit boolean translit cyrillic
 ---@field last_run_data detailsmythicplus_run_data store the data from the last run
+---@field keep_information_for_debugging boolean keep certain information for debugging
+---@field migrations_done number the timestamp of when a migration was done, where the key is the migration number from migrations.lua
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
@@ -49,6 +51,7 @@
 ---@field loot loot
 ---@field data table store data from the current mythic plus run
 ---@field Enum enum
+---@field Migrations table<number, fun()>
 ---@field selectedRunInfo runinfo currently run info in use (showing the data in the scoreboard), if any
 ---@field mythicPlusBreakdown details_mythicplus_breakdown
 ---@field activityTimeline activitytimeline namespace for functions related to the activity timeline
@@ -96,7 +99,7 @@
 ---@field combatId number the dungeon overall data unique combat id from details!
 ---@field combatData combatdata stores the required combat data for the score board, hence the scoreboard can function even if the combat isn't available in details!
 ---@field encounters detailsmythicplus_encounterinfo[] the encounters timeline
----@field combatTimeline detailsmythicplus_combatstep[] the combat timeline
+---@field combatTimeline number[] the combat timeline
 ---@field completionInfo challengemodecompletioninfo
 ---@field timeWithoutDeaths number total time in seconds the run took without counting the time lost by player deaths
 ---@field timeInCombat number total time in seconds the run took in combat
@@ -179,19 +182,13 @@
 ---@field map_id number
 ---@field start_time number
 ---@field end_time number
----@field incombat_timeline detailsmythicplus_combatstep[] first table tells the group left table, second when entered in combat, third when left combat, and so on
+---@field incombat_timeline number[] first time is no combat (key start), then every timestamp is a toggle
 ---@field encounter_timeline detailsmythicplus_encounterinfo[] store the data from encounter_start and encounter_end events, one sub table per boss attempt
 ---@field interrupt_overlaps table<string, number> count the interrupt overlaps for each player
-
----@class detailsmythicplus_combatstep : table a table with the time and if the group was in combat or not, sub table of 'incombat_timeline'
----@field time number time() of when the player entered or left combat
----@field in_combat boolean whether the player is in combat or not
 
 ---@class detailsmythicplus_encounterinfo : table
 ---@field dungeonEncounterId number encounter id given from the encounter_start event
 ---@field encounterName string localized name of the encounter
----@field difficultyId number difficulty id of the encounter
----@field raidSize number number of players in the group
 ---@field startTime number time() of when the encounter started
 ---@field endTime number time() of when the encounter ended (if the encounter did not ended yet, this value is zero)
 ---@field defeated boolean true if the boss has been killed

@@ -59,7 +59,6 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             isEligibleForScore = completionInfo.isEligibleForScore,
             isMapRecord = completionInfo.isMapRecord,
             isAffixRecord = completionInfo.isAffixRecord,
-            members = completionInfo.members,
         },
         encounters = detailsFramework.table.copy({}, addon.profile.last_run_data.encounter_timeline),
         combatTimeline = detailsFramework.table.copy({}, addon.profile.last_run_data.incombat_timeline),
@@ -92,6 +91,13 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
 
         if (actorObject:IsPlayer()) then
             local unitName = actorObject:Name()
+            local damageTakenFromSpells = {}
+            for i, damageTaken in pairs(mythicPlusOverallSegment:GetDamageTakenBySpells(unitName)) do
+                if (i > 7) then
+                    break
+                end
+                table.insert(damageTakenFromSpells, damageTaken)
+            end
 
             ---@type playerinfo
             local playerInfo = {
@@ -115,9 +121,9 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 totalInterruptsCasts = 0,
                 totalCrowdControlCasts = 0,
                 healDoneBySpells = {}, --done
-                damageTakenFromSpells  = mythicPlusOverallSegment:GetDamageTakenBySpells(unitName),
-                damageDoneBySpells  = {}, --done
-                dispelWhat  = {}, --done
+                damageTakenFromSpells = damageTakenFromSpells,
+                damageDoneBySpells = {}, --done
+                dispelWhat = {}, --done
                 interruptWhat = {}, --done
                 interruptCastOverlapDone = addon.profile.last_run_data.interrupt_cast_overlap_done[unitName] or 0,
                 crowdControlSpells = {}, --done

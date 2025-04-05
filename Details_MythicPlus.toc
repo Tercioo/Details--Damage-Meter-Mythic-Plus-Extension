@@ -32,3 +32,4 @@ events.lua
 functions.lua
 slash.lua
 rundata.lua
+migrations.lua

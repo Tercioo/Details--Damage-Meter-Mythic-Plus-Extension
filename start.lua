@@ -23,6 +23,8 @@ local defaultSettings = {
     saved_runs_selected_index = 1,
     scoreboard_scale = 1.0,
     translit = GetLocale() ~= "ruRU",
+    keep_information_for_debugging = false,
+    migrations_done = {},
     logs = {},
     font = {
         row_size = 12,
@@ -127,8 +129,6 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
         end,
     })
 
-    -- fix/migrate settings
-
     -- always show the last run first
     addon.profile.saved_runs_selected_index = 1
 
@@ -164,6 +164,14 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     -- required to create early due to the frame events
     local scoreboard = addon.CreateBigBreakdownFrame()
     scoreboard:SetScale(addon.profile.scoreboard_scale)
+
+    -- run migrations
+    for i, migration in pairs(addon.Migrations) do
+        if (not addon.profile.migrations_done[i]) then
+            migration()
+            addon.profile.migrations_done[i] = time()
+        end
+    end
 
     private.log("addon loaded")
 end

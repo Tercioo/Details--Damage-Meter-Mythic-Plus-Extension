@@ -802,7 +802,6 @@ local showCrowdControlTooltip = function(self)
         local spellInfo = C_Spell.GetSpellInfo(spellName)
         if (spellInfo) then
             GameCooltip:AddIcon(spellInfo.iconID, 1, 1, 16, 16)
-        else
         end
     end
 
@@ -1107,11 +1106,10 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             local spellsThatHitThisPlayer = playerData.damageTakenFromSpells
 
             GameCooltip:Preset(2)
-
-            for i = 1, math.min(#spellsThatHitThisPlayer, 7) do
-                local spellId = spellsThatHitThisPlayer[i].spellId
-                local amount = spellsThatHitThisPlayer[i].amount
-                local sourceName = spellsThatHitThisPlayer[i].damagerName
+            for _, spellData in pairs(spellsThatHitThisPlayer) do
+                local spellId = spellData.spellId
+                local amount = spellData.amount
+                local sourceName = spellData.damagerName
 
                 local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
                 if (spellName and spellIcon) then
@@ -1280,19 +1278,19 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             leave_combat = {0.7, 0.1, 0.1, 0.5},
         }
 
-        ---@type detailsmythicplus_combatstep[]
+        ---@type number[]
         local combatTimeline = runData.combatTimeline
         local timestamps = {}
         local last
         for i = 1, #combatTimeline do
-            local timestamp = combatTimeline[i].time
+            local timestamp = combatTimeline[i]
             if (timestamp >= runData.startTime) then
                 last = {
                     time = timestamp - runData.startTime,
-                    event = combatTimeline[i].in_combat and "enter_combat" or "leave_combat"
+                    event = i % 2 == 0 and "enter_combat" or "leave_combat"
                 }
 
-                timestamps[#timestamps+1] = last
+                table.insert(timestamps, last)
             end
         end
 
