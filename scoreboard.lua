@@ -175,31 +175,32 @@ function addon.CreateBigBreakdownFrame()
     return mythicPlusBreakdown.CreateBigBreakdownFrame()
 end
 
-local LOOT_DEBUG_MODE = true
 local SaveLoot = function(itemLink, unitName)
     local playerName = Ambiguate(unitName, "none")
-
     local lastRun = addon.GetLastRun()
     if (not lastRun) then
         return
     end
 
-    local effectiveILvl, _, baseItemLevel = C_Item.GetDetailedItemLevelInfo(itemLink)
-    local bIsAccountBound = C_Item.IsItemBindToAccountUntilEquip(itemLink)
-    local averageItemLevel = addon.GetRunAverageItemLevel(lastRun)
-
-    if (effectiveILvl > averageItemLevel * 0.75 and baseItemLevel > 5 and not bIsAccountBound) then --avoid showing loot that isn't items
-        private.log("Loot Received:", playerName, itemLink, effectiveILvl, baseItemLevel, bIsAccountBound)
-        lastRun.combatData.groupMembers[playerName].loot = itemLink
-
-        if (LOOT_DEBUG_MODE) then
-            Details:Msg("Loot ADDED:", playerName, itemLink, effectiveILvl, baseItemLevel)
-        end
-
-        addon.RefreshOpenScoreBoard()
-    elseif (LOOT_DEBUG_MODE) then
-        Details:Msg("Loot SKIPPED:", playerName, itemLink, effectiveILvl, baseItemLevel, bIsAccountBound)
+    local itemType = select(6, C_Item.GetItemInfoInstant(itemLink))
+    if (itemType ~= Enum.ItemClass.Weapon and itemType ~= Enum.ItemClass.Armor) then
+        return
     end
+
+    if (C_Item.IsItemBindToAccountUntilEquip(itemLink)) then
+        return
+    end
+
+    local effectiveILvl, _, baseItemLevel = C_Item.GetDetailedItemLevelInfo(itemLink)
+    local averageItemLevel = addon.GetRunAverageItemLevel(lastRun)
+    if (effectiveILvl < averageItemLevel * 0.75 or baseItemLevel < 6) then
+        return
+    end
+
+    private.log("Loot Received:", playerName, itemLink)
+    lastRun.combatData.groupMembers[playerName].loot = itemLink
+
+    addon.RefreshOpenScoreBoard()
 end
 
 function mythicPlusBreakdown.CreateBigBreakdownFrame()
