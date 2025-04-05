@@ -158,6 +158,7 @@ function activity.RenderDeathMarker(frame, event, marker)
 
     SetPortraitTexture(playerPortrait.Portrait, event.arguments.playerData.unitId)
     local portraitTexture = playerPortrait.Portrait:GetTexture()
+    playerPortrait.Portrait:SetTexCoord(0, 0, 0, 1, 1, 0, 1, 1)
     if (not portraitTexture) then
         local class = event.arguments.playerData.class
         playerPortrait.Portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")

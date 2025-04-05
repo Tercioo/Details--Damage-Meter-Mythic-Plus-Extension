@@ -635,12 +635,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
 
             if (playerData) then
                 scoreboardLine:Show()
-                --dumpt(playerData)
                 local playerPortrait = frames[1]
                 local specIcon = frames[2]
 
                 SetPortraitTexture(playerPortrait.Portrait, playerData.unitId)
                 local portraitTexture = playerPortrait.Portrait:GetTexture()
+                playerPortrait.Portrait:SetTexCoord(0, 0, 0, 1, 1, 0, 1, 1)
                 if (not portraitTexture) then
                     local class = playerData.class
                     playerPortrait.Portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
