@@ -28,6 +28,9 @@ local orange_font_template = detailsFramework:GetTemplate("font", "ORANGE_FONT_T
 local mythicPlusOptions = {}
 
 local optionsTemplate = {
+    ---
+    --- General Options
+    ---
     {type = "label", get = function() return L["OPTIONS_GENERAL_OPTIONS"] end, text_template = orange_font_template},
     {
         type = "select",
@@ -88,6 +91,10 @@ local optionsTemplate = {
         name = L["OPTIONS_TRANSLIT_LABEL"],
         desc = L["OPTIONS_TRANSLIT_DESC"],
     },
+
+    ---
+    --- Saving options
+    ---
     {type = "label", get = function() return L["OPTIONS_SAVING"] end, text_template = orange_font_template},
     {
         type = "range",
@@ -102,6 +109,10 @@ local optionsTemplate = {
         name = L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"],
         desc = L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"],
     },
+
+    ---
+    --- Timeline Options
+    ---
     {type = "label", get = function() return L["OPTIONS_SECTION_TIMELINE"] end, text_template = orange_font_template},
     {
         type = "toggle",
@@ -122,6 +133,21 @@ local optionsTemplate = {
         end,
         name = L["OPTIONS_SHOW_REMAINING_TIME_LABEL"],
         desc = L["OPTIONS_SHOW_REMAINING_TIME_DESC"],
+    },
+
+    ---
+    --- Debug options
+    ---
+    {type = "label", get = function() return L["OPTIONS_DEBUG"] end, text_template = orange_font_template},
+    {
+        type = "toggle",
+        get = function () return addon.profile.keep_information_for_debugging end,
+        set = function (_, _, value)
+            addon.profile.keep_information_for_debugging = value
+            addon.RefreshOpenScoreBoard()
+        end,
+        name = L["OPTIONS_DEBUG_STORE_DEBUG_INFO_LABEL"],
+        desc = L["OPTIONS_DEBUG_STORE_DEBUG_INFO_DESC"],
     },
 }
 

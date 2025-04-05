@@ -41,6 +41,9 @@ do
     L["OPTIONS_SHOW_TIME_SECTIONS_DESC"] = "Shows time labels for sections on the timeline as a guide"
     L["OPTIONS_SHOW_REMAINING_TIME_LABEL"] = "Show remaining time"
     L["OPTIONS_SHOW_REMAINING_TIME_DESC"] = "When a key is timed, an extra section will be added showing the time still remaining"
+    L["OPTIONS_DEBUG"] = "Debug"
+    L["OPTIONS_DEBUG_STORE_DEBUG_INFO_LABEL"] = "Save debug info"
+    L["OPTIONS_DEBUG_STORE_DEBUG_INFO_DESC"] = "Enabling this option will save more information when reloading for debugging purposes. It is recommended to keep this option off unless you are actually debugging"
 
     L["SCOREBOARD_NO_SCORE_AVAILABLE"] = "There is currently no score on the board"
     L["SCOREBOARD_TITLE_PLAYER_NAME"] = "Player Name"

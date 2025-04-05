@@ -52,13 +52,17 @@ function addon.InitializeEvents()
         if (not okay) then
             private.log("Error on CreateRunInfo(): ", errorText)
         end
+
+        if (not addon.profile.keep_information_for_debugging) then
+            addon.profile.last_run_data = {}
+        end
     end
 
     function addon.OnMythicDungeonStart(...)
         addon.profile.last_run_data.start_time = time()
         addon.profile.last_run_data.map_id = Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
         --store the first value in the in combat timeline.
-        addon.profile.last_run_data.incombat_timeline = {{time = time(), in_combat = false}}
+        addon.profile.last_run_data.incombat_timeline = {time()}
         addon.profile.last_run_data.encounter_timeline = {}
         addon.StartParser()
     end
@@ -66,15 +70,14 @@ function addon.InitializeEvents()
     function addon.OnMythicDungeonEnd(...)
         addon.profile.last_run_data.end_time = time()
         local combatTimeline = addon.profile.last_run_data.incombat_timeline
+        local totalTimes = #combatTimeline
 
-        --in case the combat ended after the m+ run ended, the in_combat may be true and need to be closed
-        if (combatTimeline[#combatTimeline].in_combat == true) then
-            --check if the previous segment has the same time, if so, can be an extra segment created by details! after the last combat finished and this can be ignored
-            if (combatTimeline[#combatTimeline -1].time == combatTimeline[#combatTimeline].time) then
+        if (totalTimes % 2 == 0) then
+            if (combatTimeline[totalTimes -1] == combatTimeline[totalTimes]) then
                 --remove this last segment
                 table.remove(combatTimeline)
             else
-                table.insert(combatTimeline, { time = math.floor(addon.profile.last_run_data.end_time), in_combat = false})
+                table.insert(combatTimeline, addon.profile.last_run_data.end_time)
             end
         end
 
@@ -87,8 +90,6 @@ function addon.InitializeEvents()
             local currentEncounterInfo = {
                 dungeonEncounterId = dungeonEncounterId,
                 encounterName = encounterName,
-                difficultyId = difficultyId,
-                raidSize = raidSize,
                 startTime = time(),
                 endTime = 0,
                 defeated = false,
@@ -119,19 +120,13 @@ function addon.InitializeEvents()
 
     function addon.OnPlayerEnterCombat(...)
         if (addon.IsParsing()) then
-            local incombatTimeline = addon.profile.last_run_data.incombat_timeline
-            table.insert(incombatTimeline, {time = time(), in_combat = true})
-
-            private.log("Entered in combat: ", time())
+            table.insert(addon.profile.last_run_data.incombat_timeline, time())
         end
     end
 
     function addon.OnPlayerLeaveCombat(...)
         if (addon.IsParsing()) then
-            local incombatTimeline = addon.profile.last_run_data.incombat_timeline
-            table.insert(incombatTimeline, {time = time(), in_combat = false})
-
-            private.log("Left combat: ", time())
+            table.insert(addon.profile.last_run_data.incombat_timeline, time())
         end
     end
 
