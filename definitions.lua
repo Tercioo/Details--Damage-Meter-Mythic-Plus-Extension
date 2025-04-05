@@ -89,6 +89,7 @@
 ---@field GetSelectedRun fun() : runinfo return the latest selected run info, return nil if there is no run info data
 ---@field RemoveRun fun(index:number) remove the run info from the saved runs
 ---@field GetDropdownRunDescription fun(runInfo:runinfo) : table indexed table containing: [1] dungeonName, [2] keyLevel, [3] runTime, [4] keyUpgradeLevels, [5] timeString, [6] onTime [7] mapId [8] dungeonId
+---@field GetPlayerDeathReason fun(runInfo:runinfo, unitName:playername, deathIndex:number) : death_last_hits[]|nil return a table with subtables of type death_last_hits which tells the last hits that killed the player
 
 
 ---@class runinfo : table
@@ -155,6 +156,12 @@
 ---@field interruptWhat table<spellid, number> which spells the player interrupted
 ---@field interruptCastOverlapDone number how many times the player attempted to interrupt a spell with another player
 ---@field crowdControlSpells table<spellname, number> which spells the player casted that are crowd control
+---@field deathLastHits death_last_hits[]
+
+---@class death_last_hits : table
+---@field spellId number the spell id that caused the damage
+---@field sourceName string the name of the source that caused the damage
+---@field totalDamage number the total damage done by the spell
 
 ---@class combatdata : table
 ---@field groupMembers table<playername, playerinfo>

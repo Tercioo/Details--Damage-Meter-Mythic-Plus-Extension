@@ -13,6 +13,8 @@ local _ = nil
 --localization
 local L = detailsFramework.Language.GetLanguageTable(addonName)
 
+local CONST_MAX_DEATH_EVENTS = 3
+
 ---@alias playername string
 
 --primaryAffix seens to not exists
@@ -89,11 +91,11 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
         ---@cast actorObject actordamage
 
         if (actorObject:IsPlayer()) then
-            local playerName = actorObject:Name()
+            local unitName = actorObject:Name()
 
             ---@type playerinfo
             local playerInfo = {
-                name = playerName,
+                name = unitName,
                 class = actorObject:Class(),
                 spec = actorObject:Spec(),
                 role = UnitGroupRolesAssigned(actorObject:Name()),
@@ -113,40 +115,72 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 totalInterruptsCasts = 0,
                 totalCrowdControlCasts = 0,
                 healDoneBySpells = {}, --done
-                damageTakenFromSpells  = mythicPlusOverallSegment:GetDamageTakenBySpells(playerName),
+                damageTakenFromSpells  = mythicPlusOverallSegment:GetDamageTakenBySpells(unitName),
                 damageDoneBySpells  = {}, --done
                 dispelWhat  = {}, --done
                 interruptWhat = {}, --done
-                interruptCastOverlapDone = addon.profile.last_run_data.interrupt_cast_overlap_done[playerName] or 0,
+                interruptCastOverlapDone = addon.profile.last_run_data.interrupt_cast_overlap_done[unitName] or 0,
                 crowdControlSpells = {}, --done
                 ilevel = Details:GetItemLevelFromGuid(actorObject:GetGUID()),
-                deathEvents = {},
+                deathEvents = {}, --information about when the player died
+                deathLastHits = {}, --information for the tooltip when the player died
             }
 
-            runInfo.combatData.groupMembers[playerName] = playerInfo
+            runInfo.combatData.groupMembers[unitName] = playerInfo
 
             if (type(actorObject.mrating) == "table") then
                 actorObject.mrating = actorObject.mrating.currentSeasonScore
             end
             local score = actorObject.mrating or 0
             playerInfo.score = score
-            playerInfo.scorePrevious = Details.PlayerRatings[playerName] or score
+            playerInfo.scorePrevious = Details.PlayerRatings[unitName] or score
 
             playerInfo.activityTimeDamage = actorObject:Tempo()
 
-            local playerDeaths = mythicPlusOverallSegment:GetPlayerDeaths(playerName)
+            local playerDeaths = mythicPlusOverallSegment:GetPlayerDeaths(unitName)
             playerInfo.totalDeaths = #playerDeaths
 
             local deathTable = mythicPlusOverallSegment:GetDeaths()
             for i = 1, #deathTable do
                 local thisDeathTable = deathTable[i]
-                if (thisDeathTable[3] == playerName) then --index 3 carry the name of the player that died
+                --deathTime is time()
+                local playerName, playerClass, deathTime, deathCombatTime, deathTimeString, playerMaxHealth, deathEvents, lastCooldown, spec = Details:UnpackDeathTable(thisDeathTable)
+                if (playerName == unitName) then
                     playerInfo.deathEvents[#playerInfo.deathEvents+1] = {
                         type = addon.Enum.ScoreboardEventType.Death,
                         timestamp = thisDeathTable[2],
                         arguments = {}, --playerData = playerInfo, can't assign here as it will save playerInfo twice in the saved variables (or cause a loop)
                     }
+
+                    local countDamageEventsFound = 0
+
+                    ---@type death_last_hits[]
+                    local thisDeathLastEvents = {}
+
+                    for j = #deathEvents, 1, -1 do
+                        ---@type deathtable
+                        local thisEvent = deathEvents[j]
+                        local evType, spellId, amount, eventTime, heathPercent, sourceName, absorbed, spellSchool, friendlyFire, overkill, criticalHit, crushing = Details:UnpackDeathEvent(thisEvent)
+
+                        if (evType == true) then --a boolean true means a damage event
+                            ---@type death_last_hits
+                            local deathLastHit = {
+                                spellId = spellId,
+                                sourceName = sourceName,
+                                totalDamage = amount,
+                            }
+                            thisDeathLastEvents[#thisDeathLastEvents+1] = deathLastHit
+                            countDamageEventsFound = countDamageEventsFound + 1
+
+                            if (countDamageEventsFound == CONST_MAX_DEATH_EVENTS) then
+                                break
+                            end
+                        end
+                    end
+
+                    playerInfo.deathLastHits[#playerInfo.deathLastHits+1] = thisDeathLastEvents
                 end
+
             end
 
             --spell damage done
@@ -162,7 +196,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             --heal
             for _, healActorObject in healingContainer:ListActors() do
                 ---@cast actorObject actorheal
-                if (healActorObject:Name() == playerName) then
+                if (healActorObject:Name() == unitName) then
                     playerInfo.totalHeal = healActorObject.total
                     playerInfo.totalHealTaken = healActorObject.healing_taken
                     playerInfo.activityTimeHeal = actorObject:Tempo()
@@ -182,14 +216,14 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             --utility
             for _, utilityActorObject in utilityContainer:ListActors() do
                 ---@cast utilityActorObject actorutility
-                if (utilityActorObject:Name() == playerName) then
+                if (utilityActorObject:Name() == unitName) then
                     playerInfo.totalDispels = utilityActorObject.dispell
                     playerInfo.totalInterrupts = utilityActorObject.interrupt
-                    playerInfo.totalInterruptsCasts = mythicPlusOverallSegment:GetInterruptCastAmount(playerName)
-                    playerInfo.totalCrowdControlCasts = mythicPlusOverallSegment:GetCCCastAmount(playerName)
+                    playerInfo.totalInterruptsCasts = mythicPlusOverallSegment:GetInterruptCastAmount(unitName)
+                    playerInfo.totalCrowdControlCasts = mythicPlusOverallSegment:GetCCCastAmount(unitName)
                     playerInfo.dispelWhat = detailsFramework.table.copy({}, utilityActorObject.dispell_oque or {})
                     playerInfo.interruptWhat = detailsFramework.table.copy({}, utilityActorObject.interrompeu_oque or {})
-                    playerInfo.crowdControlSpells = mythicPlusOverallSegment:GetCrowdControlSpells(playerName)
+                    playerInfo.crowdControlSpells = mythicPlusOverallSegment:GetCrowdControlSpells(unitName)
                 end
             end
         end
@@ -309,6 +343,21 @@ end
 
 function addon.FormatRunDescription(runInfo)
     return string.format("%s (%d) - %s", runInfo.dungeonName, runInfo.completionInfo.level, addon.GetRunDate(runInfo))
+end
+
+---return a table with subtables of type death_last_hits which tells the last hits that killed the player
+---@param runInfo runinfo
+---@param unitName playername
+---@param deathIndex number
+---@return death_last_hits[]|nil
+function addon.GetPlayerDeathReason(runInfo, unitName, deathIndex)
+    local playerInfo = runInfo.combatData.groupMembers[unitName]
+    if (playerInfo) then
+        local deathLastHits = playerInfo.deathLastHits[deathIndex]
+        if (deathLastHits) then
+            return deathLastHits
+        end
+    end
 end
 
 ---return the average item level of the 5 players in the run
