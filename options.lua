@@ -171,9 +171,9 @@ function mythicPlusOptions.InitializeOptionsWindow()
     detailsFramework:MakeDraggable(optionsFrame)
     optionsFrame:SetPoint("center", UIParent, "center", 160, -50)
     detailsFramework:ApplyStandardBackdrop(optionsFrame)
-    optionsFrame:SetFrameStrata("HIGH")
+    optionsFrame:SetFrameStrata("DIALOG")
     optionsFrame:SetToplevel(true)
-    optionsFrame:SetFrameLevel(1000)
+    optionsFrame:SetFrameLevel(5)
 
     --close button at the top right of the frame
     local closeButton = detailsFramework:CreateCloseButton(optionsFrame, "$parentCloseButton")
