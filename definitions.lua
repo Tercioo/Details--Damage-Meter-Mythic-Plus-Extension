@@ -211,7 +211,7 @@
 ---@field ResetSegmentTextures fun(self:scoreboard_activityframe) reset the next index of texture to use and hide all existing textures
 ---@field GetSegmentTexture fun(self:scoreboard_activityframe) : texture return a texture to be used as a segment of the activity bar
 ---@field RenderKeyFinishedMarker fun(frame:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker) : activitytimeline_marker_data
----@field RenderDeathMarker fun(frame:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker) : activitytimeline_marker_data
+---@field RenderDeathMarker fun(frame:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker, runData:runinfo) : activitytimeline_marker_data
 ---@field PrepareEventFrames fun(frame:scoreboard_activityframe, events:timeline_event[]) : timeline_event, activitytimeline_marker
 
 ---@class scoreboard_activityframe : frame

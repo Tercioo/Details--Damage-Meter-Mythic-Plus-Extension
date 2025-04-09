@@ -591,6 +591,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
             for i = 1, #deathEventsTableCopy do
                 local thisDeathEventCopied = deathEventsTableCopy[i]
                 thisDeathEventCopied.arguments.playerData = thisPlayerData
+                thisDeathEventCopied.arguments.index = i
             end
             detailsFramework.table.append(events, deathEventsTableCopy)
 
@@ -1353,7 +1354,8 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
             ---@type activitytimeline_marker_data
             local markerData = {}
             if (event.type == addon.Enum.ScoreboardEventType.Death) then
-                markerData = addon.activityTimeline.RenderDeathMarker(self, event, marker)
+                markerData = addon.activityTimeline.RenderDeathMarker(self, event, marker, runData)
+
             elseif (event.type == addon.Enum.ScoreboardEventType.KeyFinished) then
                 markerData = addon.activityTimeline.RenderKeyFinishedMarker(self, event, marker)
             end

@@ -59,6 +59,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             isEligibleForScore = completionInfo.isEligibleForScore,
             isMapRecord = completionInfo.isMapRecord,
             isAffixRecord = completionInfo.isAffixRecord,
+            members = {}, --challengemodecompletioninfo type tells a 'members' key exists in the blizzard version of this table
         },
         encounters = detailsFramework.table.copy({}, addon.profile.last_run_data.encounter_timeline),
         combatTimeline = detailsFramework.table.copy({}, addon.profile.last_run_data.incombat_timeline),

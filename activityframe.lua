@@ -134,7 +134,7 @@ function activity.ResetSegmentTextures(activityFrame)
     end
 end
 
-function activity.RenderDeathMarker(frame, event, marker)
+function activity.RenderDeathMarker(frame, event, marker, runData)
     local preferUp = false
     local playerPortrait = marker.SubFrames.playerPortrait
     ---@cast playerPortrait playerportrait
@@ -154,6 +154,60 @@ function activity.RenderDeathMarker(frame, event, marker)
         playerPortrait.RoleIcon:SetDesaturated(true)
 
         marker.SubFrames.playerPortrait = playerPortrait
+
+        --tooltip showing the latest 3 spells to kill the player
+        marker:SetScript("OnEnter", function()
+            ---@type playerinfo
+            local playerInfo = event.arguments.playerData
+            local deathReason = addon.GetPlayerDeathReason(runData, playerInfo.name, event.arguments.index)
+            if (deathReason) then
+                GameCooltip:Preset(2)
+                for i = #deathReason, 1, -1 do --first index is the spell that killed the player
+                    local thisDeathReason = deathReason[i]
+                    local spellName, _, spellIcon = Details.GetSpellInfo(thisDeathReason.spellId)
+                    GameCooltip:AddLine(i .. ". " .. spellName, Details:Format(thisDeathReason.totalDamage))
+                    GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
+
+                    local side = nil
+                    local value = 100
+                    local useSpark = false
+
+                    if (i == 1) then
+                        local statusBarColor = {0.5, 0.1, 0.1, 0.2}
+                        Details:AddTooltipBackgroundStatusbar(side, value, useSpark, statusBarColor)
+                    else
+                        local statusBarColor = {0.1, 0.1, 0.1, 0.2}
+                        Details:AddTooltipBackgroundStatusbar(side, value, useSpark, statusBarColor)
+                    end
+                end
+
+                --set the font and size of the text as defined in the options panel
+                GameCooltip:SetOption("TextSize", Details.tooltip.fontsize)
+                GameCooltip:SetOption("TextFont",  Details.tooltip.fontface)
+
+                --move the left and right texts more close to the tooltip border
+                GameCooltip:SetOption("LeftPadding", -4)
+                GameCooltip:SetOption("RightPadding", 3)
+
+                --space between each line, positive values make the lines be closer
+                GameCooltip:SetOption("LinePadding", -2)
+
+                --move each line in the Y axis(vertical offsett)
+                GameCooltip:SetOption("LineYOffset", 0)
+                --tooltip width
+                GameCooltip:SetOption("FixedWidth",(type(Details.death_tooltip_width) == "number" and Details.death_tooltip_width) or 300)
+
+                --progress bar texture
+                GameCooltip:SetOption("StatusBarTexture", Details.death_tooltip_texture)
+
+                GameCooltip:SetOwner(marker)
+                GameCooltip:Show()
+            end
+        end)
+
+        marker:SetScript("OnLeave", function()
+            GameCooltip:Hide()
+        end)
     end
 
     SetPortraitTexture(playerPortrait.Portrait, event.arguments.playerData.unitId)
