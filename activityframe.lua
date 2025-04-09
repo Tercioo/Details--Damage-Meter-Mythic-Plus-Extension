@@ -162,6 +162,11 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
             local deathReason = addon.GetPlayerDeathReason(runData, playerInfo.name, event.arguments.index)
             if (deathReason) then
                 GameCooltip:Preset(2)
+
+                local relativeTimestamp = event.timestamp - runData.startTime
+                GameCooltip:AddLine(detailsFramework:RemoveRealmName(playerInfo.name), detailsFramework:IntegerToTimer(relativeTimestamp))
+                GameCooltip:AddLine("")
+
                 for i = #deathReason, 1, -1 do --first index is the spell that killed the player
                     local thisDeathReason = deathReason[i]
                     local spellName, _, spellIcon = Details.GetSpellInfo(thisDeathReason.spellId)
