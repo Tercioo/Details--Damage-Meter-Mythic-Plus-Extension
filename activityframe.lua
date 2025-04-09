@@ -164,7 +164,8 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
                 GameCooltip:Preset(2)
 
                 local relativeTimestamp = event.timestamp - runData.startTime
-                GameCooltip:AddLine(detailsFramework:RemoveRealmName(playerInfo.name), detailsFramework:IntegerToTimer(relativeTimestamp))
+                local classColor = RAID_CLASS_COLORS[playerInfo.class]
+                GameCooltip:AddLine(addon.PreparePlayerName(playerInfo.name), detailsFramework:IntegerToTimer(relativeTimestamp), nil, classColor.r, classColor.g, classColor.b, 1, 1, 0, 0, 1)
                 GameCooltip:AddLine("")
 
                 for i = #deathReason, 1, -1 do --first index is the spell that killed the player

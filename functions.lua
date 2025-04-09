@@ -12,3 +12,9 @@ local addon = private.addon
 
 --localization
 local L = detailsFramework.Language.GetLanguageTable(tocFileName)
+local Translit = LibStub("LibTranslit-1.0")
+
+function addon.PreparePlayerName(name)
+    name = detailsFramework:RemoveRealmName(name)
+    return addon.profile.translit and Translit:Transliterate(name, "!") or name
+end
