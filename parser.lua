@@ -118,45 +118,49 @@ function addon.CountInterruptOverlaps()
 
         private.log("CountInterruptOverlaps() cluster created for", targetGUID, "Interrupts on this target:", #interruptCastsOnTarget)
 
-        --find interrupts that are attempted on the same target within 1.5 seconds
-        for i = 1, #interruptCastsOnTarget do
+        --find interrupt casts casted on the same target within 1.5 seconds of each other
+        local index = 1
+        while (index < #interruptCastsOnTarget) do
             ---@type interrupt_overlap
-            local interruptAttempt = interruptCastsOnTarget[i]
-            interruptClusters[interruptAttempt] = {interruptAttempt}
+            local interruptAttempt = interruptCastsOnTarget[index]
+            local thisCluster = {interruptAttempt}
+            local lastIndex = index
 
-            for j = i+1, #interruptCastsOnTarget do
+            for j = index+1, #interruptCastsOnTarget do --from the next interrupt to the end of the table
+                lastIndex = j
                 ---@type interrupt_overlap
                 local nextInterruptAttempt = interruptCastsOnTarget[j]
-                private.log("loop", j, interruptAttempt.time, nextInterruptAttempt.time, detailsFramework.Math.IsNearlyEqual(nextInterruptAttempt.time, interruptAttempt.time, 1.5))
                 if (detailsFramework.Math.IsNearlyEqual(interruptAttempt.time, nextInterruptAttempt.time, 1.5)) then
-                    --add to the cluster
-                    table.insert(interruptClusters[interruptAttempt], nextInterruptAttempt)
+                    table.insert(thisCluster, nextInterruptAttempt)
                 else
-                    i = i + #interruptClusters[interruptAttempt] - 1
-                    private.log("loop broken", j, "new I:", i)
                     break
                 end
+            end
+
+            index = lastIndex
+
+            if (#thisCluster > 1) then
+                --add the cluster to the list of clusters
+                table.insert(interruptClusters, thisCluster)
             end
         end
 
         private.log("Interrupts clusters found on this target:", #interruptClusters)
 
-        for index, clusterOfInterrupts in ipairs(interruptClusters) do
-            --check if the cluster has more than 1 interrupt attempt
-            if (#clusterOfInterrupts > 1) then
-                --iterate among the cluster and add a overlap if those interrupts without success
-                private.log("This cluster size:", #clusterOfInterrupts)
+        for index, thisCluster in ipairs(interruptClusters) do
+            --iterate among the cluster and add a overlap if those interrupts without success
+            private.log("This cluster size:", #thisCluster)
 
-                for i = 1, #clusterOfInterrupts do
-                    ---@type interrupt_overlap
-                    local interruptAttempt = clusterOfInterrupts[i]
-                    if (not interruptAttempt.interrupted) then
-                        local sourceName = interruptAttempt.sourceName
-                        addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] or 0) + 1
-                        private.log("Added an overlap for player:", sourceName, "total overlaps:", addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName])
-                    else
-                        private.log("This player interrupted the spell:", interruptAttempt.sourceName)
-                    end
+            for i = 1, #thisCluster do
+                ---@type interrupt_overlap
+                local interruptAttempt = thisCluster[i]
+
+                if (not interruptAttempt.interrupted) then
+                    local sourceName = interruptAttempt.sourceName
+                    addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] or 0) + 1
+                    private.log("Added an overlap for player:", sourceName, "total overlaps:", addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName])
+                else
+                    private.log("This player interrupted the spell:", interruptAttempt.sourceName)
                 end
             end
         end
