@@ -1053,9 +1053,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     local playerName = CreateBreakdownLabel(line, function(self, playerData)
         local classColor = RAID_CLASS_COLORS[playerData.class]
         self:SetTextColor(classColor.r, classColor.g, classColor.b)
-
-        local name = detailsFramework:RemoveRealmName(playerData.name)
-        self:SetText(addon.profile.translit and Translit:Transliterate(name, "!") or name)
+        self:SetText(addon.PreparePlayerName(playerData.name))
     end)
 
     local playerScore = CreateBreakdownLabel(line, function(self, playerData)

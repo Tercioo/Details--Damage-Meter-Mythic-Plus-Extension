@@ -93,6 +93,7 @@
 ---@field RemoveRun fun(index:number) remove the run info from the saved runs
 ---@field GetDropdownRunDescription fun(runInfo:runinfo) : table indexed table containing: [1] dungeonName, [2] keyLevel, [3] runTime, [4] keyUpgradeLevels, [5] timeString, [6] onTime [7] mapId [8] dungeonId
 ---@field GetPlayerDeathReason fun(runInfo:runinfo, unitName:playername, deathIndex:number) : death_last_hits[]|nil return a table with subtables of type death_last_hits which tells the last hits that killed the player
+---@field PreparePlayerName fun(name:string) : string removes the realm name, and transliterates if configured
 
 
 ---@class runinfo : table

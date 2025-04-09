@@ -30,7 +30,6 @@ function addon.StartParser()
     --this data need to survive a /reload
     addon.profile.last_run_data.interrupt_spells_cast = {}
     addon.profile.last_run_data.interrupt_cast_overlap_done = {}
-    addon.profile.last_run_data.run_start = time()
 
     parserFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
     parserFrame:SetScript("OnEvent", parserFrame.OnEvent)
