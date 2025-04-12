@@ -1200,7 +1200,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             local missed = casts - overlaps - interrupts
             local interruptText = interrupts
             local overlapText = overlaps
-            local missedText = casts
+            local missedText = missed
             if (addon.profile.show_interrupt_tooltip_percentage) then
                 if (interrupts > 0) then
                     interruptText = interruptText .. " (" .. (math.floor((interrupts / casts) * 100)) .. "%)"
