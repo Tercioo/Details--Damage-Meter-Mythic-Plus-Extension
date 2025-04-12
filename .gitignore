@@ -6,3 +6,5 @@ detailsdef/plugins/Details_Compare2/Definitions.lua
 detailsdef/plugins/Details_Compare2/DF/definitions.lua
 detailsdef/plugins/Details_EncounterDetails/Definitions.lua
 detailsdef/Libs/DF/definitions.lua
+*.afphoto
+*.afphoto~lock~
