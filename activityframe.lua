@@ -187,25 +187,14 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
                     end
                 end
 
-                --set the font and size of the text as defined in the options panel
                 GameCooltip:SetOption("TextSize", Details.tooltip.fontsize)
                 GameCooltip:SetOption("TextFont",  Details.tooltip.fontface)
-
-                --move the left and right texts more close to the tooltip border
-                GameCooltip:SetOption("LeftPadding", -4)
-                GameCooltip:SetOption("RightPadding", 3)
-
-                --space between each line, positive values make the lines be closer
+                GameCooltip:SetOption("LeftPadding", -3)
+                GameCooltip:SetOption("RightPadding", 2)
                 GameCooltip:SetOption("LinePadding", -2)
-
-                --move each line in the Y axis(vertical offset)
                 GameCooltip:SetOption("LineYOffset", 0)
-                --tooltip width
-                GameCooltip:SetOption("FixedWidth",(type(Details.death_tooltip_width) == "number" and Details.death_tooltip_width) or 300)
-
-                --progress bar texture
+                GameCooltip:SetOption("FixedWidth", false)
                 GameCooltip:SetOption("StatusBarTexture", Details.death_tooltip_texture)
-
                 GameCooltip:SetOwner(marker)
                 GameCooltip:Show()
             end
