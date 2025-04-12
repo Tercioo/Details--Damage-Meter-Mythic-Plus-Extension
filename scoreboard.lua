@@ -326,10 +326,10 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
                     menuFrame.label4 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
                     menuFrame.label5 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
 
-                    menuFrame.label2:SetPoint("left", menuFrame, "left", 200, 0)
-                    menuFrame.label3:SetPoint("left", menuFrame, "left", 220, 0)
-                    menuFrame.label4:SetPoint("left", menuFrame, "left", 260, 0)
-                    menuFrame.label5:SetPoint("left", menuFrame, "left", 285, 0)
+                    menuFrame.label2:SetPoint("left", menuFrame, "left", 210, 0)
+                    menuFrame.label3:SetPoint("left", menuFrame, "left", 240, 0)
+                    menuFrame.label4:SetPoint("left", menuFrame, "left", 285, 0)
+                    menuFrame.label5:SetPoint("left", menuFrame, "left", 315, 0)
 
                     local fontFace, fontSize, fontFlags = menuFrame.label:GetFont()
                     menuFrame.label2:SetFont(fontFace, fontSize, fontFlags)
@@ -522,6 +522,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
     mainFrame.RunInfoDropdown:Select(addon.GetSelectedRunIndex(), nil, nil, false)
     mythicPlusBreakdown.SetFontSettings()
 
+    if (#addon.GetSavedRuns() > 1) then
+        mainFrame.RunInfoDropdown:Show()
+    else
+        mainFrame.RunInfoDropdown:Hide()
+    end
+
     --hide the lootSquare
     --for i = 1, #mainFrame.PlayerBanners do
     --    mainFrame.PlayerBanners[i]:ClearLootSquares()
@@ -713,7 +719,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
         mainFrame.DungeonNameFontstring:SetText(L["SCOREBOARD_UNKNOWN_DUNGEON_LABEL"])
     end
 
-
     ---@type details_instanceinfo
     local instanceInfo = runData and Details:GetInstanceInfo(runData.mapId)
     if (instanceInfo) then
@@ -741,7 +746,25 @@ local function OpenLineBreakdown(self, mainAttribute, subAttribute)
     Details:OpenSpecificBreakdownWindow(combat, playerData.name, mainAttribute, subAttribute)
 end
 
-local spellNumberListCooltip = function(self, playerData, actor)
+local function DoPlayerTooltip(playerData, owner, renderContent, rightHeaderColumn, r, g, b)
+    GameCooltip:Preset(2)
+
+    local classColor = RAID_CLASS_COLORS[playerData.class]
+    GameCooltip:AddLine(addon.PreparePlayerName(playerData.name), rightHeaderColumn, nil, classColor.r, classColor.g, classColor.b, 1, r, g, b, 1)
+    GameCooltip:AddLine("")
+    renderContent()
+    GameCooltip:SetOwner(owner)
+    GameCooltip:SetOption("LeftPadding", -3)
+    GameCooltip:SetOption("RightPadding", 2)
+    GameCooltip:SetOption("LinePadding", -2)
+    GameCooltip:SetOption("LineYOffset", 0)
+    GameCooltip:SetOption("TextSize", Details.tooltip.fontsize)
+    GameCooltip:SetOption("TextFont",  Details.tooltip.fontface)
+    GameCooltip:SetOption("FixedWidth", false)
+    GameCooltip:Show()
+end
+
+local spellNumberListCooltip = function(self, playerData, actor, rightColumnDescription)
     if (not actor) then
         return
     end
@@ -764,27 +787,24 @@ local spellNumberListCooltip = function(self, playerData, actor)
 
     table.sort(spellIdAmount, function(t1, t2) return t1.amount > t2.amount end)
 
-    GameCooltip:Preset(2)
+    DoPlayerTooltip(playerData, self, function ()
+        for i = 1, math.min(#spellIdAmount, 7) do
+            local spellId = spellIdAmount[i].spellId
+            local amount = spellIdAmount[i].amount
 
-    for i = 1, math.min(#spellIdAmount, 7) do
-        local spellId = spellIdAmount[i].spellId
-        local amount = spellIdAmount[i].amount
-
-        local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
-        if (spellName and spellIcon) then
-            GameCooltip:AddLine(spellName, Details:Format(amount))
-            GameCooltip:AddIcon(spellIcon, 1, 1, 16, 16)
+            local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
+            if (spellName and spellIcon) then
+                GameCooltip:AddLine(spellName, Details:Format(amount))
+                GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
+                Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
+            end
         end
-    end
 
-    if (Details:GetCombatByUID(playerData.combatUid)) then
-        GameCooltip:AddLine("")
-        GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
-    end
-    GameCooltip:SetOwner(self)
-    GameCooltip:SetOption("TextSize", 10)
-    GameCooltip:SetOption("FixedWidth", 300)
-    GameCooltip:Show()
+        if (Details:GetCombatByUID(playerData.combatUid)) then
+            GameCooltip:AddLine("")
+            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+        end
+    end, rightColumnDescription)
 end
 
 ---@param self scoreboard_button
@@ -794,23 +814,20 @@ local showCrowdControlTooltip = function(self)
         return
     end
 
-    local spellsUsed = playerData.ccSpellsUsed
+    DoPlayerTooltip(playerData, self.widget, function ()
+        for spellName, totalUses in pairs(playerData.ccSpellsUsed) do
+            local ccText = totalUses
+            if (addon.profile.show_cc_cast_tooltip_percentage) then
+                ccText =  ccText .. " (" .. math.floor(totalUses / playerData.ccCasts * 100) .. "%)"
+            end
+            GameCooltip:AddLine(spellName, ccText)
+            Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
 
-    GameCooltip:Preset(2)
-
-    for spellName, totalUses in pairs(spellsUsed) do
-        GameCooltip:AddLine(spellName, totalUses .. " (" .. math.floor(totalUses / playerData.ccCasts * 100) .. "%)")
-
-        local spellInfo = C_Spell.GetSpellInfo(spellName)
-        if (spellInfo) then
-            GameCooltip:AddIcon(spellInfo.iconID, 1, 1, 16, 16)
+            local spellInfo = C_Spell.GetSpellInfo(spellName)
+            -- set icon width to 0.00001 as workaround to ensure row height is consistent
+            GameCooltip:AddIcon(spellInfo and spellInfo.iconID or 134400, 1, 1, spellInfo and 18 or 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
         end
-    end
-
-    GameCooltip:SetOwner(self.widget)
-    GameCooltip:SetOption("TextSize", 10)
-    GameCooltip:SetOption("FixedWidth", 300)
-    GameCooltip:Show()
+    end, L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"])
 end
 
 ---@param self df_blizzbutton
@@ -1095,38 +1112,35 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         ---@param self frame
         ---@param button scoreboard_button
         function (self, button)
-            ---@class spell_hit_player : table
-            ---@field spellId number
-            ---@field amount number
-            ---@field damagerName string
-
             local playerData = button:GetPlayerData()
+            DoPlayerTooltip(playerData, self, function ()
+                ---@class spell_hit_player : table
+                ---@field spellId number
+                ---@field amount number
+                ---@field damagerName string
+                ---
+                ---@type spell_hit_player[]
+                local spellsThatHitThisPlayer = playerData.damageTakenFromSpells
 
-            ---@type spell_hit_player[]
-            local spellsThatHitThisPlayer = playerData.damageTakenFromSpells
+                for _, spellData in pairs(spellsThatHitThisPlayer) do
+                    local spellId = spellData.spellId
+                    local amount = spellData.amount
+                    local sourceName = spellData.damagerName
 
-            GameCooltip:Preset(2)
-            for _, spellData in pairs(spellsThatHitThisPlayer) do
-                local spellId = spellData.spellId
-                local amount = spellData.amount
-                local sourceName = spellData.damagerName
-
-                local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
-                if (spellName and spellIcon) then
-                    local spellAmount = Details:Format(amount)
-                    GameCooltip:AddLine(spellName .. " (" .. sourceName .. ")", spellAmount)
-                    GameCooltip:AddIcon(spellIcon, 1, 1, 16, 16)
+                    local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
+                    if (spellName and spellIcon) then
+                        local spellAmount = Details:Format(amount)
+                        GameCooltip:AddLine(spellName .. " (" .. sourceName .. ")", spellAmount)
+                        GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
+                        Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
+                    end
                 end
-            end
 
-            if (Details:GetCombatByUID(playerData.combatUid)) then
-                GameCooltip:AddLine("")
-                GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
-            end
-            GameCooltip:SetOwner(self)
-            GameCooltip:SetOption("TextSize", 10)
-            GameCooltip:SetOption("FixedWidth", 300)
-            GameCooltip:Show()
+                if (Details:GetCombatByUID(playerData.combatUid)) then
+                    GameCooltip:AddLine("")
+                    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+                end
+            end, L["SCOREBOARD_TOOLTIP_DAMAGE_TAKEN_HEADER"])
         end
     )
 
@@ -1142,7 +1156,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             self:SetText(Details:Format(math.floor(playerData.dps)))
         end,
         function (self, button)
-            spellNumberListCooltip(self, button:GetPlayerData(), button:GetActor(DETAILS_ATTRIBUTE_DAMAGE))
+            spellNumberListCooltip(self, button:GetPlayerData(), button:GetActor(DETAILS_ATTRIBUTE_DAMAGE), L["SCOREBOARD_TOOLTIP_DAMAGE_DONE_HEADER"])
         end
     )
 
@@ -1159,7 +1173,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         end,
         -- onMouseEnter
         function (self, button)
-            spellNumberListCooltip(self, button:GetPlayerData(), button:GetActor(DETAILS_ATTRIBUTE_HEAL))
+            spellNumberListCooltip(self, button:GetPlayerData(), button:GetActor(DETAILS_ATTRIBUTE_HEAL), L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"])
         end
     )
 
@@ -1183,16 +1197,36 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
                 return
             end
 
-            GameCooltip:Preset(2)
-            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_SUCCESS_LABEL"], interrupts)
-            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_OVERLAP_LABEL"], overlaps)
-            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_MISSED_LABEL"], casts - overlaps - interrupts)
-            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_INTERRUPT_TOTAL_LABEL"], casts)
+            local missed = casts - overlaps - interrupts
+            local interruptText = interrupts
+            local overlapText = overlaps
+            local missedText = missed
+            if (addon.profile.show_interrupt_tooltip_percentage) then
+                if (interrupts > 0) then
+                    interruptText = interruptText .. " (" .. (math.floor((interrupts / casts) * 100)) .. "%)"
+                end
+                if (overlaps > 0) then
+                    overlapText = overlapText .. " (" .. (math.floor((overlaps / casts) * 100)) .. "%)"
+                end
+                if (missed > 0) then
+                    missedText = missedText .. " (" .. (math.floor((missed / casts) * 100)) .. "%)"
+                end
+            end
 
-            GameCooltip:SetOwner(self)
-            GameCooltip:SetOption("TextSize", 10)
-            GameCooltip:SetOption("FixedWidth", 170)
-            GameCooltip:Show()
+            local ttLines = {
+                {L["SCOREBOARD_TOOLTIP_INTERRUPT_SUCCESS_LABEL"], interruptText},
+                {L["SCOREBOARD_TOOLTIP_INTERRUPT_OVERLAP_LABEL"], overlapText},
+                {L["SCOREBOARD_TOOLTIP_INTERRUPT_MISSED_LABEL"], missedText},
+            }
+
+            DoPlayerTooltip(playerData, self, function ()
+                for _, ttLine in pairs(ttLines) do
+                    GameCooltip:AddLine(ttLine[1], ttLine[2])
+                    -- set icon width to 0.00001 as workaround to ensure row height is consistent
+                    GameCooltip:AddIcon(134400, 1, 1, 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
+                    Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
+                end
+            end, L["SCOREBOARD_TOOLTIP_INTERRUPTS_HEADER"])
         end
     )
 

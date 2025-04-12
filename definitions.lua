@@ -34,6 +34,8 @@
 ---@field when_to_automatically_open_scoreboard string which method to use to automatically open? can be LOOT_CLOSED or COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
 ---@field show_column_summary_in_tooltip boolean whether or not to show the summary in a tooltip when hovering over the column
+---@field show_cc_cast_tooltip_percentage boolean whether or not show % in the tooltip
+---@field show_interrupt_tooltip_percentage boolean whether or not show % in the tooltip
 ---@field show_remaining_timeline_after_finish boolean whether or not to render the remaining time in a bar in a keystone after completing
 ---@field show_time_sections boolean whether or not to render sections of time on the timeline
 ---@field scoreboard_scale number indicates the scale of the scoreboard window
