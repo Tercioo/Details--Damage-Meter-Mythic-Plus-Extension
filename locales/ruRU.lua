@@ -62,7 +62,6 @@ do
     L["SCOREBOARD_TOOLTIP_INTERRUPT_SUCCESS_LABEL"] = "Успех"
     L["SCOREBOARD_TOOLTIP_INTERRUPT_OVERLAP_LABEL"] = "Перекрытие"
     L["SCOREBOARD_TOOLTIP_INTERRUPT_MISSED_LABEL"] = "Пропущено"
-    L["SCOREBOARD_TOOLTIP_INTERRUPT_TOTAL_LABEL"] = "Всего прерываний"
     L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"] = "Удалено %d поврежденных забегов из истории."
     L["ADDON_STARTUP_REMOVED_TOO_MANY_HISTORY"] = "Удалено %d забегов из истории после обнаружения слишком большого количества сохраненных забегов."
 

@@ -93,6 +93,31 @@ local optionsTemplate = {
     },
 
     ---
+    --- Tooltips
+    ---
+    {type = "label", get = function() return L["OPTIONS_TOOLTIPS"] end, text_template = orange_font_template},
+    {
+        type = "toggle",
+        get = function () return addon.profile.show_interrupt_tooltip_percentage end,
+        set = function (_, _, value)
+            addon.profile.show_interrupt_tooltip_percentage = value
+            addon.RefreshOpenScoreBoard()
+        end,
+        name = L["OPTIONS_SHOW_INTERRUPT_TOOLTIP_PERCENTAGE_LABEL"],
+        desc = L["OPTIONS_SHOW_INTERRUPT_TOOLTIP_PERCENTAGE_DESC"],
+    },
+    {
+        type = "toggle",
+        get = function () return addon.profile.show_cc_cast_tooltip_percentage end,
+        set = function (_, _, value)
+            addon.profile.show_cc_cast_tooltip_percentage = value
+            addon.RefreshOpenScoreBoard()
+        end,
+        name = L["OPTIONS_SHOW_CC_CAST_TOOLTIP_PERCENTAGE_LABEL"],
+        desc = L["OPTIONS_SHOW_CC_CAST_TOOLTIP_PERCENTAGE_DESC"],
+    },
+
+    ---
     --- Saving options
     ---
     {type = "label", get = function() return L["OPTIONS_SAVING"] end, text_template = orange_font_template},
@@ -167,7 +192,7 @@ function mythicPlusOptions.InitializeOptionsWindow()
         return _G[mainFrameName]
     end
 
-    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 300, L["OPTIONS_WINDOW_TITLE"], mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
+    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 345, L["OPTIONS_WINDOW_TITLE"], mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
     detailsFramework:MakeDraggable(optionsFrame)
     optionsFrame:SetPoint("center", UIParent, "center", 160, -50)
     detailsFramework:ApplyStandardBackdrop(optionsFrame)

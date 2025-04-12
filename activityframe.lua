@@ -198,7 +198,7 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
                 --space between each line, positive values make the lines be closer
                 GameCooltip:SetOption("LinePadding", -2)
 
-                --move each line in the Y axis(vertical offsett)
+                --move each line in the Y axis(vertical offset)
                 GameCooltip:SetOption("LineYOffset", 0)
                 --tooltip width
                 GameCooltip:SetOption("FixedWidth",(type(Details.death_tooltip_width) == "number" and Details.death_tooltip_width) or 300)
