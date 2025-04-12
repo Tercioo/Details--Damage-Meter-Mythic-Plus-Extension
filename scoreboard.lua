@@ -302,7 +302,10 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 230, 20, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
     readyFrame.RunInfoDropdown = runInfoDropdown
-    runInfoDropdown:UseSimpleHeader(true)
+    -- details alpha (13509) feature detection
+    if (runInfoDropdown.UseSimpleHeader) then
+        runInfoDropdown:UseSimpleHeader(true)
+    end
 
     hooksecurefunc(runInfoDropdown, "Selected", function(self, thisOption)
         local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime = thisOption.label:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)")
@@ -340,10 +343,10 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
                     menuFrame.label4 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
                     menuFrame.label5 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
 
-                    menuFrame.label2:SetPoint("left", menuFrame, "left", 210, 0)
-                    menuFrame.label3:SetPoint("left", menuFrame, "left", 240, 0)
-                    menuFrame.label4:SetPoint("left", menuFrame, "left", 285, 0)
-                    menuFrame.label5:SetPoint("left", menuFrame, "left", 315, 0)
+                    menuFrame.label2:SetPoint("left", menuFrame, "left", 220, 0)
+                    menuFrame.label3:SetPoint("left", menuFrame, "left", 250, 0)
+                    menuFrame.label4:SetPoint("left", menuFrame, "left", 295, 0)
+                    menuFrame.label5:SetPoint("left", menuFrame, "left", 325, 0)
 
                     local fontFace, fontSize, fontFlags = menuFrame.label:GetFont()
                     menuFrame.label2:SetFont(fontFace, fontSize, fontFlags)
