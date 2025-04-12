@@ -274,15 +274,27 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         ---@type dropdownoption[]
         local runInfoList = {}
         local savedRuns = addon.GetSavedRuns()
+        --get the current run showing
+        local selectedRunIndex = addon.GetSelectedRunIndex()
+
         for i = 1, #savedRuns do
             local runInfo = savedRuns[i]
-            runInfoList[#runInfoList+1] = {
+            local option = {
                 label = table.concat(addon.GetDropdownRunDescription(runInfo), "@"),
                 value = i,
                 onclick = function()
                     addon.SetSelectedRunIndex(i)
                 end,
+                icon = [[Interface\AddOns\Details_MythicPlus\Assets\Images\sandglass_icon.png]],
             }
+
+            if (i == selectedRunIndex) then
+                option.statusbar = [[Interface\AddOns\Details\images\bar_serenity]]
+                option.statusbarcolor = {0.4, 0.4, 0, 0.5}
+                option.color = "yellow"
+
+            end
+            runInfoList[#runInfoList+1] = option
         end
         return runInfoList
     end
@@ -290,6 +302,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 230, 20, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
     readyFrame.RunInfoDropdown = runInfoDropdown
+    runInfoDropdown:UseSimpleHeader(true)
 
     hooksecurefunc(runInfoDropdown, "Selected", function(self, thisOption)
         local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime = thisOption.label:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)")
