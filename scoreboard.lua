@@ -326,10 +326,10 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
                     menuFrame.label4 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
                     menuFrame.label5 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
 
-                    menuFrame.label2:SetPoint("left", menuFrame, "left", 200, 0)
-                    menuFrame.label3:SetPoint("left", menuFrame, "left", 220, 0)
-                    menuFrame.label4:SetPoint("left", menuFrame, "left", 260, 0)
-                    menuFrame.label5:SetPoint("left", menuFrame, "left", 285, 0)
+                    menuFrame.label2:SetPoint("left", menuFrame, "left", 210, 0)
+                    menuFrame.label3:SetPoint("left", menuFrame, "left", 240, 0)
+                    menuFrame.label4:SetPoint("left", menuFrame, "left", 285, 0)
+                    menuFrame.label5:SetPoint("left", menuFrame, "left", 315, 0)
 
                     local fontFace, fontSize, fontFlags = menuFrame.label:GetFont()
                     menuFrame.label2:SetFont(fontFace, fontSize, fontFlags)
@@ -522,6 +522,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
     mainFrame.RunInfoDropdown:Select(addon.GetSelectedRunIndex(), nil, nil, false)
     mythicPlusBreakdown.SetFontSettings()
 
+    if (#addon.GetSavedRuns() > 1) then
+        mainFrame.RunInfoDropdown:Show()
+    else
+        mainFrame.RunInfoDropdown:Hide()
+    end
+
     --hide the lootSquare
     --for i = 1, #mainFrame.PlayerBanners do
     --    mainFrame.PlayerBanners[i]:ClearLootSquares()
@@ -713,7 +719,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
         mainFrame.DungeonNameFontstring:SetText(L["SCOREBOARD_UNKNOWN_DUNGEON_LABEL"])
     end
 
-
     ---@type details_instanceinfo
     local instanceInfo = runData and Details:GetInstanceInfo(runData.mapId)
     if (instanceInfo) then
@@ -819,6 +824,7 @@ local showCrowdControlTooltip = function(self)
             Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
 
             local spellInfo = C_Spell.GetSpellInfo(spellName)
+            -- set icon width to 0.00001 as workaround to ensure row height is consistent
             GameCooltip:AddIcon(spellInfo and spellInfo.iconID or 134400, 1, 1, spellInfo and 18 or 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
         end
     end, L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"])
@@ -1216,6 +1222,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
             DoPlayerTooltip(playerData, self, function ()
                 for _, ttLine in pairs(ttLines) do
                     GameCooltip:AddLine(ttLine[1], ttLine[2])
+                    -- set icon width to 0.00001 as workaround to ensure row height is consistent
                     GameCooltip:AddIcon(134400, 1, 1, 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
                     Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
                 end

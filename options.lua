@@ -128,7 +128,7 @@ local optionsTemplate = {
             addon.profile.saved_runs_limit = value
             addon.RefreshOpenScoreBoard()
         end,
-        min = 5,
+        min = 1,
         max = 30,
         step = 1,
         name = L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"],
