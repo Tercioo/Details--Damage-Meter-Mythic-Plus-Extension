@@ -14,6 +14,7 @@ local addonName, private = ...
 local addon = private.addon
 local _ = nil
 local Translit = LibStub("LibTranslit-1.0")
+local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 
 --localization
 local L = detailsFramework.Language.GetLanguageTable(addonName)
@@ -824,6 +825,13 @@ local showCrowdControlTooltip = function(self)
             Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
 
             local spellInfo = C_Spell.GetSpellInfo(spellName)
+            -- details alpha (13509) feature detection
+            if (not spellInfo and openRaidLib.GetCCSpellIdBySpellName) then
+                local spellId = openRaidLib.GetCCSpellIdBySpellName(spellName)
+                if (spellId) then
+                    spellInfo = C_Spell.GetSpellInfo(spellId)
+                end
+            end
             -- set icon width to 0.00001 as workaround to ensure row height is consistent
             GameCooltip:AddIcon(spellInfo and spellInfo.iconID or 134400, 1, 1, spellInfo and 18 or 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
         end
