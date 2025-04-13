@@ -302,9 +302,50 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 230, 20, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
     readyFrame.RunInfoDropdown = runInfoDropdown
-    -- details alpha (13509) feature detection
-    if (runInfoDropdown.UseSimpleHeader) then
-        runInfoDropdown:UseSimpleHeader(true)
+    runInfoDropdown:UseSimpleHeader(true)
+
+    runInfoDropdown.OnCreateOptionFrame = function(dropdown, optionFrame, optionTable)
+        if (not optionFrame.label2) then
+            optionFrame.label2 = optionFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+            optionFrame.label3 = optionFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+            optionFrame.label4 = optionFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+            optionFrame.label5 = optionFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+
+            optionFrame.label2:SetPoint("left", optionFrame, "left", 220, 0)
+            optionFrame.label3:SetPoint("left", optionFrame, "left", 250, 0)
+            optionFrame.label4:SetPoint("left", optionFrame, "left", 295, 0)
+            optionFrame.label5:SetPoint("left", optionFrame, "left", 325, 0)
+
+            local fontFace, fontSize, fontFlags = optionFrame.label:GetFont()
+            optionFrame.label2:SetFont(fontFace, fontSize, fontFlags)
+            optionFrame.label3:SetFont(fontFace, fontSize, fontFlags)
+            optionFrame.label4:SetFont(fontFace, fontSize, fontFlags)
+            optionFrame.label5:SetFont(fontFace, fontSize, fontFlags)
+            optionFrame.label2:SetTextColor(optionFrame.label:GetTextColor())
+            optionFrame.label3:SetTextColor(optionFrame.label:GetTextColor())
+            optionFrame.label4:SetTextColor(optionFrame.label:GetTextColor())
+            optionFrame.label5:SetTextColor(optionFrame.label:GetTextColor())
+        end
+    end
+
+    runInfoDropdown.OnUpdateOptionFrame = function(dropdown, optionFrame, optionTable)
+        ---@type fontstring
+        local label1 = optionFrame.label
+        local text = label1:GetText()
+
+        local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime = text:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)")
+
+        label1:SetText(dungeonName)
+        optionFrame.label2:SetText(keyLevel)
+        optionFrame.label3:SetText(detailsFramework:IntegerToTimer(runTime))
+
+        if (tonumber(keyUpgradeLevels) > 0) then
+            optionFrame.label4:SetText("+" .. keyUpgradeLevels)
+        else
+            optionFrame.label4:SetText("")
+        end
+
+        optionFrame.label5:SetText(timeString)
     end
 
     hooksecurefunc(runInfoDropdown, "Selected", function(self, thisOption)
@@ -326,58 +367,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     --DropDownMetaFunctions:Selected(thisOption)
 
     runInfoDropdown.widget:HookScript("OnMouseDown", function(self)
-        local dropdown = self.MyObject
 
-        if (not dropdown.opened) then
-            return
-        end
-
-        local menuFrames = dropdown.menus
-
-        for i = 1, #menuFrames do
-            local menuFrame = menuFrames[i]
-            if (menuFrame and menuFrame:IsShown()) then
-                if (not menuFrame.label2) then
-                    menuFrame.label2 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
-                    menuFrame.label3 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
-                    menuFrame.label4 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
-                    menuFrame.label5 = menuFrame:CreateFontString(nil, "overlay", "GameFontNormal")
-
-                    menuFrame.label2:SetPoint("left", menuFrame, "left", 220, 0)
-                    menuFrame.label3:SetPoint("left", menuFrame, "left", 250, 0)
-                    menuFrame.label4:SetPoint("left", menuFrame, "left", 295, 0)
-                    menuFrame.label5:SetPoint("left", menuFrame, "left", 325, 0)
-
-                    local fontFace, fontSize, fontFlags = menuFrame.label:GetFont()
-                    menuFrame.label2:SetFont(fontFace, fontSize, fontFlags)
-                    menuFrame.label3:SetFont(fontFace, fontSize, fontFlags)
-                    menuFrame.label4:SetFont(fontFace, fontSize, fontFlags)
-                    menuFrame.label5:SetFont(fontFace, fontSize, fontFlags)
-                    menuFrame.label2:SetTextColor(menuFrame.label:GetTextColor())
-                    menuFrame.label3:SetTextColor(menuFrame.label:GetTextColor())
-                    menuFrame.label4:SetTextColor(menuFrame.label:GetTextColor())
-                    menuFrame.label5:SetTextColor(menuFrame.label:GetTextColor())
-                end
-
-                ---@type fontstring
-                local label1 = menuFrame.label
-                local text = label1:GetText()
-
-                local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime = text:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)")
-
-                label1:SetText(dungeonName)
-                menuFrame.label2:SetText(keyLevel)
-                menuFrame.label3:SetText(detailsFramework:IntegerToTimer(runTime))
-
-                if (tonumber(keyUpgradeLevels) > 0) then
-                    menuFrame.label4:SetText("+" .. keyUpgradeLevels)
-                else
-                    menuFrame.label4:SetText("")
-                end
-
-                menuFrame.label5:SetText(timeString)
-            end
-        end
     end)
 
     local normalTexture = configButton:CreateTexture(nil, "overlay")
