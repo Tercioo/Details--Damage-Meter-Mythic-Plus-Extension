@@ -68,6 +68,12 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     end
     self:SetLogoutLogTable(profile.logout_logs)
 
+    local detailsCoreVersion = Details:GetCoreVersion()
+    if (detailsCoreVersion < 164) then
+        print("Details! Mythic+: Update Details!, NOW!.")
+        print("Details! Mythic+: Update Details!, NOW!.")
+    end
+
     addon.data = {}
 
     local detailsEventListener = Details:CreateEventListener()
