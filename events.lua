@@ -100,7 +100,7 @@ function addon.InitializeEvents()
     end
 
     function addon.OnEncounterStart(dungeonEncounterId, encounterName, difficultyId, raidSize)
-        if (addon.IsParsing()) then
+        if (addon.profile.is_run_ongoing) then
             ---@type detailsmythicplus_encounterinfo
             local currentEncounterInfo = {
                 dungeonEncounterId = dungeonEncounterId,
@@ -117,7 +117,7 @@ function addon.InitializeEvents()
     end
 
     function addon.OnEncounterEnd(dungeonEncounterId, encounterName, difficultyId, raidSize, endStatus)
-        if (addon.IsParsing()) then
+        if (addon.profile.is_run_ongoing) then
             ---@type detailsmythicplus_encounterinfo
             local currentEncounterInfo = addon.profile.last_run_data.encounter_timeline[#addon.profile.last_run_data.encounter_timeline]
 
@@ -134,13 +134,13 @@ function addon.InitializeEvents()
     end
 
     function addon.OnPlayerEnterCombat(...)
-        if (addon.IsParsing()) then
+        if (addon.profile.is_run_ongoing) then
             table.insert(addon.profile.last_run_data.incombat_timeline, time())
         end
     end
 
     function addon.OnPlayerLeaveCombat(...)
-        if (addon.IsParsing()) then
+        if (addon.profile.is_run_ongoing) then
             table.insert(addon.profile.last_run_data.incombat_timeline, time())
         end
     end
