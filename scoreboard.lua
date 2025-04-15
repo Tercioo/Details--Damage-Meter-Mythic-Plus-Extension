@@ -36,6 +36,7 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field ElapsedTimeText fontstring
 ---@field OutOfCombatIcon texture
 ---@field OutOfCombatText fontstring
+---@field ReloadedFrame frame
 ---@field SandTimeIcon texture
 ---@field StrongArmIcon texture
 ---@field RatingLabel fontstring
@@ -508,20 +509,45 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         outOfCombatIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
         outOfCombatIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
         outOfCombatIcon:SetVertexColor(detailsFramework:ParseColors("orangered"))
+        outOfCombatIcon:SetSize(24, 24)
+        outOfCombatIcon:SetPoint("bottomleft", headerFrame, "topleft", 20, 12)
         readyFrame.OutOfCombatIcon = outOfCombatIcon
 
         local outOfCombatText = readyFrame:CreateFontString("$parentOutOfCombatText", "artwork", "GameFontNormal")
-        outOfCombatText:SetTextColor(1, 1, 1)
         detailsFramework:SetFontSize(outOfCombatText, 11)
         detailsFramework:SetFontColor(outOfCombatText, "orangered")
         outOfCombatText:SetText("00:00")
         outOfCombatText:SetPoint("left", outOfCombatIcon, "right", 6, -3)
         readyFrame.OutOfCombatText = outOfCombatText
 
-        local buttonSize = 24
+        local reloadedFrame = CreateFrame("frame", "$parentReloadedFrame", headerFrame, "BackdropTemplate")
+        reloadedFrame:SetScript("OnEnter", function(self)
+            GameCooltip:Preset(2)
+            GameCooltip:SetOwner(self, "bottom", "top", 0, -4)
+            GameCooltip:AddLine(L["SCOREBOARD_RELOADED_TOOLTIP"])
+            GameCooltip:Show()
+        end)
+        reloadedFrame:SetScript("OnLeave", function()
+            GameCooltip:Hide()
+        end)
+        readyFrame.ReloadedFrame = reloadedFrame
 
-        readyFrame.OutOfCombatIcon:SetSize(buttonSize, buttonSize)
-        readyFrame.OutOfCombatIcon:SetPoint("bottomleft", headerFrame, "topleft", 20, 12)
+        local reloadedText = reloadedFrame:CreateFontString("$parentReloadedText", "artwork", "GameFontNormal")
+        detailsFramework:SetFontSize(reloadedText, 11)
+        detailsFramework:SetFontColor(reloadedText, "orange")
+        reloadedText:SetText(L["SCOREBOARD_RELOADED_WARNING"])
+
+        local reloadedIcon = reloadedFrame:CreateTexture("$parentReloadedIcon", "artwork", nil, 2)
+        reloadedIcon:SetAtlas("Professions_Icon_Warning")
+        reloadedIcon:SetSize(20, 15)
+
+        reloadedText:SetPoint("bottomright", headerFrame, "bottomright", -4, 25)
+        reloadedIcon:SetPoint("bottomright", reloadedText, "bottomleft", -2, 0)
+        reloadedFrame:SetPoint("bottomright", reloadedText, "bottomright", 5, -5)
+        reloadedFrame:SetPoint("topleft", reloadedIcon, "topleft", -5, 5)
+
+        reloadedFrame.ReloadedText = reloadedText
+        reloadedFrame.ReloadedIcon = reloadedIcon
     end
 
     --create 6 rows to show data of the player, it only require 5 lines, the last one can be used on exception cases.
@@ -542,6 +568,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
 
     mainFrame.RunInfoDropdown:Select(addon.GetSelectedRunIndex(), nil, nil, false)
     mythicPlusBreakdown.SetFontSettings()
+
+    if (runData.reloaded) then
+        mainFrame.ReloadedFrame:Show()
+    else
+        mainFrame.ReloadedFrame:Hide()
+    end
 
     if (#addon.GetSavedRuns() > 1) then
         mainFrame.RunInfoDropdown:Show()
