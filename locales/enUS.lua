@@ -73,7 +73,7 @@ do
     L["SCOREBOARD_TOOLTIP_INTERRUPTS_HEADER"] = "Amount"
     L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"] = "Amount"
     L["SCOREBOARD_RELOADED_WARNING"] = "Incomplete Data"
-    L["SCOREBOARD_RELOADED_TOOLTIP"] = "This run's data is incomplete because of a reload or relog mid-run"
+    L["SCOREBOARD_RELOADED_TOOLTIP"] = "This run's data is incomplete, and possibly incorrect because of a reload or relog mid-run"
     L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"] = "Removed %d corrupt run(s) from history."
     L["ADDON_STARTUP_REMOVED_TOO_MANY_HISTORY"] = "Removed %d run(s) from history after detecting too many saved runs."
 
