@@ -154,55 +154,59 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
         playerPortrait.RoleIcon:SetDesaturated(true)
 
         marker.SubFrames.playerPortrait = playerPortrait
+    end
 
-        --tooltip showing the latest 3 spells to kill the player
-        marker:SetScript("OnEnter", function()
-            ---@type playerinfo
-            local playerInfo = event.arguments.playerData
-            local deathReason = addon.GetPlayerDeathReason(runData, playerInfo.name, event.arguments.index)
-            if (deathReason) then
-                GameCooltip:Preset(2)
+    --tooltip showing the latest 3 spells to kill the player
+    marker.OnEnter = function(self)
+        self.originalFrameLevel = self:GetFrameLevel()
+        self:SetFrameLevel(self.originalFrameLevel + 6000)
 
-                local relativeTimestamp = event.timestamp - runData.startTime
-                local classColor = RAID_CLASS_COLORS[playerInfo.class]
-                GameCooltip:AddLine(addon.PreparePlayerName(playerInfo.name), detailsFramework:IntegerToTimer(relativeTimestamp), nil, classColor.r, classColor.g, classColor.b, 1, 1, 0, 0, 1)
-                GameCooltip:AddLine("")
+        ---@type playerinfo
+        local playerInfo = event.arguments.playerData
+        local deathReason = addon.GetPlayerDeathReason(runData, playerInfo.name, event.arguments.index)
+        if (deathReason) then
+            GameCooltip:Preset(2)
 
-                for i = #deathReason, 1, -1 do --first index is the spell that killed the player
-                    local thisDeathReason = deathReason[i]
-                    local spellName, _, spellIcon = Details.GetSpellInfo(thisDeathReason.spellId)
-                    GameCooltip:AddLine(i .. ". " .. spellName, Details:Format(thisDeathReason.totalDamage))
-                    GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
+            local relativeTimestamp = event.timestamp - runData.startTime
+            local classColor = RAID_CLASS_COLORS[playerInfo.class]
+            GameCooltip:AddLine(addon.PreparePlayerName(playerInfo.name), detailsFramework:IntegerToTimer(relativeTimestamp), nil, classColor.r, classColor.g, classColor.b, 1, 1, 0, 0, 1)
+            GameCooltip:AddLine("")
 
-                    local side = nil
-                    local value = 100
-                    local useSpark = false
+            for i = #deathReason, 1, -1 do --first index is the spell that killed the player
+                local thisDeathReason = deathReason[i]
+                local spellName, _, spellIcon = Details.GetSpellInfo(thisDeathReason.spellId)
+                GameCooltip:AddLine(i .. ". " .. spellName, Details:Format(thisDeathReason.totalDamage))
+                GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
 
-                    if (i == 1) then
-                        local statusBarColor = {0.5, 0.1, 0.1, 0.2}
-                        Details:AddTooltipBackgroundStatusbar(side, value, useSpark, statusBarColor)
-                    else
-                        local statusBarColor = {0.1, 0.1, 0.1, 0.2}
-                        Details:AddTooltipBackgroundStatusbar(side, value, useSpark, statusBarColor)
-                    end
+                local side = nil
+                local value = 100
+                local useSpark = false
+
+                if (i == 1) then
+                    local statusBarColor = {0.5, 0.1, 0.1, 0.2}
+                    Details:AddTooltipBackgroundStatusbar(side, value, useSpark, statusBarColor)
+                else
+                    local statusBarColor = {0.1, 0.1, 0.1, 0.2}
+                    Details:AddTooltipBackgroundStatusbar(side, value, useSpark, statusBarColor)
                 end
-
-                GameCooltip:SetOption("TextSize", Details.tooltip.fontsize)
-                GameCooltip:SetOption("TextFont",  Details.tooltip.fontface)
-                GameCooltip:SetOption("LeftPadding", -3)
-                GameCooltip:SetOption("RightPadding", 2)
-                GameCooltip:SetOption("LinePadding", -2)
-                GameCooltip:SetOption("LineYOffset", 0)
-                GameCooltip:SetOption("FixedWidth", false)
-                GameCooltip:SetOption("StatusBarTexture", Details.death_tooltip_texture)
-                GameCooltip:SetOwner(marker)
-                GameCooltip:Show()
             end
-        end)
 
-        marker:SetScript("OnLeave", function()
-            GameCooltip:Hide()
-        end)
+            GameCooltip:SetOption("TextSize", Details.tooltip.fontsize)
+            GameCooltip:SetOption("TextFont",  Details.tooltip.fontface)
+            GameCooltip:SetOption("LeftPadding", -3)
+            GameCooltip:SetOption("RightPadding", 2)
+            GameCooltip:SetOption("LinePadding", -2)
+            GameCooltip:SetOption("LineYOffset", 0)
+            GameCooltip:SetOption("FixedWidth", false)
+            GameCooltip:SetOption("StatusBarTexture", Details.death_tooltip_texture)
+            GameCooltip:SetOwner(self)
+            GameCooltip:Show()
+        end
+    end
+
+    marker.OnLeave = function (self)
+        self:SetFrameLevel(self.originalFrameLevel)
+        GameCooltip:Hide()
     end
 
     SetPortraitTexture(playerPortrait.Portrait, event.arguments.playerData.unitId)
@@ -292,15 +296,14 @@ function activity.PrepareEventFrames(frame, events)
             marker:EnableMouse(true)
             marker:SetSize(32, 32)
             marker:SetScript("OnEnter", function (self)
-                self.originalFrameLevel = self:GetFrameLevel()
-                self:SetFrameLevel(self.originalFrameLevel + 6000)
-                self.TimestampLabel:Show()
-                self.TimestampBackground:Show()
+                if (self.OnEnter) then
+                    self.OnEnter(self)
+                end
             end)
             marker:SetScript("OnLeave", function (self)
-                self:SetFrameLevel(self.originalFrameLevel)
-                self.TimestampLabel:Hide()
-                self.TimestampBackground:Hide()
+                if (self.OnLeave) then
+                    self.OnLeave(self)
+                end
             end)
 
             local timestampLabel = marker:CreateFontString("$parentTimestampLabel", "overlay", "GameFontNormal")
@@ -319,6 +322,20 @@ function activity.PrepareEventFrames(frame, events)
             line:SetColorTexture(1, 1, 1, 0.5)
             line:SetWidth(1)
             marker.LineTexture = line
+        end
+
+        -- (re)set default mouseover behavior
+        marker.OnEnter = function (self)
+            self.originalFrameLevel = self:GetFrameLevel()
+            self:SetFrameLevel(self.originalFrameLevel + 6000)
+            self.TimestampLabel:Show()
+            self.TimestampBackground:Show()
+        end
+
+        marker.OnLeave = function (self)
+            self:SetFrameLevel(self.originalFrameLevel)
+            self.TimestampLabel:Hide()
+            self.TimestampBackground:Hide()
         end
 
         marker:ClearAllPoints()
