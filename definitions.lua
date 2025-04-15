@@ -28,6 +28,8 @@
 ---@field ScoreboardEventType scoreboard_eventtype
 
 ---@class profile : table
+---@field has_last_run boolean whether or not there's a last run. This run will be cleared when the next one starts.
+---@field is_run_ongoing boolean whether or not there's a current run going
 ---@field saved_runs runinfo[] store the saved runs
 ---@field saved_runs_limit number limit of saved runs
 ---@field saved_runs_selected_index number index of the selected run
@@ -114,6 +116,7 @@
 ---@field startTime number the time() when the run started
 ---@field endTime number the time() when the run ended
 ---@field mapId number completionInfo.mapChallengeModeID or Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
+---@field reloaded boolean whether or not the run had a reload in-between
 
 ---@class challengemodecompletioninfo : table store the data from the GetChallengeCompletionInfo() plus some extra data
 ---@field mapChallengeModeID number the map id
@@ -188,6 +191,9 @@
 ---@field incombat_timeline number[] first time is no combat (key start), then every timestamp is a toggle
 ---@field encounter_timeline detailsmythicplus_encounterinfo[] store the data from encounter_start and encounter_end events, one sub table per boss attempt
 ---@field interrupt_overlaps table<string, number> count the interrupt overlaps for each player
+---@field interrupt_spells_cast table<string, table>
+---@field interrupt_cast_overlap_done table<string, number> interrupts per player
+---@field reloaded boolean whether or not the run had a reload in-between
 
 ---@class detailsmythicplus_encounterinfo : table
 ---@field dungeonEncounterId number encounter id given from the encounter_start event

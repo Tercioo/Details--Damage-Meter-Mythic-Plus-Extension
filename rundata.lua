@@ -73,6 +73,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
         startTime = addon.profile.last_run_data.start_time,
         endTime = time(),
         mapId = completionInfo.mapChallengeModeID or addon.profile.last_run_data.map_id,
+        reloaded = addon.profile.last_run_data.reloaded,
     }
 
     local dungeonName, id, timeLimit, texture, backgroundTexture = C_ChallengeMode.GetMapUIInfo(runInfo.mapId)
@@ -245,10 +246,10 @@ function addon.GetSavedRuns()
     return addon.profile.saved_runs
 end
 
----return the run info for the last run finished
+---return the run info for the last run finished before the next one starts
 ---@return runinfo
 function addon.GetLastRun()
-    return addon.profile.saved_runs[1]
+    return addon.profile.has_last_run and addon.profile.saved_runs[1] or nil
 end
 
 ---set the index of the latest selected run info

@@ -24,18 +24,15 @@ local addon = private.addon
 local L = detailsFramework.Language.GetLanguageTable(tocFileName)
 
 local parserFrame = CreateFrame("frame")
+parserFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+parserFrame:SetScript("OnEvent", function (self, ...) self:OnEvent(...) end)
 parserFrame.isParsing = false
 
 function addon.StartParser()
-    --this data need to survive a /reload
-    addon.profile.last_run_data.interrupt_spells_cast = {}
-    addon.profile.last_run_data.interrupt_cast_overlap_done = {}
-
     parserFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-    parserFrame:SetScript("OnEvent", parserFrame.OnEvent)
     parserFrame.isParsing = true
 
-    private.log("Parser stared")
+    private.log("Parser started")
 end
 
 function addon.StopParser()
@@ -52,7 +49,7 @@ end
 
 --functions for events that the addon is interesting in
 local parserFunctions = {
-    ["SPELL_INTERRUPT"] =       function(token, time, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, spellId, spellName, spellType, extraSpellID, extraSpellName, extraSchool)
+    ["SPELL_INTERRUPT"] = function(token, time, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, spellId, spellName, spellType, extraSpellID, extraSpellName, extraSchool)
         --get the list of interrupt attempts by this player
         ---@type table<guid, interrupt_overlap[]>
         local interruptCastsOnTarget = addon.profile.last_run_data.interrupt_spells_cast[targetGUID]
@@ -66,17 +63,14 @@ local parserFunctions = {
                     if (detailsFramework.Math.IsNearlyEqual(time, interruptAttempt.time, 0.1)) then
                         --mark as a success interrupt
                         interruptAttempt.interrupted = true
-                        private.log("Interrupt success:", sourceName, "on", targetGUID)
                         break
                     end
                 end
             end
-        else
-            private.log("No interrupts casts on target", targetGUID)
         end
     end,
 
-    ["SPELL_CAST_SUCCESS"] =    function(token, time, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, spellId, spellName, spellType, extraSpellID, extraSpellName, extraSchool)
+    ["SPELL_CAST_SUCCESS"] = function(token, time, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, spellId, spellName, spellType, extraSpellID, extraSpellName, extraSchool)
         local interruptSpells = LIB_OPEN_RAID_SPELL_INTERRUPT
         --check if this is an interrupt spell
         if (interruptSpells[spellId]) then
@@ -93,29 +87,40 @@ local parserFunctions = {
             }
             --store the interrupt attempt in a table
             table.insert(addon.profile.last_run_data.interrupt_spells_cast[targetGUID], spellOverlapData)
-
-            private.log("Interrupt cast:", sourceName, "on", targetGUID)
         end
     end
 }
 
-
 function parserFrame.OnEvent(self, event, ...)
-    local timestamp, event, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, b2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16 = CombatLogGetCurrentEventInfo()
-    if (parserFunctions[event]) then
-        parserFunctions[event](event, timestamp, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, b2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16)
+    if (event == "COMBAT_LOG_EVENT_UNFILTERED") then
+        local timestamp, clEvent, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, b2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16 = CombatLogGetCurrentEventInfo()
+        if (parserFunctions[clEvent]) then
+            parserFunctions[clEvent](clEvent, timestamp, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, b2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16)
+        end
+    elseif (event == "PLAYER_ENTERING_WORLD") then
+        -- continue after a reload or relog
+        -- this change should be removed when COMBAT_MYTHICDUNGEON_START is not being triggered after
+        -- reloading in a run, or if it indicates that it is a reload
+        if (addon.profile.is_run_ongoing and not parserFrame.isParsing) then
+            if (C_ChallengeMode.IsChallengeModeActive()) then
+                private.log("Detected ongoing run, continue parsing")
+                addon.StartParser()
+                addon.profile.last_run_data.reloaded = true
+            else
+                private.log("Detected ongoing run without challenge mode, clearing run")
+                addon.profile.is_run_ongoing = false
+            end
+        end
     end
 end
 
 
 function addon.CountInterruptOverlaps()
-    for targetGUID, interruptCastsOnTarget in pairs(addon.profile.last_run_data.interrupt_spells_cast) do
+    for _, interruptCastsOnTarget in pairs(addon.profile.last_run_data.interrupt_spells_cast) do
 
         --store clusters of interrupts that was attempted on the same target within 1.5 seconds
         --this is a table of tables, where each table is a cluster of interrupts
         local interruptClusters = {}
-
-        private.log("CountInterruptOverlaps() cluster created for", targetGUID, "Interrupts on this target:", #interruptCastsOnTarget)
 
         --find interrupt casts casted on the same target within 1.5 seconds of each other
         local index = 1
@@ -144,12 +149,8 @@ function addon.CountInterruptOverlaps()
             end
         end
 
-        private.log("Interrupts clusters found on this target:", #interruptClusters)
-
-        for index, thisCluster in ipairs(interruptClusters) do
+        for _, thisCluster in ipairs(interruptClusters) do
             --iterate among the cluster and add a overlap if those interrupts without success
-            private.log("This cluster size:", #thisCluster)
-
             for i = 1, #thisCluster do
                 ---@type interrupt_overlap
                 local interruptAttempt = thisCluster[i]
@@ -157,9 +158,6 @@ function addon.CountInterruptOverlaps()
                 if (not interruptAttempt.interrupted) then
                     local sourceName = interruptAttempt.sourceName
                     addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] = (addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName] or 0) + 1
-                    private.log("Added an overlap for player:", sourceName, "total overlaps:", addon.profile.last_run_data.interrupt_cast_overlap_done[sourceName])
-                else
-                    private.log("This player interrupted the spell:", interruptAttempt.sourceName)
                 end
             end
         end

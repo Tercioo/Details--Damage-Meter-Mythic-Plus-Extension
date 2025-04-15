@@ -16,6 +16,7 @@ function addon.InitializeEvents()
     local detailsEventListener = addon.detailsEventListener
 
     function detailsEventListener.OnDetailsEvent(contextObject, event, ...)
+        private.log(event)
         if (event == "COMBAT_MYTHICDUNGEON_START") then
             addon.OnMythicDungeonStart(...)
         elseif (event == "COMBAT_MYTHICDUNGEON_END") then
@@ -42,6 +43,7 @@ function addon.InitializeEvents()
                 table.insert(addon.profile.saved_runs, 1, runInfo)
                 table.remove(addon.profile.saved_runs, addon.profile.saved_runs_limit+1)
                 addon.SetSelectedRunIndex(1)
+                addon.profile.has_last_run = true
 
                 if (addon.profile.when_to_automatically_open_scoreboard == "COMBAT_MYTHICPLUS_OVERALL_READY") then
                     addon.OpenScoreBoardAtEnd()
@@ -59,15 +61,28 @@ function addon.InitializeEvents()
     end
 
     function addon.OnMythicDungeonStart(...)
+        if (addon.IsParsing()) then
+            -- this function is called after reloading, being called again would reset dungeon info
+            -- this change should be removed when COMBAT_MYTHICDUNGEON_START is not being triggered after
+            -- reloading in a run, or if it indicates that it is a reload
+            return
+        end
+
+        addon.profile.has_last_run = false
+        addon.profile.is_run_ongoing = true
+        addon.profile.last_run_data.reloaded = false
         addon.profile.last_run_data.start_time = time()
         addon.profile.last_run_data.map_id = Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
-        --store the first value in the in combat timeline.
-        addon.profile.last_run_data.incombat_timeline = {time()}
+        addon.profile.last_run_data.incombat_timeline = {time()} --store the first value in the in combat timeline.
         addon.profile.last_run_data.encounter_timeline = {}
+        addon.profile.last_run_data.interrupt_spells_cast = {}
+        addon.profile.last_run_data.interrupt_cast_overlap_done = {}
+
         addon.StartParser()
     end
 
     function addon.OnMythicDungeonEnd(...)
+        addon.profile.is_run_ongoing = false
         addon.profile.last_run_data.end_time = time()
         local combatTimeline = addon.profile.last_run_data.incombat_timeline
         local totalTimes = #combatTimeline
