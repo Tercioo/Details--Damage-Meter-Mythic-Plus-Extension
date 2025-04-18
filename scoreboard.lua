@@ -754,10 +754,10 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
         end
 
         table.sort(events, function(t1, t2) return t1.timestamp < t2.timestamp end)
+        local flooredRunTime = math.floor(runTime)
 
         mainFrame.ActivityFrame:SetActivity(events, runData)
-
-        mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(runTime))
+        mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(flooredRunTime) .. WrapTextInColorCode("." .. math.floor((runTime - flooredRunTime) * 1000), "22BA8E23"))
         mainFrame.OutOfCombatText:SetText(L["SCOREBOARD_NOT_IN_COMBAT_LABEL"] .. ": " .. detailsFramework:IntegerToTimer(notInCombat))
         mainFrame.Level:SetText(runData.completionInfo.level) --the level in the big circle at the top
         if (runData.completionInfo.onTime) then
