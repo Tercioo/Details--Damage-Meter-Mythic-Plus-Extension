@@ -848,7 +848,15 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
         local flooredRunTime = math.floor(runTime)
 
         mainFrame.ActivityFrame:SetActivity(events, runData)
-        mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(flooredRunTime) .. WrapTextInColorCode("." .. math.floor((runTime - flooredRunTime) * 1000), "22BA8E23"))
+
+        local timeLimitToCompletion = runData.timeLimit
+
+        if (detailsFramework.Math.IsNearlyEqual(timeLimitToCompletion, flooredRunTime, 2)) then
+            mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(flooredRunTime) .. WrapTextInColorCode("." .. math.floor((runTime - flooredRunTime) * 1000), "FFBA8E23"))
+        else
+            mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(flooredRunTime))
+        end
+
         mainFrame.OutOfCombatText:SetText(L["SCOREBOARD_NOT_IN_COMBAT_LABEL"] .. ": " .. detailsFramework:IntegerToTimer(notInCombat))
         mainFrame.Level:SetText(runData.completionInfo.level) --the level in the big circle at the top
         if (runData.completionInfo.onTime) then
