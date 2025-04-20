@@ -143,7 +143,7 @@ local lineBackdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], til
 local activityFrameY = headerY - 90 + (lineHeight * lineAmount * -1)
 --player keystone icon, keystone text
 local keystoneTextureSize = 45 --the icon is a square
-local keystoneDefaultTexture = [[Interface\ICONS\INV_Misc_QuestionMark]] --when no keystone is found, this texture is shown
+local keystoneDefaultTexture = 4352494 --when no keystone is found, this texture is shown
 local noKeystoneAlpha = 0.3 --when no keystone is found, decrease the alpha of the icon and text to this value
 
 function addon.OpenMythicPlusBreakdownBigFrame()
