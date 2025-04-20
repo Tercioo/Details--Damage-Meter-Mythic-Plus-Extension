@@ -126,6 +126,8 @@ local mainFrameName = "DetailsMythicPlusBreakdownFrame"
 local mainFrameHeight = 452
 --the padding on the left and right side it should keep between the frame itself and the table
 local mainFramePaddingHorizontal = 5
+--amount of desaturation for the big dungeon image in the background of the main frame
+local backdropDungeonTextureDesaturation = 0.5
 --offset for the dungeon name y position related to the top of the frame
 local dungeonNameY = -12
 --where the header is positioned in the Y axis from the top of the frame
@@ -879,6 +881,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
         mainFrame.DungeonBackdropTexture:SetTexture(runData.dungeonBackgroundTexture)
     end
 
+    mainFrame.DungeonBackdropTexture:SetDesaturation(backdropDungeonTextureDesaturation)
     mainFrame.DungeonBackdropTexture:SetTexCoord(35/512, 291/512, 49/512, 289/512)
 
     return true
