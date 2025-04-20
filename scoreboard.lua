@@ -41,6 +41,8 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field ElapsedTimeText fontstring
 ---@field OutOfCombatIcon texture
 ---@field OutOfCombatText fontstring
+---@field ItemLevelIcon texture
+---@field ItemLevelText fontstring
 ---@field ReloadedFrame frame
 ---@field SandTimeIcon texture
 ---@field StrongArmIcon texture
@@ -548,17 +550,36 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         local outOfCombatIcon = readyFrame:CreateTexture("$parentOutOfCombatIcon", "artwork", nil, 2)
         outOfCombatIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
         outOfCombatIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
-        outOfCombatIcon:SetVertexColor(detailsFramework:ParseColors("orangered"))
+        outOfCombatIcon:SetVertexColor(detailsFramework:ParseColors("silver"))
         outOfCombatIcon:SetSize(24, 24)
         outOfCombatIcon:SetPoint("bottomleft", headerFrame, "topleft", 20, 12)
         readyFrame.OutOfCombatIcon = outOfCombatIcon
 
         local outOfCombatText = readyFrame:CreateFontString("$parentOutOfCombatText", "artwork", "GameFontNormal")
         detailsFramework:SetFontSize(outOfCombatText, 11)
-        detailsFramework:SetFontColor(outOfCombatText, "orangered")
+        detailsFramework:SetFontColor(outOfCombatText, "silver")
         outOfCombatText:SetText("00:00")
         outOfCombatText:SetPoint("left", outOfCombatIcon, "right", 6, -3)
         readyFrame.OutOfCombatText = outOfCombatText
+
+        local itemLevelIcon = readyFrame:CreateTexture("$parentItemLevelIcon", "artwork", nil, 2)
+        itemLevelIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+        itemLevelIcon:SetPoint("left", outOfCombatIcon, "right", 260, 0)
+        do
+            local left, right, top, bottom = 79, 131, 229, 271
+            itemLevelIcon:SetTexCoord(left/512, right/512, top/512, bottom/512)
+            itemLevelIcon:SetSize(right - left, bottom - top)
+            itemLevelIcon:SetScale(0.5)
+            itemLevelIcon:SetAlpha(0.834)
+            itemLevelIcon:SetVertexColor(0.9, 0.9, 0.9)
+        end
+
+        local itemLevelText = readyFrame:CreateFontString("$parentItemLevelText", "artwork", "GameFontNormal")
+        detailsFramework:SetFontSize(itemLevelText, 11)
+        detailsFramework:SetFontColor(itemLevelText, "silver")
+        itemLevelText:SetText("0.0")
+        itemLevelText:SetPoint("left", itemLevelIcon, "right", 6, -3)
+        readyFrame.ItemLevelText = itemLevelText
 
         local reloadedFrame = CreateFrame("frame", "$parentReloadedFrame", headerFrame, "BackdropTemplate")
         reloadedFrame:SetScript("OnEnter", function(self)
@@ -874,6 +895,22 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
         mainFrame.ActivityFrame:SetActivity(events, runData)
 
         local timeLimitToCompletion = runData.timeLimit
+
+        --mainFrame.ItemLevelText:SetText(runData.completionInfo.itemLevel or 0.0)
+        --get the item level of all player in the run and sum all of them, and then divide by the total of players found, item level is stored here: runInfo.combatData.groupMembers[unitName].ilevel
+        local totalItemLevel = 0
+        local totalPlayers = 0
+        for playerName, playerInfo in pairs(runData.combatData.groupMembers) do
+            if (playerInfo.ilevel) then
+                totalItemLevel = totalItemLevel + playerInfo.ilevel
+                totalPlayers = totalPlayers + 1
+            end
+        end
+        if (totalPlayers > 0) then
+            mainFrame.ItemLevelText:SetText(math.floor(totalItemLevel / totalPlayers))
+        else
+            mainFrame.ItemLevelText:SetText("0.0")
+        end
 
         if (detailsFramework.Math.IsNearlyEqual(timeLimitToCompletion, flooredRunTime, 2)) then
             mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(flooredRunTime) .. WrapTextInColorCode("." .. math.floor((runTime - flooredRunTime) * 1000), "FFBA8E23"))
@@ -1220,6 +1257,7 @@ local CreateLootSquare = function(scoreboardLine)
     return lootSquare
 end
 
+--search tags: ~create ~line
 function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFrame, index)
     ---@type scoreboard_line
     local line = CreateFrame("button", "$parentLine" .. index, mainFrame, "BackdropTemplate")
