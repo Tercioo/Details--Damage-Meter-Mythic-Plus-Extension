@@ -52,6 +52,7 @@ do
 
     L["SCOREBOARD_NO_SCORE_AVAILABLE"] = "There is currently no score on the board"
     L["SCOREBOARD_TITLE_PLAYER_NAME"] = "Player Name"
+    L["SCOREBOARD_TITLE_KEYSTONE"] = "Keystone"
     L["SCOREBOARD_TITLE_SCORE"] = "M+ Score"
     L["SCOREBOARD_TITLE_LOOT"] = "Loot"
     L["SCOREBOARD_TITLE_DEATHS"] = "Deaths"

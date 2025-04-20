@@ -6,6 +6,7 @@
 ]]
 
 ---@type details
+---@diagnostic disable-next-line: undefined-field
 local Details = _G.Details
 ---@type detailsframework
 local detailsFramework = _G.DetailsFramework
@@ -15,6 +16,10 @@ local addon = private.addon
 local _ = nil
 local Translit = LibStub("LibTranslit-1.0")
 local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
+
+if (not openRaidLib) then
+    return
+end
 
 --localization
 local L = detailsFramework.Language.GetLanguageTable(addonName)
@@ -56,6 +61,10 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field WaitingForLootLabel loot_dot_animation
 ---@field LootSquare details_lootsquare
 ---@field LootSquares details_lootsquare[]
+---@field KeystoneDungeonLevel fontstring show the keystone level of the player
+---@field KeystoneDungeonLevelBackground texture background texture behind the keystone level text
+---@field KeystoneDungeonIcon texture show the keystone dungeon icon the player has
+---@field DungeonBorderTexture texture
 ---@field StopTextDotAnimation fun(self:scoreboard_line)
 ---@field GetLootSquare fun(self: scoreboard_line):details_lootsquare
 ---@field ClearLootSquares fun(self: scoreboard_line)
@@ -95,6 +104,9 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field activityTimeHeal number
 ---@field damageTakenFromSpells spell_hit_player[]
 ---@field loot string|nil
+---@field keystoneLevel number
+---@field keystoneIcon string
+
 
 ---@class timeline_event : table
 ---@field type string
@@ -127,8 +139,12 @@ local lineHeight = 46
 local lineColor1 = {1, 1, 1, 0.05}
 local lineColor2 = {1, 1, 1, 0.1}
 local lineBackdrop = {bgFile = [[Interface\Tooltips\UI-Tooltip-Background]], tileSize = 64, tile = true}
-
+--position of the activity timeline, it is positioned below the lines
 local activityFrameY = headerY - 90 + (lineHeight * lineAmount * -1)
+--player keystone icon, keystone text
+local keystoneTextureSize = 45 --the icon is a square
+local keystoneDefaultTexture = [[Interface\ICONS\INV_Misc_QuestionMark]] --when no keystone is found, this texture is shown
+local noKeystoneAlpha = 0.3 --when no keystone is found, decrease the alpha of the icon and text to this value
 
 function addon.OpenMythicPlusBreakdownBigFrame()
     local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
@@ -480,6 +496,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         {text = "", width = 60}, --player portrait
         {text = "", width = 25}, --spec icon
         {text = L["SCOREBOARD_TITLE_PLAYER_NAME"], width = 110},
+        {text = L["SCOREBOARD_TITLE_KEYSTONE"], width = 60},
         {text = L["SCOREBOARD_TITLE_SCORE"], width = 90},
         {text = L["SCOREBOARD_TITLE_LOOT"], width = 80},
         {text = L["SCOREBOARD_TITLE_DEATHS"], width = 80},
@@ -581,11 +598,6 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
         mainFrame.RunInfoDropdown:Hide()
     end
 
-    --hide the lootSquare
-    --for i = 1, #mainFrame.PlayerBanners do
-    --    mainFrame.PlayerBanners[i]:ClearLootSquares()
-    --end
-
     local combatTime = runData.timeInCombat
 
     ---@type scoreboard_playerdata[]
@@ -637,10 +649,24 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
                 deaths = playerInfo.totalDeaths,
                 combatUid = runData.combatId,
                 loot = playerInfo.loot,
+                keystoneLevel = 0,
+                keystoneIcon = keystoneDefaultTexture,
             }
 
             if (thisPlayerData.role == "NONE") then
                 thisPlayerData.role = "DAMAGER"
+            end
+
+            local playerKeystoneInfo = openRaidLib.GetKeystoneInfo(unitId)
+            if (playerKeystoneInfo) then
+                thisPlayerData.keystoneLevel = playerKeystoneInfo.level or thisPlayerData.keystoneLevel --default zero
+
+                ---@type details_instanceinfo
+                local instanceInfo = Details:GetInstanceInfo(playerKeystoneInfo.mapID)
+
+                if (instanceInfo) then
+                    thisPlayerData.keystoneIcon = instanceInfo.iconLore
+                end
             end
 
             --to render the event for deaths, it is required 'playerInfo' into the playerInfo.deathEvents[x].arguments.'playerData' field
@@ -722,6 +748,71 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
                         value.best = playerData[value.key]
                         value.line = i
                     end
+                end
+
+                --safe run for feature in test
+                local okay, errorText = pcall(function()
+                    --keystone texture and level
+                    local keystoneTexture = scoreboardLine.KeystoneDungeonIcon
+                    local keystoneLevel = scoreboardLine.KeystoneDungeonLevel
+                    local keystoneLevelBackground = scoreboardLine.KeystoneDungeonLevelBackground
+
+                    keystoneTexture:SetTexture(playerData.keystoneIcon)
+                    if (playerData.keystoneIcon ~= keystoneDefaultTexture) then
+                        keystoneTexture:SetTexCoord(36/512, 375/512, 50/512, 290/512)
+                        keystoneTexture:SetAlpha(1)
+                        keystoneTexture:SetDesaturated(false)
+                        keystoneTexture:SetTexture(playerData.keystoneIcon)
+                        keystoneLevel:SetAlpha(1)
+                        keystoneLevelBackground:SetAlpha(1)
+                    else
+                        keystoneTexture:SetTexCoord(0, 1, 0, 1)
+                        keystoneTexture:SetAlpha(noKeystoneAlpha)
+                        keystoneTexture:SetDesaturated(true)
+                        keystoneTexture:SetTexture(keystoneDefaultTexture)
+                        keystoneLevel:SetAlpha(noKeystoneAlpha)
+                        keystoneLevelBackground:SetAlpha(noKeystoneAlpha)
+                    end
+
+                    keystoneLevel:SetText(playerData.keystoneLevel)
+
+                    --the scoreboard open after the local player open the loot cache.
+                    --as consequence, the addon doesn't know if other players has opened as well.
+                    --if a player loots the first keystone, the scoreboard won't know about it, so schedule updates to verify that.
+
+                    local didPrintLog = false
+                    ---@param thisPlayerData scoreboard_playerdata
+                    local looperCallback = function(thisPlayerData)
+                        local playerName = thisPlayerData.name
+                        if (UnitExists(playerName)) then
+                            local unitKeystoneInfo = openRaidLib.GetKeystoneInfo(playerName)
+                            if (unitKeystoneInfo) then
+                                keystoneTexture:SetTexCoord(36/512, 375/512, 50/512, 290/512)
+                                keystoneTexture:SetAlpha(1)
+                                keystoneTexture:SetDesaturated(false)
+                                keystoneTexture:SetTexture(playerData.keystoneIcon)
+                                keystoneLevel:SetAlpha(1)
+                                keystoneLevelBackground:SetAlpha(1)
+                                keystoneLevel:SetText(playerData.keystoneLevel)
+
+                                --log (debug)
+                                if (not didPrintLog) then
+                                    private.log("Keystone Update Okay, Name:", playerName or "ERROR", "keystoneLevel:", playerData.keystoneLevel or "ERROR", "keystoneIcon:", playerData.keystoneIcon or "ERROR")
+                                    didPrintLog = true
+                                end
+                            end
+                        end
+                    end
+
+                    local loopAmount = 30
+                    local looperEndCallback = function()end
+                    local checkPointCallback = function() return mainFrame:IsShown() end --if the scoreboard is hidden, interrupt the loop
+                    local keystoneUpdateSchedule = detailsFramework.Schedules.NewLooper(1, looperCallback, loopAmount, looperEndCallback, checkPointCallback, playerData)
+
+                end)
+
+                if (not okay) then
+                    print("|cFFFFFF00Details Mythic+ Key Stone Update ERROR:|r ", errorText)
                 end
             end
         end
@@ -1133,6 +1224,35 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
         self:SetText(addon.PreparePlayerName(playerData.name))
     end)
 
+    local keystoneDungeonIconTexture = line:CreateTexture("$parentDungeonIconTexture", "artwork")
+    keystoneDungeonIconTexture:SetTexCoord(36/512, 375/512, 50/512, 290/512)
+    keystoneDungeonIconTexture:SetSize(keystoneTextureSize, keystoneTextureSize)
+    keystoneDungeonIconTexture:SetAlpha(0.932)
+    detailsFramework:SetMask(keystoneDungeonIconTexture, [[Interface\FrameGeneral\UIFrameIconMask]])
+    line.KeystoneDungeonIcon = keystoneDungeonIconTexture
+
+    local keystoneDungeonBorderTexture = line:CreateTexture("$parentDungeonIconBorderTexture", "border")
+    keystoneDungeonBorderTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+    keystoneDungeonBorderTexture:SetTexCoord(441/512, 511/512, 81/512, 151/512)
+    keystoneDungeonBorderTexture:SetDrawLayer("border", 0)
+    keystoneDungeonBorderTexture:SetSize(keystoneTextureSize+2, keystoneTextureSize+2)
+    keystoneDungeonBorderTexture:SetPoint("center", keystoneDungeonIconTexture, "center", 0, 0)
+    keystoneDungeonBorderTexture:SetAlpha(1)
+    keystoneDungeonBorderTexture:SetVertexColor(0, 0, 0, 0.3)
+    line.DungeonBorderTexture = keystoneDungeonBorderTexture
+
+    local keystoneDungeonLevelFontstring = line:CreateFontString("$parentDungeonLevelFontstring", "overlay", "GameFontNormal")
+    keystoneDungeonLevelFontstring:SetPoint("bottom", keystoneDungeonIconTexture, "bottom", 0, -2)
+    detailsFramework:SetFontSize(keystoneDungeonLevelFontstring, 15)
+    line.KeystoneDungeonLevel = keystoneDungeonLevelFontstring
+
+	local keystoneDungeonLevelBackgroundTexture = line:CreateTexture("$parentDungeonLevelBackgroundTexture", "artwork", nil, 6)
+	keystoneDungeonLevelBackgroundTexture:SetTexture([[Interface\Cooldown\LoC-ShadowBG]])
+	keystoneDungeonLevelBackgroundTexture:SetPoint("bottomleft", line.KeystoneDungeonIcon, "bottomleft", -10, -2)
+	keystoneDungeonLevelBackgroundTexture:SetPoint("bottomright", line.KeystoneDungeonIcon, "bottomright", 10, -15)
+	keystoneDungeonLevelBackgroundTexture:SetHeight(12)
+	line.KeystoneDungeonLevelBackground = keystoneDungeonLevelBackgroundTexture
+
     local playerScore = CreateBreakdownLabel(line, function(self, playerData)
         ---@cast playerData scoreboard_playerdata
         self:SetText(playerData.score)
@@ -1315,6 +1435,7 @@ function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFra
     line:AddFrameToHeaderAlignment(playerPortrait)
     line:AddFrameToHeaderAlignment(specIcon)
     line:AddFrameToHeaderAlignment(playerName)
+    line:AddFrameToHeaderAlignment(keystoneDungeonIconTexture)
     line:AddFrameToHeaderAlignment(playerScore)
     line:AddFrameToHeaderAlignment(lootAnchor)
     line:AddFrameToHeaderAlignment(playerDeaths)
