@@ -28,6 +28,9 @@ local defaultSettings = {
     keep_information_for_debugging = false,
     migrations_done = {},
     logs = {},
+    has_last_run = false,
+    is_run_ongoing = false,
+
     font = {
         row_size = 12,
 

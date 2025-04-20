@@ -44,7 +44,7 @@
 ---@field translit boolean translit cyrillic
 ---@field last_run_data detailsmythicplus_run_data store the data from the last run
 ---@field keep_information_for_debugging boolean keep certain information for debugging
----@field migrations_done number the timestamp of when a migration was done, where the key is the migration number from migrations.lua
+---@field migrations_done number[] the timestamp of when a migration was done, where the key is the migration number from migrations.lua
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
@@ -98,6 +98,7 @@
 ---@field GetDropdownRunDescription fun(runInfo:runinfo) : table indexed table containing: [1] dungeonName, [2] keyLevel, [3] runTime, [4] keyUpgradeLevels, [5] timeString, [6] onTime [7] mapId [8] dungeonId
 ---@field GetPlayerDeathReason fun(runInfo:runinfo, unitName:playername, deathIndex:number) : death_last_hits[]|nil return a table with subtables of type death_last_hits which tells the last hits that killed the player
 ---@field PreparePlayerName fun(name:string) : string removes the realm name, and transliterates if configured
+---@field ShowMythicPlusOptionsWindow fun() opens the options window for the addon
 
 
 ---@class runinfo : table
