@@ -169,7 +169,13 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
 
             local relativeTimestamp = event.timestamp - runData.startTime
             local classColor = RAID_CLASS_COLORS[playerInfo.class]
-            GameCooltip:AddLine(addon.PreparePlayerName(playerInfo.name), detailsFramework:IntegerToTimer(relativeTimestamp), nil, classColor.r, classColor.g, classColor.b, 1, 1, 0, 0, 1)
+            GameCooltip:AddLine(addon.PreparePlayerName(playerInfo.name), detailsFramework:IntegerToTimer(relativeTimestamp), nil, classColor.r, classColor.g, classColor.b, 1, "darkorange")
+
+            --get the class icon
+            local left, right, top, bottom, classIcon = detailsFramework:GetClassTCoordsAndTexture(playerInfo.class)
+            GameCooltip:AddIcon(classIcon, 1, 1, 18, 18, left, right, top, bottom)
+            GameCooltip:AddIcon([[Interface\AddOns\Details\images\end_of_mplus.png]], 1, 2, 14, 14, 172/512, 235/512, 84/512, 150/512)
+
             GameCooltip:AddLine("")
 
             for i = #deathReason, 1, -1 do --first index is the spell that killed the player
@@ -183,8 +189,9 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
                 local useSpark = false
 
                 if (i == 1) then
-                    local statusBarColor = {0.5, 0.1, 0.1, 0.2}
+                    local statusBarColor = {0.5, 0.1, 0.1, 0.3}
                     Details:AddTooltipBackgroundStatusbar(side, value, useSpark, statusBarColor)
+                    GameCooltip:AddIcon("poi-graveyard-neutral", 1, 2, 12, 16)
                 else
                     local statusBarColor = {0.1, 0.1, 0.1, 0.2}
                     Details:AddTooltipBackgroundStatusbar(side, value, useSpark, statusBarColor)
@@ -199,6 +206,8 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
             GameCooltip:SetOption("LineYOffset", 0)
             GameCooltip:SetOption("FixedWidth", 250)
             GameCooltip:SetOption("StatusBarTexture", Details.death_tooltip_texture)
+            GameCooltip:SetOption("UseTrilinearRight", true) --cooltip version 31 /dump _G.GameCooltip2.version
+
             GameCooltip:SetOwner(self)
             GameCooltip:Show()
         end
