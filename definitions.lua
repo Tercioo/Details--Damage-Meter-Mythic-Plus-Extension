@@ -109,6 +109,7 @@
 ---@field timeWithoutDeaths number total time in seconds the run took without counting the time lost by player deaths
 ---@field timeInCombat number total time in seconds the run took in combat
 ---@field dungeonName string the name of the dungeon
+---@field instanceId number instanceId from GetInstanceInfo()
 ---@field dungeonId number former DungeonID, this is the id from C_ChallengeMode.GetMapUIInfo
 ---@field dungeonTexture number gotten from the the 4th result of C_ChallengeMode.GetMapUIInfo
 ---@field dungeonBackgroundTexture number gotten from the the 5th result of C_ChallengeMode.GetMapUIInfo

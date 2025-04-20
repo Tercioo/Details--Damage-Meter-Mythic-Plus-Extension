@@ -105,7 +105,7 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 ---@field damageTakenFromSpells spell_hit_player[]
 ---@field loot string|nil
 ---@field keystoneLevel number
----@field keystoneIcon string
+---@field keystoneIcon string|number
 
 
 ---@class timeline_event : table
@@ -132,6 +132,8 @@ local backdropDungeonTextureDesaturation = 0.5
 local dungeonNameY = -12
 --where the header is positioned in the Y axis from the top of the frame
 local headerY = -65
+--width of the run selector at the top right corner
+local runSelectorWidth = 250
 --the amount of lines to be created to show player data
 local lineAmount = 5
 local lineOffset = 2
@@ -169,6 +171,7 @@ function addon.RefreshOpenScoreBoard()
     local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     if (mainFrame:IsVisible()) then
+        --stop all timers running
         mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, addon.GetSelectedRun())
     end
 
@@ -312,13 +315,25 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
         for i = 1, #savedRuns do
             local runInfo = savedRuns[i]
+
+            --runInfo.mapId, runInfo.dungeonId, runInfo.completionInfo.mapChallengeModeID
+            --are the same and doesn't work with Details:GetInstanceInfo()
+
+            ---@type details_instanceinfo
+            local instanceInfo = Details:GetInstanceInfo(runInfo.instanceId or runInfo.dungeonName)
+            --print(runInfo.mapId, runInfo.dungeonId, runInfo.completionInfo.mapChallengeModeID)
+
+            ---@type dropdownoption
             local option = {
                 label = table.concat(addon.GetDropdownRunDescription(runInfo), "@"),
                 value = i,
                 onclick = function()
                     addon.SetSelectedRunIndex(i)
                 end,
-                icon = [[Interface\AddOns\Details_MythicPlus\Assets\Images\sandglass_icon.png]],
+                icon = instanceInfo and instanceInfo.iconLore or [[Interface\AddOns\Details_MythicPlus\Assets\Images\sandglass_icon.png]],
+                iconsize = {18, 18},
+                texcoord = instanceInfo and instanceInfo.iconLore and {35/512, 291/512, 49/512, 289/512} or {0, 1, 0, 1},
+                iconcolor = {1, 1, 1, 0.7},
             }
 
             if (i == selectedRunIndex) then
@@ -332,7 +347,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         return runInfoList
     end
 
-    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), 230, 20, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), runSelectorWidth, 20, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
     readyFrame.RunInfoDropdown = runInfoDropdown
     runInfoDropdown:UseSimpleHeader(true)

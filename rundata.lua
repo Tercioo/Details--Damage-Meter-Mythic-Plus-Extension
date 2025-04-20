@@ -67,6 +67,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
         timeWithoutDeaths = 0,
         dungeonName = "", --done
         dungeonId = 0, --done
+        instanceId = select(8, GetInstanceInfo()),
         dungeonTexture = 0, --done
         dungeonBackgroundTexture = 0, --done
         timeLimit = 0, --done
