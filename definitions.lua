@@ -55,6 +55,7 @@
 ---@field loot loot
 ---@field data table store data from the current mythic plus run
 ---@field Enum enum
+---@field temporaryTimers timer[] store timers created with C_Timer, all timers here are stopped when an update in the scoreboard is about to start
 ---@field Migrations table<number, fun()>
 ---@field selectedRunInfo runinfo currently run info in use (showing the data in the scoreboard), if any
 ---@field mythicPlusBreakdown details_mythicplus_breakdown

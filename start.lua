@@ -79,6 +79,8 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
 
     addon.data = {}
 
+    addon.temporaryTimers = {}
+
     local detailsEventListener = Details:CreateEventListener()
     addon.detailsEventListener = detailsEventListener
 

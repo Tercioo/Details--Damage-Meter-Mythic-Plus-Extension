@@ -172,6 +172,12 @@ function addon.RefreshOpenScoreBoard()
 
     if (mainFrame:IsVisible()) then
         --stop all timers running
+        for i = 1, #addon.temporaryTimers do
+            C_Timer.CancelTimer(addon.temporaryTimers[i])
+        end
+        table.wipe(addon.temporaryTimers)
+
+        --do the update
         mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, addon.GetSelectedRun())
     end
 
@@ -825,7 +831,8 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
                     local looperEndCallback = function()end
                     local checkPointCallback = function() return mainFrame:IsShown() end --if the scoreboard is hidden, interrupt the loop
                     local keystoneUpdateSchedule = detailsFramework.Schedules.NewLooper(1, looperCallback, loopAmount, looperEndCallback, checkPointCallback, playerData)
-
+                    --add to the timer list to be stopped when a scoreboard update is triggered
+                    addon.temporaryTimers[#addon.temporaryTimers + 1] = keystoneUpdateSchedule
                 end)
 
                 if (not okay) then
