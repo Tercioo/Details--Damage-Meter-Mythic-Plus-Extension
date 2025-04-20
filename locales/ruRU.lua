@@ -52,6 +52,7 @@ do
 
     L["SCOREBOARD_NO_SCORE_AVAILABLE"] = "В настоящее время на табло нет очков"
     L["SCOREBOARD_TITLE_PLAYER_NAME"] = "Имя игрока"
+    L["SCOREBOARD_TITLE_KEYSTONE"] = "Ключ"
     L["SCOREBOARD_TITLE_SCORE"] = "Результат М+"
     L["SCOREBOARD_TITLE_LOOT"] = "Добыча"
     L["SCOREBOARD_TITLE_DEATHS"] = "Смерти"
