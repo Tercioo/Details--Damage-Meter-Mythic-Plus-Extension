@@ -175,7 +175,10 @@ function addon.RefreshOpenScoreBoard()
     if (mainFrame:IsVisible()) then
         --stop all timers running
         for i = 1, #addon.temporaryTimers do
-            C_Timer.CancelTimer(addon.temporaryTimers[i])
+            local thisTimer = addon.temporaryTimers[i]
+            if (not thisTimer:IsCancelled()) then
+                thisTimer:Cancel()
+            end
         end
         table.wipe(addon.temporaryTimers)
 
