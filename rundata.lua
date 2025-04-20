@@ -312,7 +312,7 @@ end
 ---@param runInfo runinfo
 ---@return string
 function addon.GetRunDate(runInfo)
-    return date("%H:%M %d/%b/%Y", runInfo.endTime)
+    return date("%d/%b/%Y", runInfo.endTime)
 end
 
 ---return a table with data to be used in the dropdown menu to select which run to show in the scoreboard
