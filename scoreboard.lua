@@ -734,12 +734,12 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
         end
 
         local topScores = {
-            [7] = {key = "damageTaken", line = nil, best = nil, highest = false},
-            [8] = {key = "dps", line = nil, best = nil, highest = true},
-            [9] = {key = "hps", line = nil, best = nil, highest = true},
-            [10] = {key = "interrupts", line = nil, best = nil, highest = true},
-            [11] = {key = "dispels", line = nil, best = nil, highest = true},
-            [12] = {key = "ccCasts", line = nil, best = nil, highest = true},
+            [8] = {key = "damageTaken", line = nil, best = nil, highest = false},
+            [9] = {key = "dps", line = nil, best = nil, highest = true},
+            [10] = {key = "hps", line = nil, best = nil, highest = true},
+            [11] = {key = "interrupts", line = nil, best = nil, highest = true},
+            [12] = {key = "dispels", line = nil, best = nil, highest = true},
+            [13] = {key = "ccCasts", line = nil, best = nil, highest = true},
         }
 
         for i = 1, lineAmount do
