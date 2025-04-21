@@ -101,6 +101,10 @@
 ---@field PreparePlayerName fun(name:string) : string removes the realm name, and transliterates if configured
 ---@field ShowMythicPlusOptionsWindow fun() opens the options window for the addon
 
+---@class scoreboard_keystone_texture: texture show the keystone dungeon icon the player has
+---@field KeystoneDungeonLevel fontstring show the keystone level of the player
+---@field KeystoneDungeonLevelBackground texture background texture behind the keystone level text
+---@field DungeonBorderTexture texture
 
 ---@class runinfo : table
 ---@field combatId number the dungeon overall data unique combat id from details!

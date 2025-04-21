@@ -10,9 +10,6 @@ local addonName, private = ...
 local addon = private.addon
 local _ = nil
 
---localization
-local L = detailsFramework.Language.GetLanguageTable(addonName)
-
 local CONST_MAX_DEATH_EVENTS = 3
 
 ---@alias playername string

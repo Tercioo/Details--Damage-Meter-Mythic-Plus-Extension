@@ -8,10 +8,6 @@ local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
 local _ = nil
-local Translit = LibStub("LibTranslit-1.0")
-
---localization
-local L = detailsFramework.Language.GetLanguageTable(addonName)
 
 ---@class bosswidget : frame
 ---@field AvatarTexture texture
