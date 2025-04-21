@@ -30,6 +30,7 @@
 ---@class profile : table
 ---@field has_last_run boolean whether or not there's a last run. This run will be cleared when the next one starts.
 ---@field is_run_ongoing boolean whether or not there's a current run going
+---@field run_id number the last run id
 ---@field saved_runs runinfo[] store the saved runs
 ---@field saved_runs_limit number limit of saved runs
 ---@field saved_runs_selected_index number index of the selected run
@@ -107,6 +108,7 @@
 ---@field DungeonBorderTexture texture
 
 ---@class runinfo : table
+---@field runId number a number that can be used to identify a run, can be used to map external data to (e.g. by other addons)
 ---@field combatId number the dungeon overall data unique combat id from details!
 ---@field combatData combatdata stores the required combat data for the score board, hence the scoreboard can function even if the combat isn't available in details!
 ---@field encounters detailsmythicplus_encounterinfo[] the encounters timeline

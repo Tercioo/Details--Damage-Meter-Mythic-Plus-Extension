@@ -38,8 +38,11 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
         private.log("Details M+ addon.profile.last_run_data.incombat_timeline is nil")
     end
 
+    addon.profile.last_run_id = addon.profile.last_run_id + 1
+
     ---@type runinfo
     local runInfo = {
+        runId = addon.profile.last_run_id,
         combatId = mythicPlusOverallSegment:GetCombatUID(),
         combatData = {
             groupMembers = {} --done

@@ -30,6 +30,7 @@ local defaultSettings = {
     logs = {},
     has_last_run = false,
     is_run_ongoing = false,
+    last_run_id = 0,
 
     font = {
         row_size = 12,
