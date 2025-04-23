@@ -188,27 +188,6 @@ local CreateLootSquare = function(line)
     lootSquare:SetFrameLevel(line:GetFrameLevel()+10)
     lootSquare:Hide()
 
-    function lootSquare.SetPlayerData(self, playerData)
-        self:Hide()
-        if (not playerData.loot or playerData.loot == "") then
-            return
-        end
-
-        local item = Item:CreateFromItemLink(playerData.loot)
-        item:ContinueOnItemLoad(function()
-            local r, g, b = C_Item.GetItemQualityColor(item:GetItemQuality())
-            self.itemLink = playerData.loot
-            self.LootIcon:SetTexture(item:GetItemIcon())
-            self.LootIconBorder:SetVertexColor(r, g, b, 1)
-            self.LootItemLevel:SetText(item:GetCurrentItemLevel())
-
-            --update size
-            self.LootIcon:SetSize(32, 32)
-            self.LootIconBorder:SetSize(32, 32)
-            self:Show()
-        end)
-    end
-
     lootSquare:SetScript("OnEnter", function(self)
         if (self.itemLink) then
             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT")
@@ -453,6 +432,28 @@ end
 
 do -- Loot
     local column = addon.ScoreboardColumn:Create("loot", L["SCOREBOARD_TITLE_LOOT"], 80, CreateLootSquare)
+
+    column:SetOnRender(function (frame, playerData)
+        frame:Hide()
+        if (not playerData.loot or playerData.loot == "") then
+            return
+        end
+
+        local item = Item:CreateFromItemLink(playerData.loot)
+        item:ContinueOnItemLoad(function()
+            local r, g, b = C_Item.GetItemQualityColor(item:GetItemQuality())
+            frame.itemLink = playerData.loot
+            frame.LootIcon:SetTexture(item:GetItemIcon())
+            frame.LootIconBorder:SetVertexColor(r, g, b, 1)
+            frame.LootItemLevel:SetText(item:GetCurrentItemLevel())
+
+            --update size
+            frame.LootIcon:SetSize(32, 32)
+            frame.LootIconBorder:SetSize(32, 32)
+            frame:Show()
+        end)
+    end)
+
     addon.RegisterScoreboardColumn(column)
 end
 
