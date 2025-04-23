@@ -293,7 +293,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     --close button at the top right of the frame
     local closeButton = detailsFramework:CreateCloseButton(readyFrame, "$parentCloseButton")
     closeButton:SetScript("OnClick", function() readyFrame:Hide() end)
-    closeButton:SetPoint("topright", readyFrame, "topright", -4, -5)
+    closeButton:SetPoint("topright", readyFrame, "topright", -4, -7)
 
     local configButton = detailsFramework:CreateButton(readyFrame, addon.ShowMythicPlusOptionsWindow, 32, 32, "")
     configButton:SetAlpha(0.823)
@@ -529,7 +529,8 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
         outOfCombatIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
         outOfCombatIcon:SetVertexColor(detailsFramework:ParseColors("silver"))
         outOfCombatIcon:SetSize(24, 24)
-        outOfCombatIcon:SetPoint("bottomleft", headerFrame, "topleft", 20, 12)
+        --outOfCombatIcon:SetPoint("bottomleft", headerFrame, "topleft", 20, 12)
+        outOfCombatIcon:SetPoint("topleft", readyFrame, "topleft", 5, -5)
         readyFrame.OutOfCombatIcon = outOfCombatIcon
 
         local outOfCombatText = readyFrame:CreateFontString("$parentOutOfCombatText", "artwork", "GameFontNormal")

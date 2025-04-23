@@ -374,7 +374,7 @@ end
 ---@return number
 function addon.GetRunAverageItemLevel(runInfo)
     local total = 0
-    for _, playerInfo in ipairs(runInfo.combatData.groupMembers) do
+    for _, playerInfo in pairs(runInfo.combatData.groupMembers) do
         total = total + playerInfo.ilevel
     end
     return total / 5
@@ -386,7 +386,7 @@ end
 ---@return number
 function addon.GetRunAverageDamagePerSecond(runInfo, timeType)
     local total = 0
-    for _, playerInfo in ipairs(runInfo.combatData.groupMembers) do
+    for _, playerInfo in pairs(runInfo.combatData.groupMembers) do
         total = total + playerInfo.totalDamage
     end
 
