@@ -309,7 +309,27 @@ do -- keystone
         keystoneDungeonIcon:SetTexCoord(36/512, 375/512, 50/512, 290/512)
         keystoneDungeonIcon:SetSize(keystoneTextureSize, keystoneTextureSize)
         keystoneDungeonIcon:SetAlpha(0.932)
+        keystoneDungeonIcon.KeystoneMapId = 0
         DetailsFramework:SetMask(keystoneDungeonIcon, [[Interface\FrameGeneral\UIFrameIconMask]])
+
+        keystoneDungeonIcon:SetScript("OnEnter", function(self)
+            if (self.KeystoneMapId <= 0) then
+                return
+            end
+
+            local name, _, timeLimit = C_ChallengeMode.GetMapUIInfo(self.KeystoneMapId)
+
+            GameCooltip:Preset(2)
+            GameCooltip:SetOwner(self, "bottom", "top", 0, -4)
+            GameCooltip:AddLine(name, DetailsFramework:IntegerToTimer(timeLimit))
+            GameCooltip:SetOption("TextSize", Details.tooltip.fontsize)
+            GameCooltip:SetOption("TextFont",  Details.tooltip.fontface)
+            GameCooltip:SetOption("FixedWidth", false)
+            GameCooltip:Show()
+        end)
+        keystoneDungeonIcon:SetScript("OnLeave", function()
+            GameCooltip:Hide()
+        end)
 
         local keystoneDungeonBorderTexture = line:CreateTexture("$parentDungeonIconBorderTexture", "border")
         keystoneDungeonBorderTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
@@ -328,8 +348,8 @@ do -- keystone
 
         local keystoneDungeonLevelBackgroundTexture = line:CreateTexture("$parentDungeonLevelBackgroundTexture", "artwork", nil, 6)
         keystoneDungeonLevelBackgroundTexture:SetTexture([[Interface\Cooldown\LoC-ShadowBG]])
-        keystoneDungeonLevelBackgroundTexture:SetPoint("bottomleft", line.KeystoneDungeonIcon, "bottomleft", -10, -2)
-        keystoneDungeonLevelBackgroundTexture:SetPoint("bottomright", line.KeystoneDungeonIcon, "bottomright", 10, -15)
+        keystoneDungeonLevelBackgroundTexture:SetPoint("bottomleft", keystoneDungeonIcon, "bottomleft", -10, -2)
+        keystoneDungeonLevelBackgroundTexture:SetPoint("bottomright", keystoneDungeonIcon, "bottomright", 10, -15)
         keystoneDungeonLevelBackgroundTexture:SetHeight(12)
         keystoneDungeonIcon.KeystoneDungeonLevelBackground = keystoneDungeonLevelBackgroundTexture
 
@@ -346,6 +366,7 @@ do -- keystone
 
             keystoneTexture:SetTexture(playerData.keystoneIcon)
             if (playerData.keystoneIcon ~= keystoneDefaultTexture) then
+                keystoneTexture.KeystoneMapId = playerData.keystoneMapId
                 keystoneTexture:SetTexCoord(36/512, 375/512, 50/512, 290/512)
                 keystoneTexture:SetAlpha(1)
                 keystoneTexture:SetDesaturated(false)
@@ -353,6 +374,7 @@ do -- keystone
                 keystoneLevel:SetAlpha(1)
                 keystoneLevelBackground:SetAlpha(1)
             else
+                keystoneTexture.KeystoneMapId = 0
                 keystoneTexture:SetTexCoord(0, 1, 0, 1)
                 keystoneTexture:SetAlpha(noKeystoneAlpha)
                 keystoneTexture:SetDesaturated(true)
@@ -361,7 +383,11 @@ do -- keystone
                 keystoneLevelBackground:SetAlpha(noKeystoneAlpha)
             end
 
-            keystoneLevel:SetText(playerData.keystoneLevel)
+            if (tonumber(playerData.keystoneLevel) == 0) then
+                keystoneLevel:SetText("")
+            else
+                keystoneLevel:SetText(playerData.keystoneLevel)
+            end
 
             --the scoreboard open after the local player open the loot cache.
             --as consequence, the addon doesn't know if other players has opened as well.

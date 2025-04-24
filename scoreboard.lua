@@ -91,6 +91,7 @@ end
 ---@field loot string|nil
 ---@field keystoneLevel number
 ---@field keystoneIcon string|number
+---@field keystoneMapId string|number
 
 
 ---@class timeline_event : table
@@ -669,6 +670,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
                 loot = playerInfo.loot,
                 keystoneLevel = 0,
                 keystoneIcon = keystoneDefaultTexture,
+                keystoneMapId = 0,
             }
 
             if (thisPlayerData.role == "NONE") then
@@ -678,6 +680,7 @@ function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
             local playerKeystoneInfo = openRaidLib.GetKeystoneInfo(unitId)
             if (playerKeystoneInfo) then
                 thisPlayerData.keystoneLevel = playerKeystoneInfo.level or thisPlayerData.keystoneLevel --default zero
+                thisPlayerData.keystoneMapId = playerKeystoneInfo.challengeMapID or thisPlayerData.keystoneMapId
 
                 ---@type details_instanceinfo
                 local instanceInfo = Details:GetInstanceInfo(playerKeystoneInfo.mapID)
