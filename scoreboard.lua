@@ -253,10 +253,6 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
             self:RegisterEvent("CHALLENGE_MODE_COMPLETED")
             if (addon.profile.when_to_automatically_open_scoreboard == "LOOT_CLOSED") then
                 addon.OpenScoreBoardAtEnd()
-            elseif (addon.profile.when_to_automatically_open_scoreboard == "COMBAT_MYTHICPLUS_OVERALL_READY" and not addon.profile.has_last_run) then
-                -- fallback to open the scoreboard after looting because the ready event wasn't fired
-                -- this change should be removed when COMBAT_MYTHICPLUS_OVERALL_READY is being triggered in reloaded runs
-                addon.OpenScoreBoardAtEnd()
             end
         elseif (event == "CHALLENGE_MODE_COMPLETED") then
             self:RegisterEvent("LOOT_CLOSED")

@@ -17,6 +17,8 @@ function addon.InitializeEvents()
             addon.OnMythicDungeonStart(...)
         elseif (event == "COMBAT_MYTHICDUNGEON_END") then
             addon.OnMythicDungeonEnd(...)
+        elseif (event == "COMBAT_MYTHICDUNGEON_CONTINUE") then
+            addon.OnMythicDungeonContinue(...)
         elseif (event == "COMBAT_MYTHICPLUS_OVERALL_READY") then
             addon.OnMythicPlusOverallReady(...)
         elseif (event == "COMBAT_ENCOUNTER_START") then
@@ -58,10 +60,10 @@ function addon.InitializeEvents()
 
     function addon.OnMythicDungeonStart(...)
         if (addon.IsParsing()) then
-            -- this function is called after reloading, being called again would reset dungeon info
-            -- this change should be removed when COMBAT_MYTHICDUNGEON_START is not being triggered after
-            -- reloading in a run, or if it indicates that it is a reload
-            return
+            -- edge case because COMBAT_MYTHICDUNGEON_END is not fired when
+            -- abandoning a run and then starting a new one
+            private.log("OnMythicDungeonStart: IsParsing = true")
+            addon.StopParser()
         end
 
         addon.profile.has_last_run = false
@@ -93,6 +95,12 @@ function addon.InitializeEvents()
         end
 
         addon.StopParser()
+    end
+
+    function addon.OnMythicDungeonContinue(...)
+        private.log("Detected ongoing run, continue parsing")
+        Details.MythicPlus.IsRestoredState = nil
+        addon.StartParser()
     end
 
     function addon.OnEncounterStart(dungeonEncounterId, encounterName, difficultyId, raidSize)

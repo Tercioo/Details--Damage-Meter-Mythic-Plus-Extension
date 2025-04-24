@@ -98,18 +98,8 @@ function parserFrame.OnEvent(self, event, ...)
             parserFunctions[clEvent](clEvent, timestamp, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, b2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16)
         end
     elseif (event == "PLAYER_ENTERING_WORLD") then
-        -- continue after a reload or relog
-        -- this change should be removed when COMBAT_MYTHICDUNGEON_START is not being triggered after
-        -- reloading in a run, or if it indicates that it is a reload
-        if (addon.profile.is_run_ongoing and not parserFrame.isParsing) then
-            if (C_ChallengeMode.IsChallengeModeActive()) then
-                private.log("Detected ongoing run, continue parsing")
-                addon.StartParser()
-                addon.profile.last_run_data.reloaded = true
-            else
-                private.log("Detected ongoing run without challenge mode, clearing run")
-                addon.profile.is_run_ongoing = false
-            end
+        if (addon.profile.is_run_ongoing) then
+            addon.profile.last_run_data.reloaded = true
         end
     end
 end
