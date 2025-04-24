@@ -65,6 +65,7 @@
 ---@field InitializeEvents fun() run on PLAYER_LOGIN, create the function to listen to details events
 ---@field OnMythicDungeonStart fun(...) run on COMBAT_MYTHICDUNGEON_START
 ---@field OnMythicDungeonEnd fun(...) run on COMBAT_MYTHICDUNGEON_END
+---@field OnMythicDungeonContinue fun(...) run on COMBAT_MYTHICDUNGEON_CONTINUE
 ---@field OnMythicPlusOverallReady fun(...) run on COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field OnEncounterStart fun(...) run on COMBAT_ENCOUNTER_START
 ---@field OnEncounterEnd fun(...) run on COMBAT_ENCOUNTER_END

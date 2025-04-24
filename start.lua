@@ -104,6 +104,7 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     --register details! events
     detailsEventListener:RegisterEvent("COMBAT_MYTHICDUNGEON_START")
     detailsEventListener:RegisterEvent("COMBAT_MYTHICDUNGEON_END")
+    detailsEventListener:RegisterEvent("COMBAT_MYTHICDUNGEON_CONTINUE")
     detailsEventListener:RegisterEvent("COMBAT_MYTHICPLUS_OVERALL_READY")
     detailsEventListener:RegisterEvent("COMBAT_ENCOUNTER_START")
     detailsEventListener:RegisterEvent("COMBAT_ENCOUNTER_END")
