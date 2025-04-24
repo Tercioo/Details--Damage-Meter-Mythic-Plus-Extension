@@ -3,7 +3,7 @@ local Details = Details
 local detailsFramework = DetailsFramework
 local _
 
-local CONST_MAX_LOGLINES = 256
+local CONST_MAX_LOGLINES = 100
 
 ---@type string, private
 local tocFileName, private = ...

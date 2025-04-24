@@ -12,14 +12,17 @@ function addon.InitializeEvents()
     local detailsEventListener = addon.detailsEventListener
 
     function detailsEventListener.OnDetailsEvent(contextObject, event, ...)
-        private.log(event)
         if (event == "COMBAT_MYTHICDUNGEON_START") then
+            private.log(event)
             addon.OnMythicDungeonStart(...)
         elseif (event == "COMBAT_MYTHICDUNGEON_END") then
+            private.log(event)
             addon.OnMythicDungeonEnd(...)
         elseif (event == "COMBAT_MYTHICDUNGEON_CONTINUE") then
+            private.log(event)
             addon.OnMythicDungeonContinue(...)
         elseif (event == "COMBAT_MYTHICPLUS_OVERALL_READY") then
+            private.log(event)
             addon.OnMythicPlusOverallReady(...)
         elseif (event == "COMBAT_ENCOUNTER_START") then
             addon.OnEncounterStart(...)
