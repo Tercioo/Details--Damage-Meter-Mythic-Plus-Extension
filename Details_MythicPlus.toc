@@ -28,7 +28,9 @@ start.lua
 frames.lua
 parser.lua
 options.lua
+scoreboard_column.lua
 scoreboard.lua
+scoreboard_layout.lua
 activityframe.lua
 events.lua
 functions.lua

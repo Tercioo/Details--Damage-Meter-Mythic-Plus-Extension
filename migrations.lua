@@ -27,4 +27,14 @@ addon.Migrations = {
             end
         end
     end,
+
+    function ()
+        -- runId was introduced so external addons can link info to our runs without having to save it in this addon
+        for _, run in pairs(addon.profile.saved_runs) do
+            if (run.runId == nil) then
+                addon.profile.last_run_id = addon.profile.last_run_id + 1
+                run.runId = addon.profile.last_run_id
+            end
+        end
+    end,
 }
