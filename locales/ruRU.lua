@@ -3,7 +3,11 @@ do
     local languageTable = DetailsFramework.Language.RegisterLanguage(addonId, "ruRU")
     local L = languageTable
 
-    L["ADDON_MENU_ADDONS_TITLE"] = "Фрейм М+"
+    L["ADDON_MENU_ADDONS_TITLE"] = "Details!: Расширение М+"
+    L["ADDON_MENU_ADDONS_TOOLTIP_LEFT_CLICK"] = "ЛКМ"
+    L["ADDON_MENU_ADDONS_TOOLTIP_OPEN_SCOREBOARD"] = "открыть Details!: Расширение М+"
+    L["ADDON_MENU_ADDONS_TOOLTIP_RIGHT_CLICK"] = "ПКМ"
+    L["ADDON_MENU_ADDONS_TOOLTIP_OPEN_OPTIONS"] = "открыть настройки"
 
     L["COMMAND_OPEN_OPTIONS"] = "Открыть параметры"
     L["COMMAND_OPEN_OPTIONS_PRINT"] = "Открытие параметров M+ Details!, для получения дополнительной информации используйте %s"
