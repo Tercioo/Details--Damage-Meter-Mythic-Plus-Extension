@@ -23,10 +23,10 @@ end
 
 ---@class scoreboard_object : table
 ---@field lines scoreboard_line[]
----@field CreateBigBreakdownFrame fun():scoreboard_mainframe
----@field CreateLineForBigBreakdownFrame fun(parent:scoreboard_mainframe, header:scoreboard_header, index:number):scoreboard_line
+---@field CreateScoreboardFrame fun():scoreboard_mainframe
+---@field CreateLineForScoreboardFrame fun(parent:scoreboard_mainframe, header:scoreboard_header, index:number):scoreboard_line
 ---@field CreateActivityPanel fun(parent:scoreboard_mainframe):scoreboard_activityframe
----@field RefreshBigBreakdownFrame fun(mainFrame:scoreboard_mainframe, runData:runinfo):boolean true when it has data, false when it does not and probably should be hidden
+---@field RefreshScoreboardFrame fun(mainFrame:scoreboard_mainframe, runData:runinfo):boolean true when it has data, false when it does not and probably should be hidden
 ---@field SetFontSettings fun() set the default font settings
 
 ---@class scoreboard_mainframe : frame
@@ -138,8 +138,8 @@ function addon.RegisterScoreboardColumn(column)
     table.insert(mythicPlusBreakdown.RegisteredColumns, column)
 end
 
-function addon.OpenMythicPlusBreakdownBigFrame()
-    local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
+function addon.OpenScoreboardFrame()
+    local mainFrame = mythicPlusBreakdown.CreateScoreboardFrame()
     if (mainFrame:IsVisible()) then
         return
     end
@@ -150,13 +150,13 @@ function addon.OpenMythicPlusBreakdownBigFrame()
         return
     end
 
-    mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
+    mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
     mainFrame:Show()
     mainFrame.YellowSpikeCircle.OnShowAnimation:Play()
 end
 
 function addon.RefreshOpenScoreBoard()
-    local mainFrame = mythicPlusBreakdown.CreateBigBreakdownFrame()
+    local mainFrame = mythicPlusBreakdown.CreateScoreboardFrame()
 
     if (mainFrame:IsVisible()) then
         --stop all timers running
@@ -169,7 +169,7 @@ function addon.RefreshOpenScoreBoard()
         table.wipe(addon.temporaryTimers)
 
         --do the update
-        mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, addon.GetSelectedRun())
+        mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, addon.GetSelectedRun())
     end
 
     return mainFrame
@@ -180,10 +180,6 @@ function addon.IsScoreboardOpen()
         return _G[mainFrameName]:IsShown()
     end
     return false
-end
-
-function Details.OpenMythicPlusBreakdownBigFrame()
-    addon.OpenMythicPlusBreakdownBigFrame()
 end
 
 function addon.OpenScoreBoardAtEnd()
@@ -198,11 +194,11 @@ function addon.OpenScoreBoardAtEnd()
     end
 
     private.log("auto opening the mythic+ scoreboard", addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, "seconds")
-    detailsFramework.Schedules.After(addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, addon.OpenMythicPlusBreakdownBigFrame)
+    detailsFramework.Schedules.After(addon.profile.delay_to_open_mythic_plus_breakdown_big_frame, addon.OpenScoreboardFrame)
 end
 
-function addon.CreateBigBreakdownFrame()
-    return mythicPlusBreakdown.CreateBigBreakdownFrame()
+function addon.CreateScoreboardFrame()
+    return mythicPlusBreakdown.CreateScoreboardFrame()
 end
 
 local SaveLoot = function(itemLink, unitName)
@@ -233,7 +229,7 @@ local SaveLoot = function(itemLink, unitName)
     addon.RefreshOpenScoreBoard()
 end
 
-function mythicPlusBreakdown.CreateBigBreakdownFrame()
+function mythicPlusBreakdown.CreateScoreboardFrame()
     --quick exit if the frame already exists
     if (_G[mainFrameName]) then
         return _G[mainFrameName]
@@ -504,7 +500,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
     --header frame
     local headerTable = {}
     for _, column in pairs(mythicPlusBreakdown.RegisteredColumns) do
-        table.insert(headerTable, {text = column:GetHeaderText(), width = column:GetWidth()})
+        table.insert(headerTable, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
     end
 
     local headerOptions = {
@@ -588,7 +584,7 @@ function mythicPlusBreakdown.CreateBigBreakdownFrame()
 
     --create 6 rows to show data of the player, it only require 5 lines, the last one can be used on exception cases.
     for i = 1, lineAmount do
-        mythicPlusBreakdown.CreateLineForBigBreakdownFrame(readyFrame, headerFrame, i)
+        mythicPlusBreakdown.CreateLineForScoreboardFrame(readyFrame, headerFrame, i)
     end
 
     return readyFrame
@@ -598,7 +594,7 @@ end
 --then it fill the lines with data from the overall segment
 ---@param mainFrame scoreboard_mainframe
 ---@param runData runinfo
-function mythicPlusBreakdown.RefreshBigBreakdownFrame(mainFrame, runData)
+function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
     local headerFrame = mainFrame.HeaderFrame
     local lines = headerFrame.lines
 
@@ -849,7 +845,7 @@ function mythicPlusBreakdown.SetFontSettings()
 end
 
 --search tags: ~create ~line
-function mythicPlusBreakdown.CreateLineForBigBreakdownFrame(mainFrame, headerFrame, index)
+function mythicPlusBreakdown.CreateLineForScoreboardFrame(mainFrame, headerFrame, index)
     ---@type scoreboard_line
     local line = CreateFrame("button", "$parentLine" .. index, mainFrame, "BackdropTemplate")
     detailsFramework:Mixin(line, detailsFramework.HeaderFunctions)

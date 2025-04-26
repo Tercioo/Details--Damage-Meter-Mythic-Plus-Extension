@@ -133,7 +133,7 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
         text = L["ADDON_MENU_ADDONS_TITLE"],
         icon = "4352494",
         notCheckable = true,
-        func = Details.OpenMythicPlusBreakdownBigFrame,
+        func = addon.OpenScoreboardFrame,
         funcOnEnter = function(button)
             MenuUtil.ShowTooltip(button, function(tooltip)
                 tooltip:SetText(L["ADDON_MENU_ADDONS_TOOLTIP"])
@@ -177,7 +177,7 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     addon.profile.scoreboard_scale = math.max(0.6, math.min(1.6, addon.profile.scoreboard_scale))
 
     -- required to create early due to the frame events
-    local scoreboard = addon.CreateBigBreakdownFrame()
+    local scoreboard = addon.CreateScoreboardFrame()
     scoreboard:SetScale(addon.profile.scoreboard_scale)
 
     -- run migrations

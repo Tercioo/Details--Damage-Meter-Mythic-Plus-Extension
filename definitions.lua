@@ -75,7 +75,7 @@
 ---@field StopParser fun() stop the combatlog parser
 ---@field IsParsing fun():boolean whether or parsing at the moment
 ---@field CreateRunInfo fun(segment:combat) : runinfo create a run info from the mythic+ overall segment
----@field OpenMythicPlusBreakdownBigFrame fun() open the mythic plus breakdown big frame
+---@field OpenScoreboardFrame fun() open the mythic plus breakdown big frame
 ---@field RefreshOpenScoreBoard fun():scoreboard_mainframe Refreshes the score board, but only if it's visible
 ---@field OpenScoreBoardAtEnd fun() Opens the scoreboard with the configured delay, at the end of a run
 ---@field CountInterruptOverlaps fun() executed after the run is done, count the interrupt overlaps for each player

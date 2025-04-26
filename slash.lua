@@ -28,7 +28,7 @@ addon.commands = {
         Details.ShowCopyValueFrame(addon.GetFullVersionString())
     end},
     open = {L["COMMAND_OPEN_SCOREBOARD"], function ()
-        addon.OpenMythicPlusBreakdownBigFrame()
+        addon.OpenScoreboardFrame()
     end},
     logs = {L["COMMAND_OPEN_LOGS"], function ()
         addon.ShowLogs()
