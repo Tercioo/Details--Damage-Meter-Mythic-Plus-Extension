@@ -2,6 +2,8 @@ local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
 
+local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
+
 addon.Migrations = {
     function ()
         -- structure was changed to use just numbers instead of a table with extra info
@@ -37,4 +39,27 @@ addon.Migrations = {
             end
         end
     end,
+
+    function ()
+        -- Sundering is not a CC in 99.99% of the PvE scenarios, especially in M+. For now we remove the data from
+        -- existing runs
+        for _, run in pairs(addon.profile.saved_runs) do
+            for _, playerInfo in pairs(run.combatData.groupMembers) do
+                local ccTotal = 0
+                local ccUsed = {}
+
+                for spellName, casts in pairs(playerInfo.crowdControlSpells) do
+                    local spellInfo = C_Spell.GetSpellInfo(spellName)
+                    local spellId = spellInfo and spellInfo.spellID or openRaidLib.GetCCSpellIdBySpellName(spellName)
+                    if (spellId ~= 197214) then
+                        ccUsed[spellName] = casts
+                        ccTotal = ccTotal + casts
+                    end
+                end
+
+                playerInfo.totalCrowdControlCasts = ccTotal
+                playerInfo.crowdControlSpells = ccUsed
+            end
+        end
+    end
 }

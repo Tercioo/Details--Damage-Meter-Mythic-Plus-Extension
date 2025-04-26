@@ -226,13 +226,25 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             for _, utilityActorObject in utilityContainer:ListActors() do
                 ---@cast utilityActorObject actorutility
                 if (utilityActorObject:Name() == unitName) then
+                    local ccTotal = 0
+                    local ccUsed = {}
+
+                    for spellName, casts in pairs(mythicPlusOverallSegment:GetCrowdControlSpells(unitName)) do
+                        local spellInfo = C_Spell.GetSpellInfo(spellName)
+                        local spellId = spellInfo and spellInfo.spellID or openRaidLib.GetCCSpellIdBySpellName(spellName)
+                        if (spellId ~= 197214) then
+                            ccUsed[spellName] = casts
+                            ccTotal = ccTotal + casts
+                        end
+                    end
+
                     playerInfo.totalDispels = utilityActorObject.dispell
                     playerInfo.totalInterrupts = utilityActorObject.interrupt
                     playerInfo.totalInterruptsCasts = mythicPlusOverallSegment:GetInterruptCastAmount(unitName)
-                    playerInfo.totalCrowdControlCasts = mythicPlusOverallSegment:GetCCCastAmount(unitName)
+                    playerInfo.totalCrowdControlCasts = ccTotal
                     playerInfo.dispelWhat = detailsFramework.table.copy({}, utilityActorObject.dispell_oque or {})
                     playerInfo.interruptWhat = detailsFramework.table.copy({}, utilityActorObject.interrompeu_oque or {})
-                    playerInfo.crowdControlSpells = mythicPlusOverallSegment:GetCrowdControlSpells(unitName)
+                    playerInfo.crowdControlSpells = ccUsed
                 end
             end
         end
