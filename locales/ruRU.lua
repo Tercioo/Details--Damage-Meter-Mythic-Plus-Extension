@@ -4,7 +4,6 @@ do
     local L = languageTable
 
     L["ADDON_MENU_ADDONS_TITLE"] = "Фрейм М+"
-    L["ADDON_MENU_ADDONS_TOOLTIP"] = "Открыть окно М+ Details!"
 
     L["COMMAND_OPEN_OPTIONS"] = "Открыть параметры"
     L["COMMAND_OPEN_OPTIONS_PRINT"] = "Открытие параметров M+ Details!, для получения дополнительной информации используйте %s"

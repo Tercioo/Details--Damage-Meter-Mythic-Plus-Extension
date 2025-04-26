@@ -4,7 +4,6 @@ do
     local L = languageTable
 
 	L["ADDON_MENU_ADDONS_TITLE"] = "傳奇+ 計分板"
-    L["ADDON_MENU_ADDONS_TOOLTIP"] = "開啟 Details! 傳奇+計分板"
 
     L["COMMAND_OPEN_OPTIONS"] = "開啟選項"
     L["COMMAND_OPEN_OPTIONS_PRINT"] = "開啟 Details! 傳奇+計分板選項，更多資訊請用 %s"
