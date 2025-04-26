@@ -17,10 +17,6 @@ local _ = nil
 local L = detailsFramework.Language.GetLanguageTable(addonName)
 local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 
-if (not openRaidLib) then
-    return
-end
-
 ---@class scoreboard_object : table
 ---@field lines scoreboard_line[]
 ---@field CreateScoreboardFrame fun():scoreboard_mainframe

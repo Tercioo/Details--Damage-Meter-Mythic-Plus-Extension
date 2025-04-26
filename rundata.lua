@@ -9,6 +9,7 @@ local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
 local _ = nil
+local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 
 local CONST_MAX_DEATH_EVENTS = 3
 
