@@ -4,7 +4,10 @@ do
     local L = languageTable
 
     L["ADDON_MENU_ADDONS_TITLE"] = "Mythic+ Scoreboard"
-    L["ADDON_MENU_ADDONS_TOOLTIP"] = "Open the Details! Mythic+ scoreboard"
+    L["ADDON_MENU_ADDONS_TOOLTIP_LEFT_CLICK"] = "left click"
+    L["ADDON_MENU_ADDONS_TOOLTIP_OPEN_SCOREBOARD"] = "open scoreboard"
+    L["ADDON_MENU_ADDONS_TOOLTIP_RIGHT_CLICK"] = "right click"
+    L["ADDON_MENU_ADDONS_TOOLTIP_OPEN_OPTIONS"] = "open options"
 
     L["COMMAND_OPEN_OPTIONS"] = "Open the options"
     L["COMMAND_OPEN_OPTIONS_PRINT"] = "Opening Details! Mythic+ scoreboard options, for more information use %s"

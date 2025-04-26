@@ -6,9 +6,6 @@ local addon = private.addon
 
 local L = DetailsFramework.Language.GetLanguageTable(addonName)
 local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
-if (not openRaidLib) then
-    return
-end
 
 --player keystone icon, keystone text
 local keystoneTextureSize = 45 --the icon is a square
@@ -71,8 +68,7 @@ local showCrowdControlTooltip = function(self, playerData)
             Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
 
             local spellInfo = C_Spell.GetSpellInfo(spellName)
-            -- details alpha (13509) feature detection
-            if (not spellInfo and openRaidLib.GetCCSpellIdBySpellName) then
+            if (not spellInfo) then
                 local spellId = openRaidLib.GetCCSpellIdBySpellName(spellName)
                 if (spellId) then
                     spellInfo = C_Spell.GetSpellInfo(spellId)
