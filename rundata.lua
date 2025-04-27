@@ -197,7 +197,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             --spell damage done
             local spellsUsed = actorObject:GetActorSpells()
             local temp = {}
-            for _, spellTable in ipairs(spellsUsed) do
+            for _, spellTable in pairs(spellsUsed) do
                 table.insert(temp, {spellTable.id, spellTable.total})
             end
 
@@ -215,7 +215,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                     --spell heal done
                     local temp = {}
                     local spellsUsedToHeal = healActorObject:GetActorSpells()
-                    for _, spellTable in ipairs(spellsUsedToHeal) do
+                    for _, spellTable in pairs(spellsUsedToHeal) do
                         table.insert(temp, {spellTable.id, spellTable.total})
                     end
 
