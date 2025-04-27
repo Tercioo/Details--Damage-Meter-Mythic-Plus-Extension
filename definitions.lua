@@ -154,6 +154,7 @@
 ---@field spec number specialization id
 ---@field role role name of the role
 ---@field guid string the player guid
+---@field playerOwns boolean this is true if the player was controlling the character during the run
 ---@field activityTimeDamage number the time in seconds the player was in combat
 ---@field activityTimeHeal number the time in seconds the player was in combat
 ---@field score number mythic+ score

@@ -112,6 +112,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 guid = actorObject:GetGUID(),
                 loot = "",
                 score = 0,
+                playerOwns = UnitIsUnit(unitName, "player"),
                 activityTimeDamage = 0,
                 activityTimeHeal = 0,
                 scorePrevious = 0,
@@ -360,7 +361,20 @@ function addon.GetDropdownRunDescription(runInfo)
     local dungeonId = runInfo.dungeonId or 0
     local onTime = runInfo.completionInfo.onTime or false
 
-    return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime and 1 or 0}
+    --get the alt name, playerOwns is true when the player itself played the character when doing the run
+    local altName = "0" --can't be an empty string due to string.match pattern
+    local playerName = UnitName("player")
+
+    for unitName, playerInfo in pairs(runInfo.combatData.groupMembers) do
+        ---@cast playerInfo playerinfo
+        if (playerInfo.playerOwns and playerInfo.name ~= playerName) then
+            altName = playerInfo.name
+            altName = detailsFramework:AddClassColorToText(altName, playerInfo.class)
+            break
+        end
+    end
+
+    return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime and 1 or 0, altName}
 end
 
 function addon.FormatRunDescription(runInfo)

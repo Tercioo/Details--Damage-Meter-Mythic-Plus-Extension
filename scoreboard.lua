@@ -313,9 +313,22 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
             local playersInThisRun = runInfo.combatData.groupMembers
             local isPlayerCharacterInThisRun = playersInThisRun[playerName]
 
+            --[=[
+            if (i == 5) then
+                for thisPlayerName, playerInfo in pairs(playersInThisRun) do
+                    if (thisPlayerName == "Moolinrouge") then
+                        playerInfo.playerOwns = true
+                        break
+                    end
+                end
+            end
+            --]=]
+
+            local labelContent = table.concat(addon.GetDropdownRunDescription(runInfo), "@")
+
             ---@type dropdownoption
             local option = {
-                label = table.concat(addon.GetDropdownRunDescription(runInfo), "@"),
+                label = labelContent,
                 value = i,
                 onclick = function()
                     addon.SetSelectedRunIndex(i)
@@ -349,21 +362,25 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
             optionFrame.label3 = optionFrame:CreateFontString(nil, "overlay", "GameFontNormal")
             optionFrame.label4 = optionFrame:CreateFontString(nil, "overlay", "GameFontNormal")
             optionFrame.label5 = optionFrame:CreateFontString(nil, "overlay", "GameFontNormal")
+            optionFrame.label6 = optionFrame:CreateFontString(nil, "overlay", "GameFontNormal")
 
             optionFrame.label2:SetPoint("left", optionFrame, "left", 220, 0)
             optionFrame.label3:SetPoint("left", optionFrame, "left", 250, 0)
             optionFrame.label4:SetPoint("left", optionFrame, "left", 295, 0)
             optionFrame.label5:SetPoint("left", optionFrame, "left", 325, 0)
+            optionFrame.label6:SetPoint("left", optionFrame, "left", 410, 0)
 
             local fontFace, fontSize, fontFlags = optionFrame.label:GetFont()
             optionFrame.label2:SetFont(fontFace, fontSize, fontFlags)
             optionFrame.label3:SetFont(fontFace, fontSize, fontFlags)
             optionFrame.label4:SetFont(fontFace, fontSize, fontFlags)
             optionFrame.label5:SetFont(fontFace, fontSize, fontFlags)
+            optionFrame.label6:SetFont(fontFace, fontSize, fontFlags)
             optionFrame.label2:SetTextColor(optionFrame.label:GetTextColor())
             optionFrame.label3:SetTextColor(optionFrame.label:GetTextColor())
             optionFrame.label4:SetTextColor(optionFrame.label:GetTextColor())
             optionFrame.label5:SetTextColor(optionFrame.label:GetTextColor())
+            optionFrame.label6:SetTextColor(optionFrame.label:GetTextColor())
         end
     end
 
@@ -372,7 +389,7 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
         local label1 = optionFrame.label
         local text = label1:GetText()
 
-        local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime = text:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)")
+        local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime, altName = text:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)@(.+)")
 
         label1:SetText(dungeonName)
         optionFrame.label2:SetText(keyLevel)
@@ -385,11 +402,13 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
         end
 
         optionFrame.label5:SetText(timeString)
+
+        optionFrame.label6:SetText(altName ~= "0" and altName or "") --when no altName is found, it returns "0"
     end
 
     hooksecurefunc(runInfoDropdown, "Selected", function(self, thisOption)
-        local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime = thisOption.label:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)")
-
+        local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime, altName = thisOption.label:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)@(.+)")
+        print("altName", altName)
         onTime = "1" and true or false
 
         dungeonId = tonumber(dungeonId)
