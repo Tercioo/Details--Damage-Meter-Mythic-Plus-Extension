@@ -408,7 +408,6 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
 
     hooksecurefunc(runInfoDropdown, "Selected", function(self, thisOption)
         local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime, altName = thisOption.label:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)@(.+)")
-        print("altName", altName)
         onTime = "1" and true or false
 
         dungeonId = tonumber(dungeonId)
