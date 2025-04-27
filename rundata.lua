@@ -198,7 +198,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             local spellsUsed = actorObject:GetActorSpells()
             local temp = {}
             for _, spellTable in ipairs(spellsUsed) do
-                table.insert(temp, spellTable.id, spellTable.total)
+                table.insert(temp, {spellTable.id, spellTable.total})
             end
 
             table.sort(temp, function(a, b) return a[2] > b[2] end)
@@ -216,7 +216,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                     local temp = {}
                     local spellsUsedToHeal = healActorObject:GetActorSpells()
                     for _, spellTable in ipairs(spellsUsedToHeal) do
-                        table.insert(temp, spellTable.id, spellTable.total)
+                        table.insert(temp, {spellTable.id, spellTable.total})
                     end
 
                     table.sort(temp, function(a, b) return a[2] > b[2] end)
