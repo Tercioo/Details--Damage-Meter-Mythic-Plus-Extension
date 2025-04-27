@@ -31,6 +31,9 @@ local defaultSettings = {
     has_last_run = false,
     is_run_ongoing = false,
     last_run_id = 0,
+    minimap = {
+        hide = false,
+    },
 
     font = {
         row_size = 12,
@@ -51,7 +54,6 @@ local defaultSettings = {
 private.addon = detailsFramework:CreateNewAddOn(tocFileName, "Details_MythicPlusDB", defaultSettings)
 local addon = private.addon
 
-addon.minimap = {}
 addon.activityTimeline = {}
 
 function addon.OnLoad(self, profile) --ADDON_LOADED
@@ -228,7 +230,7 @@ function addon:RegisterMinimap()
         })
 
         if (dataBroker and not LDBIcon:IsRegistered("Details_MythicPlus")) then
-            LDBIcon:Register("Details_MythicPlus", dataBroker, self.minimap)
+            LDBIcon:Register("Details_MythicPlus", dataBroker, self.profile.minimap)
         end
 
         self.dataBroker = dataBroker

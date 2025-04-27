@@ -33,6 +33,22 @@ local optionsTemplate = {
     ---
     {type = "label", get = function() return L["OPTIONS_GENERAL_OPTIONS"] end, text_template = orange_font_template},
     {
+        type = "toggle",
+        get = function () return not addon.profile.minimap.hide end,
+        set = function (_, _, value)
+            addon.profile.minimap.hide = not value
+            LDBIcon = LibStub("LibDBIcon-1.0", true)
+            LDBIcon:Refresh("Details_MythicPlus", addon.profile.minimap)
+            if (addon.profile.minimap.hide) then
+                LDBIcon:Hide("Details_MythicPlus")
+            else
+                LDBIcon:Show("Details_MythicPlus")
+            end
+        end,
+        name = L["OPTIONS_SHOW_MINIMAP_ICON_LABEL"],
+        desc = L["OPTIONS_SHOW_MINIMAP_ICON_DESC"],
+    },
+    {
         type = "select",
         get = function() return addon.profile.when_to_automatically_open_scoreboard end,
         values = function()
@@ -192,7 +208,7 @@ function mythicPlusOptions.InitializeOptionsWindow()
         return _G[mainFrameName]
     end
 
-    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 345, L["OPTIONS_WINDOW_TITLE"], mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
+    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 367, L["OPTIONS_WINDOW_TITLE"], mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
     detailsFramework:MakeDraggable(optionsFrame)
     optionsFrame:SetPoint("center", UIParent, "center", 160, -50)
     detailsFramework:ApplyStandardBackdrop(optionsFrame)
@@ -222,7 +238,7 @@ function mythicPlusOptions.InitializeOptionsWindow()
     canvasFrame:SetPoint("bottomright", optionsFrame, "bottomright", -26, 6)
     optionsFrame.canvasFrame = canvasFrame
 
-    detailsFramework:BuildMenu(canvasFrame, optionsTemplate, 0, 0, optionsFrame:GetWidth(), false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
+    detailsFramework:BuildMenu(canvasFrame, optionsTemplate, 0, 0, optionsFrame:GetHeight(), false, options_text_template, options_dropdown_template, options_switch_template, true, options_slider_template, options_button_template)
 
     return optionsFrame
 end
