@@ -37,3 +37,4 @@ functions.lua
 slash.lua
 rundata.lua
 migrations.lua
+templates.lua
