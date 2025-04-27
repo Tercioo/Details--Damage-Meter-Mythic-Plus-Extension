@@ -4,6 +4,10 @@ do
     local L = languageTable
 
 	L["ADDON_MENU_ADDONS_TITLE"] = "傳奇+ 計分板"
+    L["ADDON_MENU_ADDONS_TOOLTIP_LEFT_CLICK"] = "左鍵點擊"
+    L["ADDON_MENU_ADDONS_TOOLTIP_OPEN_SCOREBOARD"] = "開啟計分板"
+    L["ADDON_MENU_ADDONS_TOOLTIP_RIGHT_CLICK"] = "右鍵點擊"
+    L["ADDON_MENU_ADDONS_TOOLTIP_OPEN_OPTIONS"] = "開啟選項"
 
     L["COMMAND_OPEN_OPTIONS"] = "開啟選項"
     L["COMMAND_OPEN_OPTIONS_PRINT"] = "開啟 Details! 傳奇+計分板選項，更多資訊請用 %s"
@@ -72,6 +76,8 @@ do
     L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"] = "最高"
     L["SCOREBOARD_TOOLTIP_INTERRUPTS_HEADER"] = "數量"
     L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"] = "數量"
+    L["SCOREBOARD_RELOADED_WARNING"] = "未完成數據"
+    L["SCOREBOARD_RELOADED_TOOLTIP"] = "此次的數據尚未完成，並且由於中途重新載入或重新錄製，可能是錯誤的。"
     L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"] = "從歷史紀錄中刪除 %d 損壞的次數。"
     L["ADDON_STARTUP_REMOVED_TOO_MANY_HISTORY"] = "從歷史紀錄中刪除 %d 發現到的過量次數。"
 	
