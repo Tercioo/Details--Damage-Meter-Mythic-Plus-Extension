@@ -23,6 +23,8 @@ do
 
     L["OPTIONS_WINDOW_TITLE"] = "Details! Mythic+ Options"
     L["OPTIONS_GENERAL_OPTIONS"] = "General Options"
+    L["OPTIONS_SHOW_MINIMAP_ICON_LABEL"] = "Show minimap icon"
+    L["OPTIONS_SHOW_MINIMAP_ICON_DESC"] = "The minimap icon lets you quickly open your scoreboard whenever you want"
     L["OPTIONS_AUTO_OPEN_LABEL"] = "Automatically open scoreboard"
     L["OPTIONS_AUTO_OPEN_DESC"] = "Do you want to automatically open the scoreboard when done looting the chest, or when the run itself finishes?"
     L["OPTIONS_AUTO_OPEN_CHOICE_LOOT_CLOSED"] = "When done looting"

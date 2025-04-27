@@ -27,6 +27,9 @@
 ---@field CombatType combattimetype
 ---@field ScoreboardEventType scoreboard_eventtype
 
+---@class minimap : table
+---@field hide boolean whether or not to hide the minimap icon
+
 ---@class profile : table
 ---@field has_last_run boolean whether or not there's a last run. This run will be cleared when the next one starts.
 ---@field is_run_ongoing boolean whether or not there's a current run going
@@ -49,6 +52,7 @@
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
+---@field minimap minimap the minimap settings
 
 ---@class detailsmythicplus : table
 ---@field profile profile store the profile settings
