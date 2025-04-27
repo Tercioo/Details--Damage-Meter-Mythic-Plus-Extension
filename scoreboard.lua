@@ -298,6 +298,8 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
         --get the current run showing
         local selectedRunIndex = addon.GetSelectedRunIndex()
 
+        local playerName = UnitName("player")
+
         for i = 1, #savedRuns do
             local runInfo = savedRuns[i]
 
@@ -307,6 +309,9 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
             ---@type details_instanceinfo
             local instanceInfo = Details:GetInstanceInfo(runInfo.instanceId or runInfo.dungeonName)
             --print(runInfo.mapId, runInfo.dungeonId, runInfo.completionInfo.mapChallengeModeID)
+
+            local playersInThisRun = runInfo.combatData.groupMembers
+            local isPlayerCharacterInThisRun = playersInThisRun[playerName]
 
             ---@type dropdownoption
             local option = {
@@ -319,6 +324,7 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
                 iconsize = {18, 18},
                 texcoord = instanceInfo and instanceInfo.iconLore and {35/512, 291/512, 49/512, 289/512} or {0, 1, 0, 1},
                 iconcolor = {1, 1, 1, 0.7},
+                color = isPlayerCharacterInThisRun and "white" or "gray",
             }
 
             if (i == selectedRunIndex) then
