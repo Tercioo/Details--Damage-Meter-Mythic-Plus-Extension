@@ -114,8 +114,6 @@ local backdropDungeonTextureDesaturation = 0.5
 local dungeonNameY = -12
 --where the header is positioned in the Y axis from the top of the frame
 local headerY = -65
---width of the run selector at the top right corner
-local runSelectorWidth = 250
 --the amount of lines to be created to show player data
 local lineAmount = 5
 local lineOffset = 2
@@ -130,6 +128,7 @@ local activityFrameY = headerY - 90 + (lineHeight * lineAmount * -1)
 --player keystone icon, keystone text
 local keystoneDefaultTexture = 4352494 --when no keystone is found, this texture is shown
 
+--column registration is made at the file scoreboard_layout.lua
 function addon.RegisterScoreboardColumn(column)
     table.insert(mythicPlusBreakdown.RegisteredColumns, column)
 end
@@ -351,10 +350,11 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
         return runInfoList
     end
 
-    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), runSelectorWidth, 20, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), addon.templates.dropdownRunSelector.width, addon.templates.dropdownRunSelector.height, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", configButton, "left", -3, 0)
     readyFrame.RunInfoDropdown = runInfoDropdown
     runInfoDropdown:UseSimpleHeader(true)
+    runInfoDropdown:SetMenuSize(nil, addon.templates.dropdownRunSelector.dropdownHeight)
 
     runInfoDropdown.OnCreateOptionFrame = function(dropdown, optionFrame, optionTable)
         if (not optionFrame.label2) then
@@ -408,7 +408,6 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
 
     hooksecurefunc(runInfoDropdown, "Selected", function(self, thisOption)
         local dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime, altName = thisOption.label:match("(.-)@(%d+)@(%d+)@(%d+)@(.+)@(%d+)@(%d+)@(%d+)@(.+)")
-        print("altName", altName)
         onTime = "1" and true or false
 
         dungeonId = tonumber(dungeonId)

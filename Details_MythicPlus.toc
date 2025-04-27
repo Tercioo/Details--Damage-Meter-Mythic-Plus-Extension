@@ -25,6 +25,7 @@ locales\zhCN.lua
 locales\zhTW.lua
 
 start.lua
+templates.lua
 frames.lua
 parser.lua
 options.lua
@@ -37,4 +38,3 @@ functions.lua
 slash.lua
 rundata.lua
 migrations.lua
-templates.lua

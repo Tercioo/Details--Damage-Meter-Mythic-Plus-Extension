@@ -12,6 +12,7 @@ addon.templates = {}
 
 ---@class templateclass : table
 ---@field activityTimeline activitytimeline_template template for the activity timeline in the scoreboard
+---@field dropdownRunSelector dropdownrunselector_template template for the run selector dropdown in the scoreboard
 
 ---@class activitytimeline_template : table
 ---@field deathMarker_Size number size of the death marker
@@ -32,3 +33,17 @@ local activityTimelineTemplate = {
 }
 
 addon.templates.activityTimeline = activityTimelineTemplate
+
+--dropdown selector is positioned at the top right corner of the scoreboard
+---@class dropdownrunselector_template : table
+---@field width number width of the dropdown
+---@field height number height of the dropdown
+---@field dropdownHeight number height of the dropdown when opened
+
+local dropdownRunSelector = {
+    width = 250,
+    height = 20,
+    dropdownHeight = 400,
+}
+
+addon.templates.dropdownRunSelector = dropdownRunSelector
