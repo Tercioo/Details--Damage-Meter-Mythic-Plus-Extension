@@ -53,6 +53,8 @@
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
 ---@field minimap minimap the minimap settings
+---@field last_run_id number the id of the last run
+---@field visible_scoreboard_columns table<string, boolean> key is the id/name of the column, the value is whether or not it's shown
 
 ---@class detailsmythicplus : table
 ---@field profile profile store the profile settings

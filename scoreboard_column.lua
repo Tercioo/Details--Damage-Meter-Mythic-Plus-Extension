@@ -21,6 +21,7 @@ local ScoreboardColumnMixin = {
     Width = nil,
     Constructor = nil,
     OnRender = function () end,
+    OnHide = function () end,
     OnCalculateBestLine = function () end,
 }
 
@@ -51,6 +52,10 @@ function ScoreboardColumnMixin:SetOnRender(callback)
     self.OnRender = callback
 end
 
+function ScoreboardColumnMixin:SetOnHide(callback)
+    self.OnHide = callback
+end
+
 function ScoreboardColumnMixin:CalculateBestPlayerData(allPlayerData)
     return self.OnCalculateBestLine(allPlayerData)
 end
@@ -61,6 +66,10 @@ end
 
 function ScoreboardColumnMixin:Render(frame, playerData, isBest)
     self.OnRender(frame, playerData, isBest)
+end
+
+function ScoreboardColumnMixin:Hide(frame)
+    self.OnHide(frame)
 end
 
 function ScoreboardColumnMixin:BindToLine(line)
