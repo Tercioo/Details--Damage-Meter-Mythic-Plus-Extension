@@ -101,7 +101,7 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 local mythicPlusBreakdown = {
     lines = {},
     RegisteredColumns = {},
-    HeaderNeedsRefresh = true,
+    HeaderNeedsRefresh = false,
 }
 
 --main frame settings
@@ -234,15 +234,15 @@ local SaveLoot = function(itemLink, unitName)
     addon.RefreshOpenScoreBoard()
 end
 
-function mythicPlusBreakdown.GetHeaderColumns()
-    local headerTable = {}
+function mythicPlusBreakdown.GetVisibleColumns()
+    local columns = {}
     for _, column in pairs(mythicPlusBreakdown.RegisteredColumns) do
         if (addon.profile.visible_scoreboard_columns[column:GetId()]) then
-            table.insert(headerTable, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
+            table.insert(columns, column)
         end
     end
 
-    return headerTable
+    return columns
 end
 
 function mythicPlusBreakdown.CreateScoreboardFrame()
@@ -543,8 +543,13 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
         padding = 2,
     }
 
+    local headers = {}
+    for _, column in ipairs(mythicPlusBreakdown.GetVisibleColumns()) do
+        table.insert(headers, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
+    end
+
     ---@type scoreboard_header
-    local headerFrame = detailsFramework:CreateHeader(readyFrame, mythicPlusBreakdown.GetHeaderColumns(), headerOptions)
+    local headerFrame = detailsFramework:CreateHeader(readyFrame, headers, headerOptions)
     headerFrame:SetPoint("topleft", readyFrame, "topleft", 5, headerY)
     headerFrame.lines = {}
     readyFrame.HeaderFrame = headerFrame
@@ -636,7 +641,22 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
 
     if (mythicPlusBreakdown.HeaderNeedsRefresh) then
         mythicPlusBreakdown.HeaderNeedsRefresh = false
-        headerFrame:SetHeaderTable(mythicPlusBreakdown.GetHeaderColumns())
+        local headers = {}
+        local columns = mythicPlusBreakdown.GetVisibleColumns()
+        for _, column in ipairs(columns) do
+            table.insert(headers, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
+        end
+
+        headerFrame:SetHeaderTable(headers)
+        for i = 1, lineAmount do
+            local line = lines[i]
+            line:ResetFramesToHeaderAlignment()
+            for _, column in ipairs(columns) do
+                line:AddFrameToHeaderAlignment(column:GetFrameObject())
+            end
+            line:AlignWithHeader(headerFrame, "left")
+        end
+
         mainFrame:SetWidth(headerFrame:GetWidth() + mainFramePaddingHorizontal * 2)
     end
 
@@ -759,26 +779,20 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
             for j = 1, #frames do
                 local frame = frames[j]
                 if (frame.ColumnDefinition) then
-                    if (addon.profile.visible_scoreboard_columns[frame.ColumnDefinition:GetId()]) then
-                        if (not bestCache[j]) then
-                            bestCache[j] = frame.ColumnDefinition:CalculateBestPlayerData(data)
-                        end
+                    if (not bestCache[j]) then
+                        bestCache[j] = frame.ColumnDefinition:CalculateBestPlayerData(data)
+                    end
 
-                        local isBest = false
-                        if (bestCache[j]) then
-                            for _, bestData in pairs(bestCache[j]) do
-                                if (playerData == bestData) then
-                                    isBest = true
-                                end
+                    local isBest = false
+                    if (bestCache[j]) then
+                        for _, bestData in pairs(bestCache[j]) do
+                            if (playerData == bestData) then
+                                isBest = true
                             end
                         end
-
-                        frame:Show()
-                        frame.ColumnDefinition:Render(frame, playerData, isBest)
-                    else
-                        frame:Hide()
-                        frame.ColumnDefinition:Hide(frame)
                     end
+
+                    frame.ColumnDefinition:Render(frame, playerData, isBest)
                 end
             end
 
