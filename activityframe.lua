@@ -85,10 +85,14 @@ function activity.UpdateBossWidgets(activityFrame, runData, multiplier)
             bossWidget.TimeText:SetText(detailsFramework:IntegerToTimer(killTimeRelativeToStart))
             local encounterInfo = Details:GetEncounterInfo(encounter.dungeonEncounterId)
             if (encounterInfo and encounterInfo.creatureIcon) then
+                bossWidget.EncounterInfo = encounterInfo
+                bossWidget.EncounterData = encounter
                 bossWidget.AvatarTexture:SetTexture(encounterInfo.creatureIcon)
                 bossWidget.AvatarTexture:SetSize(64, 32)
                 bossWidget.AvatarTexture:SetAlpha(1)
             else
+                bossWidget.EncounterInfo = nil
+                bossWidget.EncounterData = nil
                 -- the following 3 lines and the SetSize/SetAlpha above can be removed when a proper fallback image is available
                 bossWidget.AvatarTexture:SetAtlas("BossBanner-SkullCircle")
                 bossWidget.AvatarTexture:SetSize(36, 36)
@@ -164,7 +168,7 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
         if (deathReason) then
             GameCooltip:Preset(2)
 
-            local relativeTimestamp = event.timestamp - runData.startTime
+            local relativeTimestamp = math.floor(event.timestamp - runData.startTime)
             local classColor = RAID_CLASS_COLORS[playerInfo.class]
             GameCooltip:AddLine(addon.PreparePlayerName(playerInfo.name), detailsFramework:IntegerToTimer(relativeTimestamp), nil, classColor.r, classColor.g, classColor.b, 1, "darkorange")
 

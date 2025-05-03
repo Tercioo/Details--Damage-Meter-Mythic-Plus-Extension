@@ -13,6 +13,8 @@ local _ = nil
 ---@field AvatarTexture texture
 ---@field TimeText fontstring
 ---@field VerticalLine texture
+---@field EncounterInfo df_encounterinfo|nil
+---@field EncounterData detailsmythicplus_encounterinfo|nil
 ---
 ---@class timesection : frame
 ---@field TimeText fontstring
@@ -47,6 +49,34 @@ function addon.CreateBossPortraitTexture(parent, index)
     timeBackground:SetColorTexture(0, 0, 0, 0.8)
     timeBackground:SetPoint("topleft", timeText, "topleft", -2, 2)
     timeBackground:SetPoint("bottomright", timeText, "bottomright", 3, 0)
+
+    newBossWidget:SetScript("OnEnter", function (self)
+        if (not self.EncounterInfo or not self.EncounterData) then
+            return
+        end
+
+        local duration = math.floor(self.EncounterData.endTime - self.EncounterData.startTime)
+
+        GameCooltip:Preset(2)
+        GameCooltip:AddLine(self.EncounterInfo.name, detailsFramework:IntegerToTimer(duration), nil, nil, nil, nil, 1, "darkorange")
+        --GameCooltip:AddIcon("DungeonSkull", 1, 1, 16, 16)
+        GameCooltip:AddIcon("worldquest-icon-boss", 1, 1, 16, 16)
+        GameCooltip:AddIcon([[Interface\AddOns\Details\images\end_of_mplus.png]], 1, 2, 14, 14, 172/512, 235/512, 84/512, 150/512)
+        GameCooltip:SetOwner(self, "bottom", "top", 0, -4)
+        GameCooltip:SetOption("TextSize", Details.tooltip.fontsize)
+        GameCooltip:SetOption("TextFont",  Details.tooltip.fontface)
+        GameCooltip:SetOption("LeftPadding", -3)
+        GameCooltip:SetOption("RightPadding", 2)
+        GameCooltip:SetOption("LinePadding", -2)
+        GameCooltip:SetOption("LineYOffset", 0)
+        GameCooltip:SetOption("FixedWidth", false)
+        GameCooltip:SetOption("UseTrilinearRight", true)
+        GameCooltip:SetOwner(self)
+        GameCooltip:Show()
+    end)
+    newBossWidget:SetScript("OnLeave", function ()
+        GameCooltip:Hide()
+    end)
 
     return newBossWidget
 end
