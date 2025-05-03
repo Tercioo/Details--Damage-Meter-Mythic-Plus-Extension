@@ -713,6 +713,8 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 scoreColor = ratingColor,
                 damageTaken = playerInfo.totalDamageTaken or 0,
                 damageTakenFromSpells = playerInfo.damageTakenFromSpells,
+                damageDoneBySpells = playerInfo.damageDoneBySpells,
+                healDoneBySpells = playerInfo.healDoneBySpells,
                 dps = playerInfo.totalDamage / combatTime,
                 hps = playerInfo.totalHeal / combatTime,
                 activityTimeDamage = playerInfo.activityTimeDamage or combatTime,
