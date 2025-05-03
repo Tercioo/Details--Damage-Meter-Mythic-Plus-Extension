@@ -688,7 +688,7 @@ do -- Interrupts
 end
 
 do -- Dispels
-    local column = addon.ScoreboardColumn:Create("cc-casts", L["SCOREBOARD_TITLE_DISPELS"], 80, function (line)
+    local column = addon.ScoreboardColumn:Create("dispels", L["SCOREBOARD_TITLE_DISPELS"], 80, function (line)
         return line:CreateFontString(nil, "overlay", "GameFontNormal")
     end)
 

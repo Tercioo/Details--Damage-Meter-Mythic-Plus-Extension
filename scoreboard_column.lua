@@ -14,6 +14,7 @@ addon.ScoreboardColumn = ScoreboardColumn
 ---@field SetCalculateBestLine fun(self: scoreboard_column, callback: fun(allPlayerData: scoreboard_playerdata[]))
 ---@field Render fun(self: scoreboard_column, playerData: scoreboard_playerdata)
 ---@field BindToLine fun(self: scoreboard_column, line: scoreboard_line) : frame
+---@field GetFrameObject fun(self: scoreboard_column) : frame|nil
 
 local ScoreboardColumnMixin = {
     ColumnId = nil,
@@ -22,6 +23,7 @@ local ScoreboardColumnMixin = {
     Constructor = nil,
     OnRender = function () end,
     OnCalculateBestLine = function () end,
+    FrameObject = nil,
 }
 
 ---@return scoreboard_column
@@ -63,8 +65,13 @@ function ScoreboardColumnMixin:Render(frame, playerData, isBest)
     self.OnRender(frame, playerData, isBest)
 end
 
+function ScoreboardColumnMixin:GetFrameObject()
+    return self.FrameObject
+end
+
 function ScoreboardColumnMixin:BindToLine(line)
     local frame = self.Constructor(line)
     frame.ColumnDefinition = self
+    self.FrameObject = frame
     return frame
 end

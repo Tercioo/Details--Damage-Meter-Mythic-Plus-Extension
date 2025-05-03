@@ -101,6 +101,7 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 local mythicPlusBreakdown = {
     lines = {},
     RegisteredColumns = {},
+    HeaderNeedsRefresh = false,
 }
 
 --main frame settings
@@ -131,6 +132,15 @@ local keystoneDefaultTexture = 4352494 --when no keystone is found, this texture
 --column registration is made at the file scoreboard_layout.lua
 function addon.RegisterScoreboardColumn(column)
     table.insert(mythicPlusBreakdown.RegisteredColumns, column)
+end
+
+function addon.GetRegisteredColumns()
+    return mythicPlusBreakdown.RegisteredColumns
+end
+
+function addon.SignalHeadersChanged()
+    mythicPlusBreakdown.HeaderNeedsRefresh = true
+    addon.RefreshOpenScoreBoard()
 end
 
 function addon.OpenScoreboardFrame()
@@ -222,6 +232,17 @@ local SaveLoot = function(itemLink, unitName)
     lastRun.combatData.groupMembers[playerName].loot = itemLink
 
     addon.RefreshOpenScoreBoard()
+end
+
+function mythicPlusBreakdown.GetVisibleColumns()
+    local columns = {}
+    for _, column in pairs(mythicPlusBreakdown.RegisteredColumns) do
+        if (addon.profile.visible_scoreboard_columns[column:GetId()]) then
+            table.insert(columns, column)
+        end
+    end
+
+    return columns
 end
 
 function mythicPlusBreakdown.CreateScoreboardFrame()
@@ -518,17 +539,17 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
     end
 
     --header frame
-    local headerTable = {}
-    for _, column in pairs(mythicPlusBreakdown.RegisteredColumns) do
-        table.insert(headerTable, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
-    end
-
     local headerOptions = {
         padding = 2,
     }
 
+    local headers = {}
+    for _, column in ipairs(mythicPlusBreakdown.GetVisibleColumns()) do
+        table.insert(headers, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
+    end
+
     ---@type scoreboard_header
-    local headerFrame = detailsFramework:CreateHeader(readyFrame, headerTable, headerOptions)
+    local headerFrame = detailsFramework:CreateHeader(readyFrame, headers, headerOptions)
     headerFrame:SetPoint("topleft", readyFrame, "topleft", 5, headerY)
     headerFrame.lines = {}
     readyFrame.HeaderFrame = headerFrame
@@ -617,6 +638,27 @@ end
 function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
     local headerFrame = mainFrame.HeaderFrame
     local lines = headerFrame.lines
+
+    if (mythicPlusBreakdown.HeaderNeedsRefresh) then
+        mythicPlusBreakdown.HeaderNeedsRefresh = false
+        local headers = {}
+        local columns = mythicPlusBreakdown.GetVisibleColumns()
+        for _, column in ipairs(columns) do
+            table.insert(headers, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
+        end
+
+        headerFrame:SetHeaderTable(headers)
+        for i = 1, lineAmount do
+            local line = lines[i]
+            line:ResetFramesToHeaderAlignment()
+            for _, column in ipairs(columns) do
+                line:AddFrameToHeaderAlignment(column:GetFrameObject())
+            end
+            line:AlignWithHeader(headerFrame, "left")
+        end
+
+        mainFrame:SetWidth(headerFrame:GetWidth() + mainFramePaddingHorizontal * 2)
+    end
 
     mainFrame.RunInfoDropdown:Select(addon.GetSelectedRunIndex(), nil, nil, false)
     mythicPlusBreakdown.SetFontSettings()

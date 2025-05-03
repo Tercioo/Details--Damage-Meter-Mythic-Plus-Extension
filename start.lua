@@ -34,6 +34,7 @@ local defaultSettings = {
     minimap = {
         hide = false,
     },
+    visible_scoreboard_columns = {},
 
     font = {
         row_size = 12,
