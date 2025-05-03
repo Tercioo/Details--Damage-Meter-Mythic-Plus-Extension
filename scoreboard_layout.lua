@@ -615,9 +615,9 @@ do -- HPS
 
                 if (Details:GetCombatByUID(playerData.combatUid)) then
                     GameCooltip:AddLine("")
-                    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+                    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
                 end
-            end, L["SCOREBOARD_TOOLTIP_DAMAGE_DONE_HEADER"])
+            end, L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"])
         end
         frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HPS) end
         frame:SetText(Details:Format(math.floor(playerData.hps)))
