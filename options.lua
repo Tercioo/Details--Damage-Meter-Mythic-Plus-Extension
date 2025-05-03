@@ -180,20 +180,20 @@ local function GetOptionsTable()
         ---
         --- Scoreboard column options
         ---
-        {type = "label", get = function() return L["OPTIONS_SECTION_VISIBLE_COLUMNS"] end, text_template = orange_font_template},
+        --{type = "label", get = function() return L["OPTIONS_SECTION_VISIBLE_COLUMNS"] end, text_template = orange_font_template},
     }
 
-    for _, column in pairs(addon.GetRegisteredColumns()) do
-        table.insert(options, {
-            type = "toggle",
-            get = function () return addon.profile.visible_scoreboard_columns[column:GetId()] end,
-            set = function (_, _, value)
-                addon.profile.visible_scoreboard_columns[column:GetId()] = value
-                addon.SignalHeadersChanged()
-            end,
-            name = column:GetHeaderText(),
-        })
-    end
+    --for _, column in pairs(addon.GetRegisteredColumns()) do
+    --    table.insert(options, {
+    --        type = "toggle",
+    --        get = function () return addon.profile.visible_scoreboard_columns[column:GetId()] end,
+    --        set = function (_, _, value)
+    --            addon.profile.visible_scoreboard_columns[column:GetId()] = value
+    --            addon.SignalHeadersChanged()
+    --        end,
+    --        name = column:GetHeaderText(),
+    --    })
+    --end
 
     ---
     --- Debug options
