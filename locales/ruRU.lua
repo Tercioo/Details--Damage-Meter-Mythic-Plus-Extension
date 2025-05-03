@@ -23,6 +23,8 @@ do
 
     L["OPTIONS_WINDOW_TITLE"] = "Параметры M+ Details!"
     L["OPTIONS_GENERAL_OPTIONS"] = "Общие параметры"
+    L["OPTIONS_SHOW_MINIMAP_ICON_LABEL"] = "Показать значок миникарты"
+    L["OPTIONS_SHOW_MINIMAP_ICON_DESC"] = "Значок миникарты позволяет Вам быстро открыть окно М+ Details! в любое время"
     L["OPTIONS_AUTO_OPEN_LABEL"] = "Автоматически открывать окно М+ Details!"
     L["OPTIONS_AUTO_OPEN_DESC"] = "Хотите ли Вы, чтобы окно М+ Details! автоматически открывалось после обыска сундука или после завершения забега?"
     L["OPTIONS_AUTO_OPEN_CHOICE_LOOT_CLOSED"] = "При получении добычи"
@@ -49,6 +51,7 @@ do
     L["OPTIONS_SHOW_TIME_SECTIONS_DESC"] = "Показывает временные метки для разделов на временной шкале в качестве ориентира"
     L["OPTIONS_SHOW_REMAINING_TIME_LABEL"] = "Показывать оставшееся время"
     L["OPTIONS_SHOW_REMAINING_TIME_DESC"] = "Когда ключ пройден вовремя, будет добавлен дополнительный раздел, показывающий оставшееся время"
+    L["OPTIONS_SECTION_VISIBLE_COLUMNS"] = "Видимые столбцы"
     L["OPTIONS_DEBUG"] = "Отладка"
     L["OPTIONS_DEBUG_STORE_DEBUG_INFO_LABEL"] = "Сохранить отладочную информацию"
     L["OPTIONS_DEBUG_STORE_DEBUG_INFO_DESC"] = "Включение этой опции позволит сохранить больше информации при перезагрузке в целях отладки. Рекомендуется не включать этот параметр, если Вы не занимаетесь отладкой."
