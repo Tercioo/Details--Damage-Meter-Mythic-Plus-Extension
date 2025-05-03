@@ -61,5 +61,20 @@ addon.Migrations = {
                 playerInfo.crowdControlSpells = ccUsed
             end
         end
+    end,
+
+    function ()
+        -- Some spell data contains invalid values, we can't reconstruct this
+        for _, run in pairs(addon.profile.saved_runs) do
+            for _, playerInfo in pairs(run.combatData.groupMembers) do
+                for _, spellData in pairs(playerInfo.damageDoneBySpells) do
+                    if (type(spellData) == "number") then
+                        playerInfo.damageDoneBySpells = {}
+                    end
+
+                    break
+                end
+            end
+        end
     end
 }

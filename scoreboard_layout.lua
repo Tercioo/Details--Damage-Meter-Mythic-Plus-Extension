@@ -39,6 +39,7 @@ local function DoPlayerTooltip(playerData, owner, renderContent, rightHeaderColu
 
     local classColor = RAID_CLASS_COLORS[playerData.class]
     GameCooltip:AddLine(addon.PreparePlayerName(playerData.name), rightHeaderColumn, nil, classColor.r, classColor.g, classColor.b, 1, r, g, b, 1)
+    GameCooltip:AddIcon(select(4, GetSpecializationInfoByID(playerData.spec)), 1, 1, 18, 18)
     GameCooltip:AddLine("")
     renderContent()
     GameCooltip:SetOwner(owner)
@@ -78,55 +79,6 @@ local showCrowdControlTooltip = function(self, playerData)
             GameCooltip:AddIcon(spellInfo and spellInfo.iconID or 134400, 1, 1, spellInfo and 18 or 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
         end
     end, L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"])
-end
-
-local spellNumberListCooltip = function(owner, playerData, mainAttribute, rightColumnDescription)
-    local combat = Details:GetCombatByUID(playerData.combatUid)
-    if (not combat) then
-        return
-    end
-
-    local actor = combat:GetActor(mainAttribute, playerData.name)
-    if (not actor) then
-        return
-    end
-
-    ---@class spell_id_amount_table : table
-    ---@field spellId number
-    ---@field amount number
-    ---
-    ---@type spell_id_amount_table[]
-    local spellIdAmount = {}
-
-    for spellId, spellTable in pairs(actor:GetSpellList()) do
-        if (spellTable.total > 0) then
-            spellIdAmount[#spellIdAmount +1] = {
-                spellId = spellId,
-                amount = spellTable.total,
-            }
-        end
-    end
-
-    table.sort(spellIdAmount, function(t1, t2) return t1.amount > t2.amount end)
-
-    DoPlayerTooltip(playerData, owner, function ()
-        for i = 1, math.min(#spellIdAmount, 7) do
-            local spellId = spellIdAmount[i].spellId
-            local amount = spellIdAmount[i].amount
-
-            local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
-            if (spellName and spellIcon) then
-                GameCooltip:AddLine(spellName, Details:Format(amount))
-                GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
-                Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
-            end
-        end
-
-        if (Details:GetCombatByUID(playerData.combatUid)) then
-            GameCooltip:AddLine("")
-            GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
-        end
-    end, rightColumnDescription)
 end
 
 local function OpenLineBreakdown(playerData, mainAttribute, subAttribute)
@@ -515,6 +467,9 @@ do -- Damage taken
 
     column:SetOnRender(function (frame, playerData, isBest)
         frame.OnMouseEnter = function (self)
+            if (#playerData.damageTakenFromSpells == 0) then
+                return
+            end
             DoPlayerTooltip(playerData, self, function ()
                 ---@class spell_hit_player : table
                 ---@field spellId number
@@ -575,7 +530,35 @@ do -- DPS
     end)
 
     column:SetOnRender(function (frame, playerData, isBest)
-        frame.OnMouseEnter = function (self) spellNumberListCooltip(self, playerData, DETAILS_ATTRIBUTE_DAMAGE, L["SCOREBOARD_TOOLTIP_DAMAGE_DONE_HEADER"]) end
+        frame.OnMouseEnter = function (self)
+            if (#playerData.damageDoneBySpells == 0) then
+                return
+            end
+            DoPlayerTooltip(playerData, self, function ()
+                local i = 0
+                for _, spellData in pairs(playerData.damageDoneBySpells) do
+                    i = i + 1
+                    if (i > 7) then
+                        break
+                    end
+                    local spellId = spellData[1]
+                    local amount = spellData[2]
+
+                    local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
+                    if (spellName and spellIcon) then
+                        local spellAmount = Details:Format(amount)
+                        GameCooltip:AddLine(spellName, spellAmount)
+                        GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
+                        Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
+                    end
+                end
+
+                if (Details:GetCombatByUID(playerData.combatUid)) then
+                    GameCooltip:AddLine("")
+                    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+                end
+            end, L["SCOREBOARD_TOOLTIP_DAMAGE_DONE_HEADER"])
+        end
         frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS) end
         frame:SetText(Details:Format(math.floor(playerData.dps)))
 
@@ -607,7 +590,35 @@ do -- HPS
     end)
 
     column:SetOnRender(function (frame, playerData, isBest)
-        frame.OnMouseEnter = function (self) spellNumberListCooltip(self, playerData, DETAILS_ATTRIBUTE_HEAL, L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"]) end
+        frame.OnMouseEnter = function (self)
+            if (#playerData.healDoneBySpells == 0) then
+                return
+            end
+            DoPlayerTooltip(playerData, self, function ()
+                local i = 0
+                for _, spellData in pairs(playerData.healDoneBySpells) do
+                    i = i + 1
+                    if (i > 7) then
+                        break
+                    end
+                    local spellId = spellData[1]
+                    local amount = spellData[2]
+
+                    local spellName, _, spellIcon = Details.GetSpellInfo(spellId)
+                    if (spellName and spellIcon) then
+                        local spellAmount = Details:Format(amount)
+                        GameCooltip:AddLine(spellName, spellAmount)
+                        GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
+                        Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
+                    end
+                end
+
+                if (Details:GetCombatByUID(playerData.combatUid)) then
+                    GameCooltip:AddLine("")
+                    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+                end
+            end, L["SCOREBOARD_TOOLTIP_DAMAGE_DONE_HEADER"])
+        end
         frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HPS) end
         frame:SetText(Details:Format(math.floor(playerData.hps)))
 

@@ -59,7 +59,6 @@ function addon.CreateBossPortraitTexture(parent, index)
 
         GameCooltip:Preset(2)
         GameCooltip:AddLine(self.EncounterInfo.name, detailsFramework:IntegerToTimer(duration), nil, nil, nil, nil, 1, "darkorange")
-        --GameCooltip:AddIcon("DungeonSkull", 1, 1, 16, 16)
         GameCooltip:AddIcon("worldquest-icon-boss", 1, 1, 16, 16)
         GameCooltip:AddIcon([[Interface\AddOns\Details\images\end_of_mplus.png]], 1, 2, 14, 14, 172/512, 235/512, 84/512, 150/512)
         GameCooltip:SetOwner(self, "bottom", "top", 0, -4)

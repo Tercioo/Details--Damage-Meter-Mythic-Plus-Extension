@@ -180,6 +180,8 @@
 ---@field healDoneBySpells table<spellid, number>[] heal done by spells, a table with indexed subtables where the first index is the spellid and the second is the total heal done by that spell
 ---@field damageDoneBySpells table<spellid, number>[] damage done by spells, a table with indexed subtables where the first index is the spellid and the second is the total damage done by that spell
 ---@field damageTakenFromSpells spell_hit_player[] damage taken from spells
+---@field damageDoneBySpells table<number, number>[] spellId, damage done
+---@field healDoneBySpells table<number, number>[] spellId, heals done
 ---@field dispelWhat table<spellid, number> which debuffs the player dispelled
 ---@field interruptWhat table<spellid, number> which spells the player interrupted
 ---@field interruptCastOverlapDone number how many times the player attempted to interrupt a spell with another player
