@@ -237,9 +237,9 @@ end
 function mythicPlusBreakdown.GetVisibleColumns()
     local columns = {}
     for _, column in pairs(mythicPlusBreakdown.RegisteredColumns) do
-        if (addon.profile.visible_scoreboard_columns[column:GetId()] ~= false) then
+        --if (addon.profile.visible_scoreboard_columns[column:GetId()] ~= false) then
             table.insert(columns, column)
-        end
+        --end
     end
 
     return columns
