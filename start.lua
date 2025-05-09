@@ -226,6 +226,7 @@ function addon:RegisterMinimap()
         local dataBroker = LDB:NewDataObject("Details_MythicPlus", {
             type = "data source",
             icon = "4352494",
+            text = L["ADDON_MENU_ADDONS_TITLE"],
 
             OnClick = function(self, button)
                 HandleMinimapClick(button)
