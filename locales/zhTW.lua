@@ -23,6 +23,8 @@ do
 
     L["OPTIONS_WINDOW_TITLE"] = "Details! 傳奇+選項"
     L["OPTIONS_GENERAL_OPTIONS"] = "一般選項"
+	L["OPTIONS_SHOW_MINIMAP_ICON_LABEL"] = "顯示小地圖圖示"
+    L["OPTIONS_SHOW_MINIMAP_ICON_DESC"] = "小地圖圖示讓你可以快速開啟計分板"	
     L["OPTIONS_AUTO_OPEN_LABEL"] = "自動開啟計分板"
     L["OPTIONS_AUTO_OPEN_DESC"] = "您想在拾取寶箱或是完成副本時自動開啟計分板嗎？"
     L["OPTIONS_AUTO_OPEN_CHOICE_LOOT_CLOSED"] = "當結束後拾取時"
@@ -49,6 +51,7 @@ do
     L["OPTIONS_SHOW_TIME_SECTIONS_DESC"] = "顯示時間表上階段的時間標籤作為指南"
     L["OPTIONS_SHOW_REMAINING_TIME_LABEL"] = "顯示剩餘時間"
     L["OPTIONS_SHOW_REMAINING_TIME_DESC"] = "當鑰石時限內，將添加額外的階段，顯示仍剩餘的時間"
+    L["OPTIONS_SECTION_VISIBLE_COLUMNS"] = "可見的行列"
     L["OPTIONS_DEBUG"] = "偵錯"
     L["OPTIONS_DEBUG_STORE_DEBUG_INFO_LABEL"] = "儲存偵錯資訊"
     L["OPTIONS_DEBUG_STORE_DEBUG_INFO_DESC"] = "啟用此選項將在重新載入以進行偵錯目的時節省更多訊息。建議除非您實際調試，否則請清空此選項"
