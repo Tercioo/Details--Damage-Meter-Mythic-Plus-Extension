@@ -35,8 +35,8 @@
 ---@field is_run_ongoing boolean whether or not there's a current run going
 ---@field run_id number the last run id
 ---@field saved_runs runinfo[] store the saved runs
----@field saved_runs_compress string[] store the compressed saved runs, this is used to save memory and speed up the loading time of the addon
----@field saved_runs_headers table[] store the headers of the saved runs, this is used to show the run history in the dropdown menu
+---@field saved_runs_compressed string[] store the compressed saved runs, this is used to save memory and speed up the loading time of the addon
+---@field saved_runs_compressed_headers table[] store the headers of the saved runs, this is used to show the run history in the dropdown menu
 ---@field saved_runs_limit number limit of saved runs
 ---@field saved_runs_selected_index number index of the selected run
 ---@field when_to_automatically_open_scoreboard string which method to use to automatically open? can be LOOT_CLOSED or COMBAT_MYTHICPLUS_OVERALL_READY
@@ -255,3 +255,17 @@
 ---@field OutOfCombatTexture texture
 ---@field BackgroundTexture texture
 ---@field SetActivity fun(self: scoreboard_activityframe, events: timeline_event[], runData: runinfo)
+
+---@class runinfocompressed_header : table
+---@field dungeonName string
+---@field startTime number
+---@field endTime number
+---@field keyLevel number
+---@field keyUpgradeLevels number
+---@field onTime boolean
+---@field mapId number
+---@field dungeonId number
+---@field playerName string
+---@field playerClass string
+---@field runId number
+---@field instanceId number
