@@ -35,6 +35,8 @@
 ---@field is_run_ongoing boolean whether or not there's a current run going
 ---@field run_id number the last run id
 ---@field saved_runs runinfo[] store the saved runs
+---@field saved_runs_compress string[] store the compressed saved runs, this is used to save memory and speed up the loading time of the addon
+---@field saved_runs_headers table[] store the headers of the saved runs, this is used to show the run history in the dropdown menu
 ---@field saved_runs_limit number limit of saved runs
 ---@field saved_runs_selected_index number index of the selected run
 ---@field when_to_automatically_open_scoreboard string which method to use to automatically open? can be LOOT_CLOSED or COMBAT_MYTHICPLUS_OVERALL_READY
@@ -110,6 +112,7 @@
 ---@field GetPlayerDeathReason fun(runInfo:runinfo, unitName:playername, deathIndex:number) : death_last_hits[]|nil return a table with subtables of type death_last_hits which tells the last hits that killed the player
 ---@field PreparePlayerName fun(name:string) : string removes the realm name, and transliterates if configured
 ---@field ShowMythicPlusOptionsWindow fun() opens the options window for the addon
+---@field RegisterScoreboardColumn fun(column:scoreboard_column) register a column to be shown in the scoreboard
 
 ---@class scoreboard_keystone_texture: texture show the keystone dungeon icon the player has
 ---@field KeystoneDungeonLevel fontstring show the keystone level of the player
