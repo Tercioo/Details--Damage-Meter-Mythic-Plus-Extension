@@ -249,11 +249,16 @@ function activity.RenderDeathMarker(frame, event, marker, runData)
     }
 end
 
-function activity.RenderKeyFinishedMarker(frame, event, marker)
+function activity.RenderKeyFinishedMarker(frame, event, marker, runData)
     local icon = marker.SubFrames.icon
     if (not icon) then
         icon = marker:CreateTexture("$parentIcon", "artwork")
         marker.SubFrames.icon = icon
+    end
+
+    if (event.arguments.timeLostToDeaths and event.arguments.timeLostToDeaths > 0) then
+        local formatted = detailsFramework:IntegerToTimer(event.timestamp - runData.startTime)
+        marker.TimestampLabel:SetText(formatted .. " (+" .. detailsFramework:IntegerToTimer(event.arguments.timeLostToDeaths) .. ")")
     end
 
     detailsFramework:SetFontSize(marker.TimestampLabel, 12)

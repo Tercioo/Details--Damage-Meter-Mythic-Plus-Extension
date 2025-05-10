@@ -25,6 +25,7 @@ local L = detailsFramework.Language.GetLanguageTable(tocFileName)
 
 local parserFrame = CreateFrame("frame")
 parserFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+parserFrame:RegisterEvent("CHALLENGE_MODE_DEATH_COUNT_UPDATED")
 parserFrame:SetScript("OnEvent", function (self, ...) self:OnEvent(...) end)
 parserFrame.isParsing = false
 
@@ -97,6 +98,8 @@ function parserFrame.OnEvent(self, event, ...)
         if (parserFunctions[clEvent]) then
             parserFunctions[clEvent](clEvent, timestamp, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, targetGUID, targetName, targetFlags, targetRaidFlags, b2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16)
         end
+    elseif (event == "CHALLENGE_MODE_DEATH_COUNT_UPDATED") then
+        addon.profile.last_run_data.time_lost_to_deaths = select(2, C_ChallengeMode.GetDeathCount())
     elseif (event == "PLAYER_ENTERING_WORLD") then
         if (addon.profile.is_run_ongoing) then
             addon.profile.last_run_data.reloaded = true
