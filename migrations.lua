@@ -76,5 +76,5 @@ addon.Migrations = {
                 end
             end
         end
-    end
+    end,
 }

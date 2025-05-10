@@ -256,6 +256,10 @@ function activity.RenderKeyFinishedMarker(frame, event, marker)
         marker.SubFrames.icon = icon
     end
 
+    if (event.arguments.timeLostToDeaths and event.arguments.timeLostToDeaths > 0) then
+        marker.TimestampLabel:SetText(marker.TimestampLabel:GetText() .. " (+" .. detailsFramework:IntegerToTimer(event.arguments.timeLostToDeaths) .. ")")
+    end
+
     detailsFramework:SetFontSize(marker.TimestampLabel, 12)
     if (event.arguments.onTime) then
         icon:SetAtlas("gficon-chest-evergreen-greatvault-collect")

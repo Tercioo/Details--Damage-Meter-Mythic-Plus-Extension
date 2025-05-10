@@ -136,6 +136,7 @@
 ---@field timeLimit number the time limit for the run in seconds
 ---@field startTime number the time() when the run started
 ---@field endTime number the time() when the run ended
+---@field timeLostToDeaths number the amount of seconds lost to party members dying
 ---@field mapId number completionInfo.mapChallengeModeID or Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
 ---@field reloaded boolean whether or not the run had a reload in-between
 
@@ -212,6 +213,7 @@
 ---@field map_id number
 ---@field start_time number
 ---@field end_time number
+---@field time_lost_to_deaths number
 ---@field incombat_timeline number[] first time is no combat (key start), then every timestamp is a toggle
 ---@field encounter_timeline detailsmythicplus_encounterinfo[] store the data from encounter_start and encounter_end events, one sub table per boss attempt
 ---@field interrupt_overlaps table<string, number> count the interrupt overlaps for each player

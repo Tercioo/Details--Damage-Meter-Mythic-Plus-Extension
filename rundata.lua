@@ -74,6 +74,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
         timeLimit = 0, --done
         startTime = addon.profile.last_run_data.start_time,
         endTime = time(),
+        timeLostToDeaths = addon.profile.last_run_data.time_lost_to_deaths,
         mapId = completionInfo.mapChallengeModeID or addon.profile.last_run_data.map_id,
         reloaded = addon.profile.last_run_data.reloaded,
     }

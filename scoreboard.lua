@@ -333,17 +333,6 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
             local playersInThisRun = runInfo.combatData.groupMembers
             local isPlayerCharacterInThisRun = playersInThisRun[playerName]
 
-            --[=[
-            if (i == 5) then
-                for thisPlayerName, playerInfo in pairs(playersInThisRun) do
-                    if (thisPlayerName == "Moolinrouge") then
-                        playerInfo.playerOwns = true
-                        break
-                    end
-                end
-            end
-            --]=]
-
             local labelContent = table.concat(addon.GetDropdownRunDescription(runInfo), "@")
 
             ---@type dropdownoption
@@ -816,7 +805,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 timestamp = runData.endTime,
                 arguments = {
                     onTime = runData.completionInfo.onTime,
-                    keystoneLevelsUpgrade = runData.completionInfo.keystoneUpgradeLevels,
+                    timeLostToDeaths = runData.timeLostToDeaths or 0,
                 },
             }
         end
@@ -1079,12 +1068,12 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 marker:SetPoint("bottom", activityFrame, "topleft", pointOnBar, 15)
                 marker.LineTexture:SetPoint("top", marker, "bottom", 0, 0)
                 marker.LineTexture:SetPoint("bottom", activityFrame, "top", 0, 0)
-                marker.TimestampLabel:SetPoint("bottom", marker, "top", 0, 3)
+                marker.TimestampLabel:SetPoint("bottom", marker, "top", 0, 5)
             else
                 marker:SetPoint("top", activityFrame, "bottomleft", pointOnBar, -15)
                 marker.LineTexture:SetPoint("top", marker, "top", 0, 0)
                 marker.LineTexture:SetPoint("bottom", activityFrame, "bottom", 0, 0)
-                marker.TimestampLabel:SetPoint("top", marker, "bottom", 0, -3)
+                marker.TimestampLabel:SetPoint("top", marker, "bottom", 0, -5)
             end
         end
 
