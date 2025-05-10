@@ -1041,7 +1041,7 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 markerData = addon.activityTimeline.RenderDeathMarker(self, event, marker, runData)
 
             elseif (event.type == addon.Enum.ScoreboardEventType.KeyFinished) then
-                markerData = addon.activityTimeline.RenderKeyFinishedMarker(self, event, marker)
+                markerData = addon.activityTimeline.RenderKeyFinishedMarker(self, event, marker, runData)
             end
 
             local offset = marker:GetWidth() * 0.4
