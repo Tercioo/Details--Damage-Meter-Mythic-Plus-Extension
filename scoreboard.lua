@@ -209,7 +209,7 @@ end
 local SaveLoot = function(itemLink, unitName)
     local playerName = Ambiguate(unitName, "none")
     local lastRun = addon.GetLastRun()
-    if (not lastRun) then
+    if (not lastRun or not lastRun.combatData.groupMembers[playerName]) then
         return
     end
 
