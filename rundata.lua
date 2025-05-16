@@ -273,7 +273,7 @@ end
 ---return the run info for the last run finished before the next one starts
 ---@return runinfo
 function addon.GetLastRun()
-    return addon.profile.has_last_run and addon.profile.saved_runs[1] and addon.profile.saved_run[1].endTime + CONST_LAST_RUN_TIMEOUT > time() or nil
+    return addon.profile.has_last_run and addon.profile.saved_runs[1] and addon.profile.saved_runs[1].endTime + CONST_LAST_RUN_TIMEOUT > time() or nil
 end
 
 ---set the index of the latest selected run info
