@@ -122,7 +122,7 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     addon.Enum = {
         --used to identify the type of run
         CombatType = {
-            RunRime = 1,
+            RunTime = 1,
             CombatTime = 2,
         },
         --used to identify the type of event

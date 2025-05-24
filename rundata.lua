@@ -254,7 +254,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
         end
     end
 
-    local compressedOkay, errorText = pcall(function() addon.CompressAndSaveRunInfo(runInfo) end)
+    local compressedOkay, errorText = pcall(function() addon.Compress.CompressAndSaveRun(runInfo) end)
     if (not compressedOkay) then
         private.log("Error compressing run info: " .. errorText)
     end
@@ -337,71 +337,6 @@ end
 ---@return string
 function addon.GetRunDate(runInfo)
     return date("%d/%b/%Y", runInfo.endTime)
-end
-
----receives a runInfo, encode it, compress and save it to the saved_runs_compressed
----@param runInfo runinfo
----@return boolean success
-function addon.CompressAndSaveRunInfo(runInfo)
-    if (not runInfo) then
-        private.log("CompressAndSaveRunInfo: runInfo is nil")
-        return false
-    end
-
-    if (not C_EncodingUtil) then
-        private.log("CompressAndSaveRunInfo: C_EncodingUtil is nil")
-        return false
-    end
-
-    local dataSerialized = C_EncodingUtil.SerializeCBOR(runInfo)
-    if (not dataSerialized) then
-        private.log("CompressAndSaveRunInfo: C_EncodingUtil.SerializeCBOR failed")
-        return false
-    end
-
-    local dataCompressed = C_EncodingUtil.CompressString(dataSerialized, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
-    if (not dataCompressed) then
-        private.log("CompressAndSaveRunInfo: C_EncodingUtil.CompressString failed")
-        return false
-    end
-
-    local dataEncoded = C_EncodingUtil.EncodeBase64(dataCompressed)
-    if (not dataEncoded) then
-        private.log("CompressAndSaveRunInfo: C_EncodingUtil.EncodeBase64 failed")
-        return false
-    end
-
-    --save the compressed run info
-    table.insert(addon.profile.saved_runs_compressed, 1, dataEncoded)
-
-    ---@type runinfocompressed_header
-    local header = {
-        dungeonName = runInfo.dungeonName,
-        startTime = runInfo.startTime,
-        endTime = runInfo.endTime,
-        keyLevel = runInfo.completionInfo.level,
-        keyUpgradeLevels = runInfo.completionInfo.keystoneUpgradeLevels,
-        onTime = runInfo.completionInfo.onTime or false,
-        mapId = runInfo.mapId,
-        dungeonId = runInfo.dungeonId,
-        playerName = UnitName("player"),
-        playerClass = select(2, UnitClass("player")),
-        runId = runInfo.runId,
-        instanceId = runInfo.instanceId,
-    }
-
-    table.insert(addon.profile.saved_runs_compressed_headers, 1, header)
-
-    --limit data to 200 entries
-    if (#addon.profile.saved_runs_compressed > 200) then
-        table.remove(addon.profile.saved_runs_compressed, 201)
-    end
-
-    if (#addon.profile.saved_runs_compressed_headers > 200) then
-        table.remove(addon.profile.saved_runs_compressed_headers, 201)
-    end
-
-    return true
 end
 
 ---return a table with data to be used in the dropdown menu to select which run to show in the scoreboard
@@ -491,7 +426,7 @@ function addon.GetRunAverageDamagePerSecond(runInfo, timeType)
         total = total + playerInfo.totalDamage
     end
 
-    if (addon.Enum.CombatType.RunRime == timeType) then
+    if (addon.Enum.CombatType.RunTime == timeType) then
         return total / (runInfo.endTime - runInfo.startTime)
     elseif (addon.Enum.CombatType.CombatTime == timeType) then
         return total / runInfo.timeInCombat
@@ -510,7 +445,7 @@ function addon.GetRunAverageHealingPerSecond(runInfo, timeType)
         total = total + playerInfo.totalHeal
     end
 
-    if (addon.Enum.CombatType.RunRime == timeType) then
+    if (addon.Enum.CombatType.RunTime == timeType) then
         return total / (runInfo.endTime - runInfo.startTime)
     elseif (addon.Enum.CombatType.CombatTime == timeType) then
         return total / runInfo.timeInCombat
@@ -535,4 +470,132 @@ function addon.GetRunInfoForHighestScoreById(id)
         end
     end
     return highestScoreRun
+end
+
+
+--run data can be saved as compressed data to save space, as uncompressing all runs everytime the player open the dropdown to select a run, a header is created for the run data
+--a 'run header' is a table with a small portion of the run data. this data is used to show in the dropdown menu which runs are available to be selected
+
+---@class compressrun : table
+---@field CompressAndSaveRun fun(runInfo:runinfo) : string receives a runInfo, encode it, compress and save it to the saved_runs_compressed. also creates a header for the run.
+---@field GetSavedRuns fun() : string[] return a table with compressed run info where the first index in the newest run
+---@field GetHeaders fun() : runinfocompressed_header[] return a table with headers where the first index in the newest run
+---@field GetRunHeader fun(headerIndex:number) : runinfocompressed_header? return the compressed header from the saved run
+---@field UncompressedRun fun(headerIndex:number) : runinfo? return the uncompressed run data from the compressed run data
+
+---return a table with compressed run info where the first index in the newest run
+---@return string[]
+function addon.Compress.GetSavedRuns()
+    return addon.profile.saved_runs_compressed
+end
+
+---return a table with headers where the first index in the newest run
+---@return runinfocompressed_header[]
+function addon.Compress.GetHeaders()
+    return addon.profile.saved_runs_compressed_headers
+end
+
+---return the header for a compressed run info
+---@param headerIndex number
+---@return runinfocompressed_header|nil
+function addon.Compress.GetRunHeader(headerIndex)
+    return addon.profile.saved_runs_compressed_headers[headerIndex]
+end
+
+---return a table with the uncompressed run data
+---@param headerIndex number
+---@return runinfo|nil
+function addon.Compress.UncompressedRun(headerIndex)
+    assert(type(headerIndex) == "number", "UncompressedRun(headerIndex): headerIndex must be a number.")
+    assert(C_EncodingUtil, "C_EncodingUtil is nil")
+
+    local compressedRuns = addon.Compress.GetSavedRuns()
+
+    local runData = compressedRuns[headerIndex]
+    if (not runData) then
+        private.log("UncompressedRun(headerIndex): runData not found for index " .. headerIndex)
+        return nil
+    end
+
+    local dataDecoded = C_EncodingUtil.DecodeBase64(runData)
+    if (not dataDecoded) then
+        private.log("UncompressedRun(headerIndex): C_EncodingUtil.DecodeBase64 failed")
+        return nil
+    end
+
+    local dataDecompressed = C_EncodingUtil.DecompressString(dataDecoded, Enum.CompressionMethod.Deflate)
+    if (not dataDecompressed) then
+        private.log("UncompressedRun(headerIndex): C_EncodingUtil.DecompressString failed")
+        return nil
+    end
+
+    local runInfo = C_EncodingUtil.DeserializeCBOR(dataDecompressed)
+    if (not runInfo) then
+        private.log("UncompressedRun(headerIndex): C_EncodingUtil.DeserializeCBOR failed")
+        return nil
+    end
+
+    return runInfo
+end
+
+---receives a runInfo, encode it, compress and save it to the saved_runs_compressed
+---@param runInfo runinfo
+---@return boolean success
+function addon.Compress.CompressAndSaveRun(runInfo)
+    if (not runInfo) then
+        private.log("CompressAndSaveRun: runInfo is nil")
+        return false
+    end
+
+    assert(C_EncodingUtil, "C_EncodingUtil is nil")
+
+    local dataSerialized = C_EncodingUtil.SerializeCBOR(runInfo)
+    if (not dataSerialized) then
+        private.log("CompressAndSaveRun: C_EncodingUtil.SerializeCBOR failed")
+        return false
+    end
+
+    local dataCompressed = C_EncodingUtil.CompressString(dataSerialized, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
+    if (not dataCompressed) then
+        private.log("CompressAndSaveRun: C_EncodingUtil.CompressString failed")
+        return false
+    end
+
+    local dataEncoded = C_EncodingUtil.EncodeBase64(dataCompressed)
+    if (not dataEncoded) then
+        private.log("CompressAndSaveRun: C_EncodingUtil.EncodeBase64 failed")
+        return false
+    end
+
+    --save the compressed run info
+    table.insert(addon.profile.saved_runs_compressed, 1, dataEncoded)
+
+    ---@type runinfocompressed_header
+    local header = {
+        dungeonName = runInfo.dungeonName,
+        startTime = runInfo.startTime,
+        endTime = runInfo.endTime,
+        keyLevel = runInfo.completionInfo.level,
+        keyUpgradeLevels = runInfo.completionInfo.keystoneUpgradeLevels,
+        onTime = runInfo.completionInfo.onTime or false,
+        mapId = runInfo.mapId,
+        dungeonId = runInfo.dungeonId,
+        playerName = UnitName("player"),
+        playerClass = select(2, UnitClass("player")),
+        runId = runInfo.runId,
+        instanceId = runInfo.instanceId,
+    }
+
+    table.insert(addon.profile.saved_runs_compressed_headers, 1, header)
+
+    --limit data to 200 entries
+    if (#addon.profile.saved_runs_compressed > 200) then
+        table.remove(addon.profile.saved_runs_compressed, 201)
+    end
+
+    if (#addon.profile.saved_runs_compressed_headers > 200) then
+        table.remove(addon.profile.saved_runs_compressed_headers, 201)
+    end
+
+    return true
 end
