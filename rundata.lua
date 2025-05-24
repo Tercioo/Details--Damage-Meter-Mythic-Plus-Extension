@@ -483,6 +483,9 @@ end
 ---@field GetRunHeader fun(headerIndex:number) : runinfocompressed_header? return the compressed header from the saved run
 ---@field UncompressedRun fun(headerIndex:number) : runinfo? return the uncompressed run data from the compressed run data
 
+---@diagnostic disable-next-line: missing-fields
+addon.Compress = {}
+
 ---return a table with compressed run info where the first index in the newest run
 ---@return string[]
 function addon.Compress.GetSavedRuns()
