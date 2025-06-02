@@ -32,6 +32,7 @@ options.lua
 scoreboard_column.lua
 scoreboard.lua
 scoreboard_layout.lua
+scoreboard_runselectordropdown.lua
 activityframe.lua
 events.lua
 functions.lua

@@ -473,7 +473,7 @@ function addon.GetRunInfoForHighestScoreById(id)
 end
 
 
---run data can be saved as compressed data to save space, as uncompressing all runs everytime the player open the dropdown to select a run, a header is created for the run data
+--run data is also saved compressed to save space, when doing so, a header is created for it
 --a 'run header' is a table with a small portion of the run data. this data is used to show in the dropdown menu which runs are available to be selected
 
 ---@class compressrun : table
