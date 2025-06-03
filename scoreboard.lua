@@ -208,6 +208,24 @@ function addon.CreateScoreboardFrame()
     return mythicPlusBreakdown.CreateScoreboardFrame()
 end
 
+local isLootValid = function(itemLink)
+    local itemType = select(6, C_Item.GetItemInfoInstant(itemLink))
+    if (itemType ~= Enum.ItemClass.Weapon and itemType ~= Enum.ItemClass.Armor) then
+        return false
+    end
+
+    if (C_Item.IsItemBindToAccountUntilEquip(itemLink)) then
+        return false
+    end
+
+    local effectiveILvl, _, baseItemLevel = C_Item.GetDetailedItemLevelInfo(itemLink)
+    if (effectiveILvl < 620 or baseItemLevel < 6) then
+        return false
+    end
+
+    return true
+end
+
 local SaveLoot = function(itemLink, unitName)
     local playerName = Ambiguate(unitName, "none")
     local lastRun = addon.GetLastRun()
@@ -234,6 +252,14 @@ local SaveLoot = function(itemLink, unitName)
     lastRun.combatData.groupMembers[playerName].loot = itemLink
 
     addon.RefreshOpenScoreBoard()
+end
+
+local saveLootCompressed = function(itemLink, unitName)
+    local playerName = Ambiguate(unitName, "none")
+    local compressedRuns = addon.Compress.GetSavedRuns()
+    if (compressedRuns[1]) then
+        compressedRuns[1].combatData.groupMembers[playerName].loot = itemLink
+    end
 end
 
 function mythicPlusBreakdown.GetVisibleColumns()

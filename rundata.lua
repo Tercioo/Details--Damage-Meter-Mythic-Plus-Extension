@@ -494,6 +494,14 @@ function addon.Compress.GetSavedRuns()
     return addon.profile.saved_runs_compressed
 end
 
+---return the run info for the last run finished before the next one starts
+---@return runinfo?
+function addon.Compress.GetLastRun()
+    local headerIndex = 1
+    local compressedRuns = addon.Compress.GetSavedRuns()
+    return compressedRuns[headerIndex]
+end
+
 ---return a table with headers where the first index in the newest run
 ---@return runinfocompressed_header[]
 function addon.Compress.GetHeaders()
@@ -543,12 +551,31 @@ function addon.Compress.UncompressedRun(headerIndex)
     return runInfo
 end
 
----receives a runInfo, encode it, compress and save it to the saved_runs_compressed
----@param runInfo runinfo
----@return boolean success
-function addon.Compress.CompressAndSaveRun(runInfo)
+function addon.Compress.SetValue(headerIndex, path, value)
+    assert(type(headerIndex) == "number", "UncompressedRun(headerIndex): headerIndex must be a number.")
+    assert(C_EncodingUtil, "C_EncodingUtil is nil")
+
+    local runInfo = addon.Compress.UncompressedRun(headerIndex)
+    if (runInfo) then
+        detailsFramework.table.setfrompath(runInfo, path, value)
+
+        local runInfoCompressed = addon.Compress.CompressRun(runInfo)
+        if (not runInfoCompressed) then
+            private.log("SetValue: CompressRun failed")
+            return false
+        end
+
+        --save the compressed run info
+        local savedRuns = addon.Compress.GetSavedRuns()
+        savedRuns[headerIndex] = runInfoCompressed
+    end
+
+    return true
+end
+
+function addon.Compress.CompressRun(runInfo)
     if (not runInfo) then
-        private.log("CompressAndSaveRun: runInfo is nil")
+        private.log("CompressRun: runInfo is nil")
         return false
     end
 
@@ -556,24 +583,37 @@ function addon.Compress.CompressAndSaveRun(runInfo)
 
     local dataSerialized = C_EncodingUtil.SerializeCBOR(runInfo)
     if (not dataSerialized) then
-        private.log("CompressAndSaveRun: C_EncodingUtil.SerializeCBOR failed")
+        private.log("CompressRun: C_EncodingUtil.SerializeCBOR failed")
         return false
     end
 
     local dataCompressed = C_EncodingUtil.CompressString(dataSerialized, Enum.CompressionMethod.Deflate, Enum.CompressionLevel.OptimizeForSize)
     if (not dataCompressed) then
-        private.log("CompressAndSaveRun: C_EncodingUtil.CompressString failed")
+        private.log("CompressRun: C_EncodingUtil.CompressString failed")
         return false
     end
 
     local dataEncoded = C_EncodingUtil.EncodeBase64(dataCompressed)
     if (not dataEncoded) then
-        private.log("CompressAndSaveRun: C_EncodingUtil.EncodeBase64 failed")
+        private.log("CompressRun: C_EncodingUtil.EncodeBase64 failed")
+        return false
+    end
+
+    return dataEncoded
+end
+
+---receives a runInfo, encode it, compress and save it to the saved_runs_compressed
+---@param runInfo runinfo
+---@return boolean success
+function addon.Compress.CompressAndSaveRun(runInfo)
+    local runInfoCompressed = addon.Compress.CompressRun(runInfo)
+    if (not runInfoCompressed) then
+        private.log("CompressAndSaveRun: CompressRun failed")
         return false
     end
 
     --save the compressed run info
-    table.insert(addon.profile.saved_runs_compressed, 1, dataEncoded)
+    table.insert(addon.profile.saved_runs_compressed, 1, runInfoCompressed)
 
     ---@type runinfocompressed_header
     local header = {
