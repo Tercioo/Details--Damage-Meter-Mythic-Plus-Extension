@@ -12,8 +12,7 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 
 function addon.CreateRunSelectorDropdown(readyFrame)
-    --dropdown to select the runInfo to show
-    local buildRunInfoList = function()
+    local buildRunInfoListFromUncompressed = function()
         ---@type dropdownoption[]
         local runInfoList = {}
         local savedRuns = addon.GetSavedRuns()
@@ -62,7 +61,55 @@ function addon.CreateRunSelectorDropdown(readyFrame)
         return runInfoList
     end
 
-    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoList, addon.GetSelectedRunIndex(), addon.templates.dropdownRunSelector.width, addon.templates.dropdownRunSelector.height, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
+    local buildRunInfoListFromCompressed = function()
+        ---@type dropdownoption[]
+        local runInfoList = {}
+        local savedRuns = addon.Compress.GetSavedRuns()
+
+        local headers = addon.Compress.GetHeaders()
+
+        --get the current run showing
+        local selectedRunIndex = addon.GetSelectedRunIndex()
+        local playerName = UnitName("player")
+
+        for i = 1, #headers do
+            local thisHeader = headers[i]
+            local isPlayerCharacterInThisRun = true
+
+            local playersInThisRun = thisHeader.groupMembers
+            if (playersInThisRun) then
+                isPlayerCharacterInThisRun = playersInThisRun[playerName] and true or false
+            end
+
+            local labelContent = table.concat(addon.Compress.GetDropdownRunDescription(thisHeader), "@")
+
+            ---@type dropdownoption
+            local option = {
+                label = labelContent,
+                value = i,
+                onclick = function()
+                    addon.SetSelectedRunIndex(i)
+                end,
+                icon = [[Interface\AddOns\Details_MythicPlus\Assets\Images\sandglass_icon.png]],
+                iconsize = {18, 18},
+                texcoord = {0, 1, 0, 1},
+                iconcolor = {1, 1, 1, 0.7},
+                color = isPlayerCharacterInThisRun and "white" or "gray",
+            }
+
+            if (i == selectedRunIndex) then
+                option.statusbar = [[Interface\AddOns\Details\images\bar_serenity]]
+                option.statusbarcolor = {0.4, 0.4, 0, 0.5}
+                option.color = "yellow"
+            end
+
+            runInfoList[#runInfoList+1] = option
+        end
+
+        return runInfoList
+    end
+
+    local runInfoDropdown = detailsFramework:CreateDropDown(readyFrame, buildRunInfoListFromCompressed, addon.GetSelectedRunIndex(), addon.templates.dropdownRunSelector.width, addon.templates.dropdownRunSelector.height, "selectRunInfoDropdown", "DetailsMythicPlusRunSelectorDropdown", detailsFramework:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     runInfoDropdown:SetPoint("right", readyFrame.ConfigButton, "left", -3, 0)
     readyFrame.RunInfoDropdown = runInfoDropdown
     runInfoDropdown:UseSimpleHeader(true)

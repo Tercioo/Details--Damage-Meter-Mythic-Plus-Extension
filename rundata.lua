@@ -482,6 +482,7 @@ end
 ---@field GetHeaders fun() : runinfocompressed_header[] return a table with headers where the first index in the newest run
 ---@field GetRunHeader fun(headerIndex:number) : runinfocompressed_header? return the compressed header from the saved run
 ---@field UncompressedRun fun(headerIndex:number) : runinfo? return the uncompressed run data from the compressed run data
+---@field GetDropdownRunDescription fun(header:runinfocompressed_header) : table
 
 ---@diagnostic disable-next-line: missing-fields
 addon.Compress = {}
@@ -587,7 +588,12 @@ function addon.Compress.CompressAndSaveRun(runInfo)
         playerClass = select(2, UnitClass("player")),
         runId = runInfo.runId,
         instanceId = runInfo.instanceId,
+        groupMembers = {},
     }
+
+    for playerName, playerInfo in pairs(runInfo.combatData.groupMembers) do
+        header.groupMembers[playerName] = playerInfo.class
+    end
 
     table.insert(addon.profile.saved_runs_compressed_headers, 1, header)
 
@@ -601,4 +607,52 @@ function addon.Compress.CompressAndSaveRun(runInfo)
     end
 
     return true
+end
+
+---return a table with data to be used in the dropdown menu to select which run to show in the scoreboard
+---@param header runinfocompressed_header
+---@return table dropdownData dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId
+function addon.Compress.GetDropdownRunDescription(header)
+    --Operation: Mechagon - Workshop (2) | 20:10 (+3) | 4 hours ago
+    local dungeonName = header.dungeonName
+    local runTime = header.endTime - header.startTime
+    local secondsAgo = time() - header.endTime
+
+    --if the run time is less than 1 hour, show the time in minutes
+    --if the run is less than 24 hours, show the time in hours
+    --if the run is more than 24 hours, show the time in days
+    --if the run is more than 7 days, show the data using addon.GetRunDate(runInfo)
+
+    local timeString = ""
+    if (secondsAgo < 3600) then
+        timeString = string.format("%d minutes ago", math.floor(secondsAgo / 60))
+    elseif (secondsAgo < 86400) then
+        timeString = string.format("%d hours ago", math.floor(secondsAgo / 3600))
+    elseif (secondsAgo < 604800) then
+        timeString = string.format("%d days ago", math.floor(secondsAgo / 86400))
+    else
+        timeString = addon.GetRunDate(header)
+    end
+
+    local keyLevel = header.keyLevel or 0
+    local keyUpgradeLevels = header.keyUpgradeLevels or 0
+    local mapId = header.mapId or 0
+    local dungeonId = header.dungeonId or 0
+    local onTime = header.onTime or false
+
+    --get the alt name, playerOwns is true when the player itself played the character when doing the run
+    local altName = "0" --can't be an empty string due to string.match pattern
+    local playerName = UnitName("player")
+
+    if (header.groupMembers) then
+        for unitName, class in pairs(header.groupMembers) do
+            if (header.playerName == unitName and unitName ~= playerName) then
+                altName = unitName
+                altName = detailsFramework:AddClassColorToText(altName, class)
+                break
+            end
+        end
+    end
+
+    return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime and 1 or 0, altName}
 end
