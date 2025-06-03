@@ -483,6 +483,7 @@ end
 ---@field GetRunHeader fun(headerIndex:number) : runinfocompressed_header? return the compressed header from the saved run
 ---@field UncompressedRun fun(headerIndex:number) : runinfo? return the uncompressed run data from the compressed run data
 ---@field GetDropdownRunDescription fun(header:runinfocompressed_header) : table
+---@field GetSelectedRun fun() : runinfo return the uncompressed run data from the compressed run data
 
 ---@diagnostic disable-next-line: missing-fields
 addon.Compress = {}
@@ -655,4 +656,21 @@ function addon.Compress.GetDropdownRunDescription(header)
     end
 
     return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime and 1 or 0, altName}
+end
+
+---uncompress the runInfo and return it
+---@return runinfo?
+function addon.Compress.GetSelectedRun()
+    local savedRuns = addon.Compress.GetSavedRuns()
+    local selectedRunIndex = addon.GetSelectedRunIndex()
+    local compresedRunInfo = savedRuns[selectedRunIndex]
+
+    if (compresedRunInfo == nil) then
+        --if no run is selected, select the first run
+        addon.SetSelectedRunIndex(1)
+        selectedRunIndex = 1
+    end
+
+    local runInfo = addon.Compress.UncompressedRun(selectedRunIndex)
+    return runInfo
 end

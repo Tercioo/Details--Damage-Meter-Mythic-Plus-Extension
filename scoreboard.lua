@@ -150,7 +150,8 @@ function addon.OpenScoreboardFrame()
         return
     end
 
-    local runData = addon.GetSelectedRun()
+    --local runData = addon.GetSelectedRun()
+    local runData = addon.Compress.GetSelectedRun()
     if (not runData) then
         print(L["SCOREBOARD_NO_SCORE_AVAILABLE"])
         return
@@ -175,7 +176,7 @@ function addon.RefreshOpenScoreBoard()
         table.wipe(addon.temporaryTimers)
 
         --do the update
-        mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, addon.GetSelectedRun())
+        mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, addon.Compress.GetSelectedRun())
     end
 
     return mainFrame

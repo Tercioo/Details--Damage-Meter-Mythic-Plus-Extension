@@ -114,7 +114,7 @@
 ---@field PreparePlayerName fun(name:string) : string removes the realm name, and transliterates if configured
 ---@field ShowMythicPlusOptionsWindow fun() opens the options window for the addon
 ---@field RegisterScoreboardColumn fun(column:scoreboard_column) register a column to be shown in the scoreboard
----@field CreateRunSelectorDropdown fun(readyFrame:frame) create a dropdown to select the run to show in the scoreboard
+---@field CreateRunSelectorDropdown fun(readyFrame:scoreboard_mainframe) create a dropdown to select the run to show in the scoreboard
 
 ---@class scoreboard_keystone_texture: texture show the keystone dungeon icon the player has
 ---@field KeystoneDungeonLevel fontstring show the keystone level of the player
