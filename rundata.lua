@@ -472,7 +472,6 @@ function addon.GetRunInfoForHighestScoreById(id)
     return highestScoreRun
 end
 
-
 --run data is also saved compressed to save space, when doing so, a header is created for it
 --a 'run header' is a table with a small portion of the run data. this data is used to show in the dropdown menu which runs are available to be selected
 
@@ -484,6 +483,9 @@ end
 ---@field UncompressedRun fun(headerIndex:number) : runinfo? return the uncompressed run data from the compressed run data
 ---@field GetDropdownRunDescription fun(header:runinfocompressed_header) : table
 ---@field GetSelectedRun fun() : runinfo return the uncompressed run data from the compressed run data
+---@field SetValue fun(headerIndex:number, path:string, value:any) : boolean
+---@field CompressRun fun(runInfo:runinfo) : string compresses the run info and returns the compressed data
+---@field GetLastRun fun() : compressedruninfo? return the run info for the last run finished before the next one starts
 
 ---@diagnostic disable-next-line: missing-fields
 addon.Compress = {}
@@ -495,7 +497,7 @@ function addon.Compress.GetSavedRuns()
 end
 
 ---return the run info for the last run finished before the next one starts
----@return runinfo?
+---@return compressedruninfo?
 function addon.Compress.GetLastRun()
     local headerIndex = 1
     local compressedRuns = addon.Compress.GetSavedRuns()

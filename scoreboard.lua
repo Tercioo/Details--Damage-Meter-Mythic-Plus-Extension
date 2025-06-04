@@ -258,7 +258,8 @@ local saveLootCompressed = function(itemLink, unitName)
     local playerName = Ambiguate(unitName, "none")
     local compressedRuns = addon.Compress.GetSavedRuns()
     if (compressedRuns[1]) then
-        compressedRuns[1].combatData.groupMembers[playerName].loot = itemLink
+        local headerIndex = 1 --latest run
+        addon.Compress.SetValue(headerIndex, "combatData.groupMembers." .. playerName .. ".loot", itemLink)
     end
 end
 
@@ -310,7 +311,8 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
             end
         elseif (event == "ENCOUNTER_LOOT_RECEIVED") then
             local _, _, itemLink, _, unitName = ...
-            SaveLoot(itemLink, unitName)
+            --SaveLoot(itemLink, unitName)
+            saveLootCompressed(itemLink, unitName)
         end
     end)
 

@@ -23,6 +23,8 @@
 ---| "Death"
 ---| "KeyFinished"
 
+---@alias compressedruninfo string
+
 ---@class enum : table
 ---@field CombatType combattimetype
 ---@field ScoreboardEventType scoreboard_eventtype
