@@ -484,7 +484,7 @@ end
 ---@field GetDropdownRunDescription fun(header:runinfocompressed_header) : table
 ---@field GetSelectedRun fun() : runinfo return the uncompressed run data from the compressed run data
 ---@field SetValue fun(headerIndex:number, path:string, value:any) : boolean
----@field CompressRun fun(runInfo:runinfo) : string compresses the run info and returns the compressed data
+---@field CompressRun fun(runInfo:runinfo) : string? compresses the run info and returns the compressed data
 ---@field GetLastRun fun() : compressedruninfo? return the run info for the last run finished before the next one starts
 
 ---@diagnostic disable-next-line: missing-fields
