@@ -79,6 +79,8 @@ do
     L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"] = "Наивысший"
     L["SCOREBOARD_TOOLTIP_INTERRUPTS_HEADER"] = "Суммарно"
     L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"] = "Суммарно"
+    L["SCOREBOARD_RELOADED_WARNING"] = "Неполные данные"
+    L["SCOREBOARD_RELOADED_TOOLTIP"] = "Данные этого забега неполные и, возможно, неверные из-за перезагрузки или перезахода в игру в середине забега"
     L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"] = "Удалено %d поврежденных забегов из истории."
     L["ADDON_STARTUP_REMOVED_TOO_MANY_HISTORY"] = "Удалено %d забегов из истории после обнаружения слишком большого количества сохраненных забегов."
 
