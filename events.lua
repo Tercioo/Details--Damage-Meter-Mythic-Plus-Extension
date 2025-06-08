@@ -41,8 +41,6 @@ function addon.InitializeEvents()
         local okay, errorText = pcall(function()
             local runInfo = addon.CreateRunInfo(mythicPlusOverallSegment)
             if (runInfo) then
-                table.insert(addon.profile.saved_runs, 1, runInfo)
-                table.remove(addon.profile.saved_runs, addon.profile.saved_runs_limit+1)
                 addon.SetSelectedRunIndex(1)
                 addon.profile.has_last_run = true
 

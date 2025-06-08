@@ -12,59 +12,9 @@ local L = detailsFramework.Language.GetLanguageTable(addonName)
 local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 
 function addon.CreateRunSelectorDropdown(readyFrame)
-    local buildRunInfoListFromUncompressed = function()
-        ---@type dropdownoption[]
-        local runInfoList = {}
-        local savedRuns = addon.GetSavedRuns()
-        --get the current run showing
-        local selectedRunIndex = addon.GetSelectedRunIndex()
-
-        local playerName = UnitName("player")
-
-        for i = 1, #savedRuns do
-            local runInfo = savedRuns[i]
-
-            --runInfo.mapId, runInfo.dungeonId, runInfo.completionInfo.mapChallengeModeID
-            --are the same and doesn't work with Details:GetInstanceInfo()
-
-            ---@type details_instanceinfo
-            local instanceInfo = Details:GetInstanceInfo(runInfo.instanceId or runInfo.dungeonName)
-            --print(runInfo.mapId, runInfo.dungeonId, runInfo.completionInfo.mapChallengeModeID)
-
-            local playersInThisRun = runInfo.combatData.groupMembers
-            local isPlayerCharacterInThisRun = playersInThisRun[playerName]
-
-            local labelContent = table.concat(addon.GetDropdownRunDescription(runInfo), "@")
-
-            ---@type dropdownoption
-            local option = {
-                label = labelContent,
-                value = i,
-                onclick = function()
-                    addon.SetSelectedRunIndex(i)
-                end,
-                icon = instanceInfo and instanceInfo.iconLore or [[Interface\AddOns\Details_MythicPlus\Assets\Images\sandglass_icon.png]],
-                iconsize = {18, 18},
-                texcoord = instanceInfo and instanceInfo.iconLore and {35/512, 291/512, 49/512, 289/512} or {0, 1, 0, 1},
-                iconcolor = {1, 1, 1, 0.7},
-                color = isPlayerCharacterInThisRun and "white" or "gray",
-            }
-
-            if (i == selectedRunIndex) then
-                option.statusbar = [[Interface\AddOns\Details\images\bar_serenity]]
-                option.statusbarcolor = {0.4, 0.4, 0, 0.5}
-                option.color = "yellow"
-
-            end
-            runInfoList[#runInfoList+1] = option
-        end
-        return runInfoList
-    end
-
     local buildRunInfoListFromCompressed = function()
         ---@type dropdownoption[]
         local runInfoList = {}
-        local savedRuns = addon.Compress.GetSavedRuns()
 
         local headers = addon.Compress.GetHeaders()
 

@@ -16,8 +16,6 @@ do
     L["COMMAND_SHOW_VERSION"] = "Показать версию во всплывающем окне"
     L["COMMAND_OPEN_SCOREBOARD"] = "Открыть окно М+ Details!"
     L["COMMAND_OPEN_LOGS"] = "Показать последние журналы"
-    L["COMMAND_LIST_RUN_HISTORY"] = "Список последних забегов"
-    L["COMMAND_LIST_RUN_HISTORY_NO_RUNS"] = "В настоящее время нет сохраненных забегов"
     L["COMMAND_CLEAR_RUN_HISTORY"] = "Очистить историю последних забегов"
     L["COMMAND_CLEAR_RUN_HISTORY_DONE"] = "Очищена история %s забегов"
 
@@ -79,8 +77,6 @@ do
     L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"] = "Наивысший"
     L["SCOREBOARD_TOOLTIP_INTERRUPTS_HEADER"] = "Суммарно"
     L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"] = "Суммарно"
-    L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"] = "Удалено %d поврежденных забегов из истории."
-    L["ADDON_STARTUP_REMOVED_TOO_MANY_HISTORY"] = "Удалено %d забегов из истории после обнаружения слишком большого количества сохраненных забегов."
 
     ------------------------------------------------------------
     --@localization(locale="ruRU", format="lua_additive_table")@

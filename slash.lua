@@ -33,24 +33,6 @@ addon.commands = {
     logs = {L["COMMAND_OPEN_LOGS"], function ()
         addon.ShowLogs()
     end},
-    history = {L["COMMAND_LIST_RUN_HISTORY"], function ()
-        local runs = addon.GetSavedRuns()
-        local total = #runs
-        if (total == 0) then
-            print(L["COMMAND_LIST_RUN_HISTORY_NO_RUNS"])
-        end
-        for i = total, 1, -1 do
-            local runInfo = runs[i]
-            print(i .. ". " .. addon.FormatRunDescription(runInfo))
-        end
-    end},
-    ["history-clear"] = {L["COMMAND_CLEAR_RUN_HISTORY"], function ()
-        local total = #addon.GetSavedRuns()
-        print(string.format(L["COMMAND_CLEAR_RUN_HISTORY_DONE"], WrapTextInColorCode(total, "0000ff00")))
-        for i = total, 1, -1 do
-            addon.RemoveRun(i)
-        end
-    end},
 }
 
 SLASH_SCORE1, SLASH_SCORE2, SLASH_SCORE3 = "/scoreboard", "/score", "/sb"
