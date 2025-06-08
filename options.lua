@@ -149,7 +149,24 @@ local function GetOptionsTable()
             max = 300,
             step = 1,
             name = L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"],
-            desc = L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"],
+            desc = function ()
+                local savedRuns = addon.Compress.GetSavedRuns()
+                local totalSize = 0
+                for _, run in pairs(savedRuns) do
+                    totalSize = totalSize + #run
+                end
+
+                return string.format(
+                    "%s\n\n%s: %d\n%s: %.2f KB\n%s: %.2f KB",
+                    L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"],
+                    L["OPTIONS_HISTORY_RUNS_TO_KEEP_SAVED_RUNS"],
+                    #savedRuns,
+                    L["OPTIONS_HISTORY_RUNS_TO_KEEP_TOTAL_STORAGE"],
+                    totalSize / 1024,
+                    L["OPTIONS_HISTORY_RUNS_TO_KEEP_AVERAGE_PER_RUN"],
+                    (totalSize / #savedRuns) / 1024
+                )
+            end,
         },
 
         ---
