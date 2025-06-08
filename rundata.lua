@@ -262,20 +262,6 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
     return runInfo
 end
 
-
-
----return an array with all data from the saved runs
----@return runinfo[]
-function addon.GetSavedRuns()
-    return addon.profile.saved_runs
-end
-
----return the run info for the last run finished before the next one starts
----@return runinfo
-function addon.GetLastRun()
-    return addon.profile.has_last_run and addon.profile.saved_runs[1] and addon.profile.saved_runs[1].endTime + CONST_LAST_RUN_TIMEOUT > time() and addon.profile.saved_runs[1] or nil
-end
-
 ---set the index of the latest selected run info
 ---@param index number
 function addon.SetSelectedRunIndex(index)
@@ -288,48 +274,6 @@ end
 ---@return number
 function addon.GetSelectedRunIndex()
     return addon.profile.saved_runs_selected_index
-end
-
----return the latest selected run info, return nil if there is no run info data
----@return runinfo?
-function addon.GetSelectedRun()
-    local savedRuns = addon.GetSavedRuns()
-    local selectedRunIndex = addon.GetSelectedRunIndex()
-    local runInfo = savedRuns[selectedRunIndex]
-    if (runInfo == nil) then
-        --if no run is selected, select the first run
-        addon.SetSelectedRunIndex(1)
-        selectedRunIndex = 1
-    end
-    return savedRuns[selectedRunIndex]
-end
-
----remove the run info from the saved runs
----@param index number
-function addon.RemoveRun(index)
-    local currentSelectedIndex = addon.GetSelectedRunIndex()
-
-    table.remove(addon.profile.saved_runs, index)
-
-    if (currentSelectedIndex == index) then
-        addon.SetSelectedRunIndex(1)
-    elseif (currentSelectedIndex > index) then
-        addon.SetSelectedRunIndex(currentSelectedIndex - 1)
-    end
-end
-
----return an array with run infos of all runs that match the dungeon name or dungeon id
----@param id string|number dungeon name, dungeon id or map id
----@return runinfo[]
-function addon.GetDungeonRunsById(id)
-    local runs = {}
-    local savedRuns = addon.GetSavedRuns()
-    for _, runInfo in ipairs(savedRuns) do
-        if (runInfo.dungeonName == id or runInfo.dungeonId == id or runInfo.mapId == id) then
-            table.insert(runs, runInfo)
-        end
-    end
-    return runs
 end
 
 ---return the date when the run ended in format of a string with hour:minute day as number/month as 3letters/year as number
@@ -455,23 +399,6 @@ function addon.GetRunAverageHealingPerSecond(runInfo, timeType)
     return total / (runInfo.endTime - runInfo.startTime)
 end
 
----return the run info with highest score for a dungeon
----@param id string|number dungeon name, dungeon id or map id
----@return runinfo?
-function addon.GetRunInfoForHighestScoreById(id)
-    local highestScore = 0
-    local highestScoreRun = nil
-    for _, runInfo in ipairs(addon.GetSavedRuns()) do
-        if (runInfo.dungeonName == id or runInfo.dungeonId == id or runInfo.mapId == id) then
-            if (runInfo.completionInfo.newOverallDungeonScore > highestScore) then
-                highestScore = runInfo.completionInfo.newOverallDungeonScore
-                highestScoreRun = runInfo
-            end
-        end
-    end
-    return highestScoreRun
-end
-
 --run data is also saved compressed to save space, when doing so, a header is created for it
 --a 'run header' is a table with a small portion of the run data. this data is used to show in the dropdown menu which runs are available to be selected
 
@@ -485,7 +412,7 @@ end
 ---@field GetSelectedRun fun() : runinfo return the uncompressed run data from the compressed run data
 ---@field SetValue fun(headerIndex:number, path:string, value:any) : boolean
 ---@field CompressRun fun(runInfo:runinfo) : string? compresses the run info and returns the compressed data
----@field GetLastRun fun() : compressedruninfo? return the run info for the last run finished before the next one starts
+---@field GetLastRun fun() : runinfo? return the run info for the last run finished before the next one starts
 
 ---@diagnostic disable-next-line: missing-fields
 addon.Compress = {}
@@ -497,11 +424,14 @@ function addon.Compress.GetSavedRuns()
 end
 
 ---return the run info for the last run finished before the next one starts
----@return compressedruninfo?
+---@return runinfo?
 function addon.Compress.GetLastRun()
-    local headerIndex = 1
-    local compressedRuns = addon.Compress.GetSavedRuns()
-    return compressedRuns[headerIndex]
+    local hasRun = addon.profile.has_last_run
+        and addon.profile.saved_runs_compressed_headers[1]
+        and addon.profile.saved_runs_compressed_headers[1].endTime + CONST_LAST_RUN_TIMEOUT > time()
+        and true or false
+
+    return hasRun and addon.Compress.UncompressedRun(1)
 end
 
 ---return a table with headers where the first index in the newest run
@@ -606,8 +536,14 @@ end
 
 ---receives a runInfo, encode it, compress and save it to the saved_runs_compressed
 ---@param runInfo runinfo
+---@param atIndex number|nil
 ---@return boolean success
-function addon.Compress.CompressAndSaveRun(runInfo)
+function addon.Compress.CompressAndSaveRun(runInfo, atIndex)
+    atIndex = atIndex and atIndex > 0 and atIndex or 1
+    if (atIndex > addon.profile.saved_runs_limit) then
+        return
+    end
+
     local runInfoCompressed = addon.Compress.CompressRun(runInfo)
     if (not runInfoCompressed) then
         private.log("CompressAndSaveRun: CompressRun failed")
@@ -615,7 +551,7 @@ function addon.Compress.CompressAndSaveRun(runInfo)
     end
 
     --save the compressed run info
-    table.insert(addon.profile.saved_runs_compressed, 1, runInfoCompressed)
+    table.insert(addon.profile.saved_runs_compressed, atIndex, runInfoCompressed)
 
     ---@type runinfocompressed_header
     local header = {
@@ -638,18 +574,21 @@ function addon.Compress.CompressAndSaveRun(runInfo)
         header.groupMembers[playerName] = playerInfo.class
     end
 
-    table.insert(addon.profile.saved_runs_compressed_headers, 1, header)
+    table.insert(addon.profile.saved_runs_compressed_headers, atIndex, header)
 
-    --limit data to 200 entries
-    if (#addon.profile.saved_runs_compressed > 200) then
-        table.remove(addon.profile.saved_runs_compressed, 201)
-    end
-
-    if (#addon.profile.saved_runs_compressed_headers > 200) then
-        table.remove(addon.profile.saved_runs_compressed_headers, 201)
-    end
+    addon.Compress.YeetRunsOverStorageLimit()
 
     return true
+end
+
+function addon.Compress.YeetRunsOverStorageLimit()
+    while #addon.profile.saved_runs_compressed > addon.profile.saved_runs_limit do
+        table.remove(addon.profile.saved_runs_compressed, addon.profile.saved_runs_limit + 1)
+    end
+
+    while #addon.profile.saved_runs_compressed_headers > addon.profile.saved_runs_limit do
+        table.remove(addon.profile.saved_runs_compressed_headers, addon.profile.saved_runs_limit + 1)
+    end
 end
 
 ---return a table with data to be used in the dropdown menu to select which run to show in the scoreboard
@@ -705,14 +644,13 @@ end
 function addon.Compress.GetSelectedRun()
     local savedRuns = addon.Compress.GetSavedRuns()
     local selectedRunIndex = addon.GetSelectedRunIndex()
-    local compresedRunInfo = savedRuns[selectedRunIndex]
+    local compressedRunInfo = savedRuns[selectedRunIndex]
 
-    if (compresedRunInfo == nil) then
+    if (compressedRunInfo == nil) then
         --if no run is selected, select the first run
         addon.SetSelectedRunIndex(1)
         selectedRunIndex = 1
     end
 
-    local runInfo = addon.Compress.UncompressedRun(selectedRunIndex)
-    return runInfo
+    return addon.Compress.UncompressedRun(selectedRunIndex)
 end

@@ -16,8 +16,6 @@ do
     L["COMMAND_SHOW_VERSION"] = "Show the version in a popup"
     L["COMMAND_OPEN_SCOREBOARD"] = "Open the scoreboard"
     L["COMMAND_OPEN_LOGS"] = "Show recent logs"
-    L["COMMAND_LIST_RUN_HISTORY"] = "List recent runs"
-    L["COMMAND_LIST_RUN_HISTORY_NO_RUNS"] = "There are currently no saved runs"
     L["COMMAND_CLEAR_RUN_HISTORY"] = "Clear recent runs history"
     L["COMMAND_CLEAR_RUN_HISTORY_DONE"] = "Cleared the history of %s run(s)"
 
@@ -81,8 +79,6 @@ do
     L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"] = "Amount"
     L["SCOREBOARD_RELOADED_WARNING"] = "Incomplete Data"
     L["SCOREBOARD_RELOADED_TOOLTIP"] = "This run's data is incomplete, and possibly incorrect because of a reload or relog mid-run"
-    L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"] = "Removed %d corrupt run(s) from history."
-    L["ADDON_STARTUP_REMOVED_TOO_MANY_HISTORY"] = "Removed %d run(s) from history after detecting too many saved runs."
 
     ------------------------------------------------------------
     --@localization(locale="enUS", format="lua_additive_table")@

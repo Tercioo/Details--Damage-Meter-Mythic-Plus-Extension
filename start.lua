@@ -21,7 +21,6 @@ local defaultSettings = {
     show_cc_cast_tooltip_percentage = true,
     show_remaining_timeline_after_finish = true,
     show_time_sections = true,
-    saved_runs = {},
     saved_runs_compressed = {},
     saved_runs_compressed_headers = {},
     saved_runs_limit = 10,
@@ -142,30 +141,7 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     addon.profile.saved_runs_selected_index = 1
 
     -- try to yeet broken saves and shrink history if the setting is lowered
-    local newRuns = {}
-    local corruptRuns = 0
-    local removedRuns = 0
-    for i = 1, #addon.profile.saved_runs do
-        local run = addon.profile.saved_runs[i]
-        local newRunCount = #newRuns
-        if (newRunCount >= addon.profile.saved_runs_limit) then
-            removedRuns = removedRuns + 1
-        elseif (not run or not run.completionInfo or run.completionInfo.mapChallengeModeID == 0) then
-            corruptRuns = corruptRuns + 1
-        else
-            newRuns[newRunCount + 1] = run
-        end
-    end
-
-    if (corruptRuns > 0) then
-        print("Details! Mythic+: " .. string.format(L["ADDON_STARTUP_REMOVED_CORRUPT_HISTORY"], corruptRuns))
-    end
-
-    if (removedRuns > 0) then
-        print("Details! Mythic+: " .. string.format(L["ADDON_STARTUP_REMOVED_TOO_MANY_HISTORY"], removedRuns))
-    end
-
-    addon.profile.saved_runs = newRuns
+    addon.Compress.YeetRunsOverStorageLimit()
 
     -- ensure people don't break the scale
     addon.profile.scoreboard_scale = math.max(0.6, math.min(1.6, addon.profile.scoreboard_scale))

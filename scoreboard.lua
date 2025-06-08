@@ -150,7 +150,6 @@ function addon.OpenScoreboardFrame()
         return
     end
 
-    --local runData = addon.GetSelectedRun()
     local runData = addon.Compress.GetSelectedRun()
     if (not runData) then
         print(L["SCOREBOARD_NO_SCORE_AVAILABLE"])
@@ -208,27 +207,9 @@ function addon.CreateScoreboardFrame()
     return mythicPlusBreakdown.CreateScoreboardFrame()
 end
 
-local isLootValid = function(itemLink)
-    local itemType = select(6, C_Item.GetItemInfoInstant(itemLink))
-    if (itemType ~= Enum.ItemClass.Weapon and itemType ~= Enum.ItemClass.Armor) then
-        return false
-    end
-
-    if (C_Item.IsItemBindToAccountUntilEquip(itemLink)) then
-        return false
-    end
-
-    local effectiveILvl, _, baseItemLevel = C_Item.GetDetailedItemLevelInfo(itemLink)
-    if (effectiveILvl < 620 or baseItemLevel < 6) then
-        return false
-    end
-
-    return true
-end
-
 local SaveLoot = function(itemLink, unitName)
     local playerName = Ambiguate(unitName, "none")
-    local lastRun = addon.GetLastRun()
+    local lastRun = addon.Compress.GetLastRun()
     if (not lastRun or not lastRun.combatData.groupMembers[playerName]) then
         return
     end
@@ -249,18 +230,9 @@ local SaveLoot = function(itemLink, unitName)
     end
 
     private.log("Loot Received:", playerName, itemLink)
-    lastRun.combatData.groupMembers[playerName].loot = itemLink
+    addon.Compress.SetValue(1, "combatData.groupMembers." .. playerName .. ".loot", itemLink)
 
     addon.RefreshOpenScoreBoard()
-end
-
-local saveLootCompressed = function(itemLink, unitName)
-    local playerName = Ambiguate(unitName, "none")
-    local compressedRuns = addon.Compress.GetSavedRuns()
-    if (compressedRuns[1]) then
-        local headerIndex = 1 --latest run
-        addon.Compress.SetValue(headerIndex, "combatData.groupMembers." .. playerName .. ".loot", itemLink)
-    end
 end
 
 function mythicPlusBreakdown.GetVisibleColumns()
@@ -311,8 +283,7 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
             end
         elseif (event == "ENCOUNTER_LOOT_RECEIVED") then
             local _, _, itemLink, _, unitName = ...
-            --SaveLoot(itemLink, unitName)
-            saveLootCompressed(itemLink, unitName)
+            SaveLoot(itemLink, unitName)
         end
     end)
 
@@ -564,7 +535,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
         mainFrame.ReloadedFrame:Hide()
     end
 
-    if (#addon.GetSavedRuns() > 1) then
+    if (#addon.Compress.GetHeaders() > 1) then
         mainFrame.RunInfoDropdown:Show()
     else
         mainFrame.RunInfoDropdown:Hide()
