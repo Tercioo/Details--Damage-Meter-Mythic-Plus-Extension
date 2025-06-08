@@ -27,7 +27,7 @@ do
     L["OPTIONS_AUTO_OPEN_DESC"] = "Хотите ли Вы, чтобы окно М+ Details! автоматически открывалось после обыска сундука или после завершения забега?"
     L["OPTIONS_AUTO_OPEN_CHOICE_LOOT_CLOSED"] = "При получении добычи"
     L["OPTIONS_AUTO_OPEN_CHOICE_OVERALL_READY"] = "При завершении прохождения ключа М+"
-
+    
     L["OPTIONS_OPEN_DELAY_LABEL"] = "Задержка открытия окна М+ Details!"
     L["OPTIONS_OPEN_DELAY_DESC"] = "Количество секунд, по истечении которых появится окно М+ Details! в соответствии с настройкой выше"
     L["OPTIONS_SCOREBOARD_SCALE_LABEL"] = "Масштаб окна М+ Details!"
@@ -77,6 +77,8 @@ do
     L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"] = "Наивысший"
     L["SCOREBOARD_TOOLTIP_INTERRUPTS_HEADER"] = "Суммарно"
     L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"] = "Суммарно"
+    L["SCOREBOARD_RELOADED_WARNING"] = "Неполные данные"
+    L["SCOREBOARD_RELOADED_TOOLTIP"] = "Данные этого забега неполные и, возможно, неверные из-за перезагрузки или перезахода в игру в середине забега"
 
     ------------------------------------------------------------
     --@localization(locale="ruRU", format="lua_additive_table")@
