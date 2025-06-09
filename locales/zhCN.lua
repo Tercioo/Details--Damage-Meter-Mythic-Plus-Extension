@@ -45,7 +45,7 @@ do
 	L["OPTIONS_TRANSLIT_LABEL"] = "翻译"
 	L["OPTIONS_SAVING"] = "保存"
 	L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"] = "保存次数"
-	L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"] = "保存的副本场次数量。超过此上限的历史记录将在下次重载界面或登录时被移除。数量较大可能会略微增加加载时间。"
+	L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"] = "保存的副本场次数量。超过此上限的历史记录将在下次重载界面或登录时被移除。"
 	L["OPTIONS_TRANSLIT_DESC"] = "将西里尔字母音译为拉丁字母"
 	L["OPTIONS_SHOW_TIME_SECTIONS_LABEL"] = "显示分段计时标签"
 	L["OPTIONS_SHOW_TIME_SECTIONS_DESC"] = "在时间轴上显示副本分段时间标签作为参考"

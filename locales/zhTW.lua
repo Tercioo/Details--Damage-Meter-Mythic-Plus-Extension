@@ -43,7 +43,7 @@ do
     L["OPTIONS_TRANSLIT_LABEL"] = "翻譯"
     L["OPTIONS_SAVING"] = "保存"
     L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"] = "保存次數"
-    L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"] = "保存的次數。下次重新載入或登入時將刪除大於此數字的現有歷史記錄。較大的數字可能會稍微增加載入時間。"
+    L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"] = "保存的次數。下次重新載入或登入時將刪除大於此數字的現有歷史記錄。"
     L["OPTIONS_TRANSLIT_DESC"] = "翻譯西里爾字符到拉丁字母"
     L["OPTIONS_SHOW_TIME_SECTIONS_LABEL"] = "顯示階段時間標籤"
     L["OPTIONS_SHOW_TIME_SECTIONS_DESC"] = "顯示時間表上階段的時間標籤作為指南"

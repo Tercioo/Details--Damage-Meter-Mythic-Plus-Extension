@@ -28,6 +28,7 @@ local defaultSettings = {
     scoreboard_scale = 1.0,
     translit = GetLocale() ~= "ruRU",
     keep_information_for_debugging = false,
+    developer_mode = false,
     migrations_done = {},
     logs = {},
     has_last_run = false,
