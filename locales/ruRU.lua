@@ -44,6 +44,9 @@ do
     L["OPTIONS_SAVING"] = "Сохранение"
     L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"] = "Сохранённые забеги"
     L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"] = "Количество забегов, которые необходимо сохранить. Существующая история, превышающая это значение, будет удалена при следующей перезагрузке или входе в систему."
+    L["OPTIONS_HISTORY_RUNS_TO_KEEP_SAVED_RUNS"] = "Сохраненные прохождения"
+    L["OPTIONS_HISTORY_RUNS_TO_KEEP_TOTAL_STORAGE"] = "Общее хранилище"
+    L["OPTIONS_HISTORY_RUNS_TO_KEEP_AVERAGE_PER_RUN"] = "Среднее значение за прохождение"
     L["OPTIONS_TRANSLIT_DESC"] = "Перевести кириллические символы в латинский алфавит"
     L["OPTIONS_SHOW_TIME_SECTIONS_LABEL"] = "Показывать временные метки для разделов"
     L["OPTIONS_SHOW_TIME_SECTIONS_DESC"] = "Показывает временные метки для разделов на временной шкале в качестве ориентира"
@@ -53,6 +56,8 @@ do
     L["OPTIONS_DEBUG"] = "Отладка"
     L["OPTIONS_DEBUG_STORE_DEBUG_INFO_LABEL"] = "Сохранить отладочную информацию"
     L["OPTIONS_DEBUG_STORE_DEBUG_INFO_DESC"] = "Включение этой опции позволит сохранить больше информации при перезагрузке в целях отладки. Рекомендуется не включать этот параметр, если Вы не занимаетесь отладкой."
+    L["OPTIONS_DEBUG_STORE_DEV_MODE_LABEL"] = "Режим разработчика"
+    L["OPTIONS_DEBUG_STORE_DEV_MODE_DESC"] = "Включает конкретную информацию и функции, используемые при разработке этого дополнения."
 
     L["SCOREBOARD_NO_SCORE_AVAILABLE"] = "В настоящее время на табло нет очков"
     L["SCOREBOARD_TITLE_PLAYER_NAME"] = "Имя игрока"
