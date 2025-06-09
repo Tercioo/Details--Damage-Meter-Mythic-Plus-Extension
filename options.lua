@@ -150,6 +150,14 @@ local function GetOptionsTable()
             step = 1,
             name = L["OPTIONS_HISTORY_RUNS_TO_KEEP_LABEL"],
             desc = function ()
+                if (not addon.profile.developer_mode) then
+                    return string.format(
+                        "%s\n\n%s: %d",
+                        L["OPTIONS_HISTORY_RUNS_TO_KEEP_DESC"],
+                        L["OPTIONS_HISTORY_RUNS_TO_KEEP_SAVED_RUNS"],
+                        #addon.Compress.GetSavedRuns()
+                    )
+                end
                 local savedRuns = addon.Compress.GetSavedRuns()
                 local totalSize = 0
                 for _, run in pairs(savedRuns) do
@@ -227,6 +235,17 @@ local function GetOptionsTable()
         desc = L["OPTIONS_DEBUG_STORE_DEBUG_INFO_DESC"],
     })
 
+    table.insert(options, {
+        type = "toggle",
+        get = function () return addon.profile.developer_mode end,
+        set = function (_, _, value)
+            addon.profile.developer_mode = value
+            addon.RefreshOpenScoreBoard()
+        end,
+        name = L["OPTIONS_DEBUG_STORE_DEV_MODE_LABEL"],
+        desc = L["OPTIONS_DEBUG_STORE_DEV_MODE_DESC"],
+    })
+
     return options
 end
 
@@ -246,7 +265,7 @@ function mythicPlusOptions.InitializeOptionsWindow()
         return _G[mainFrameName]
     end
 
-    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 367, L["OPTIONS_WINDOW_TITLE"], mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
+    local optionsFrame = detailsFramework:CreateSimplePanel(UIParent, 360, 387, L["OPTIONS_WINDOW_TITLE"], mainFrameName, {UseScaleBar = false, NoScripts = true, NoTUISpecialFrame = true})
     detailsFramework:MakeDraggable(optionsFrame)
     optionsFrame:SetPoint("center", UIParent, "center", 160, -50)
     detailsFramework:ApplyStandardBackdrop(optionsFrame)

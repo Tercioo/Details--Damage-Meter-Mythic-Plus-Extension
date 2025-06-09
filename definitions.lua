@@ -51,6 +51,7 @@
 ---@field translit boolean translit cyrillic
 ---@field last_run_data detailsmythicplus_run_data store the data from the last run
 ---@field keep_information_for_debugging boolean keep certain information for debugging
+---@field developer_mode boolean enable certain information only useful when developing the addon
 ---@field migrations_done number[] the timestamp of when a migration was done, where the key is the migration number from migrations.lua
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
