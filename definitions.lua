@@ -70,6 +70,7 @@
 ---@field dataBroker table?
 ---@field minimap table
 ---@field Compress compressrun
+---@field Comm comm
 ---@field Migrations table<number, fun()>
 ---@field selectedRunInfo runinfo currently run info in use (showing the data in the scoreboard), if any
 ---@field mythicPlusBreakdown details_mythicplus_breakdown
@@ -116,6 +117,13 @@
 ---@field KeystoneDungeonLevel fontstring show the keystone level of the player
 ---@field KeystoneDungeonLevelBackground texture background texture behind the keystone level text
 ---@field DungeonBorderTexture texture
+
+---@class comm : table --~comm
+---@field RegisteredCallbacks table<string, fun(sender:string, data:any)> store the registered callbacks for the comms
+---@field Initialize fun() initialize the addon comms
+---@field Register fun(prefix:string, callback:fun(sender:string, data:any)) register a function
+---@field Send fun(prefix:string, data:any, channel:string?) send a comm message, channel defaults to "PARTY"
+---@field Test fun() test the comm system
 
 ---@class runinfo : table
 ---@field runId number a number that can be used to identify a run, can be used to map external data to (e.g. by other addons)

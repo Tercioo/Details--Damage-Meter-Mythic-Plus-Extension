@@ -58,7 +58,11 @@ local defaultSettings = {
 private.addon = detailsFramework:CreateNewAddOn(tocFileName, "Details_MythicPlusDB", defaultSettings)
 local addon = private.addon
 
+---@diagnostic disable-next-line: missing-fields
 addon.activityTimeline = {}
+
+---@diagnostic disable-next-line: missing-fields
+addon.Comm = {}
 
 function addon.OnLoad(self, profile) --ADDON_LOADED
     --added has been loaded
@@ -135,6 +139,7 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     }
 
     addon.InitializeEvents()
+    addon.Comm.Initialize()
     addon.RegisterAddonCompartment()
     Details.SafeRun(addon.RegisterMinimap, "Register Minimap Icon", addon)
 
