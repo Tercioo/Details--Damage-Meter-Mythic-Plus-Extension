@@ -186,6 +186,27 @@ local CreateLootSquare = function(line)
     return lootSquare
 end
 
+do -- player likes
+    local column = addon.ScoreboardColumn:Create("player-likes", "", 34, function (line)
+        local texture = line:CreateTexture("$parentRankTexture", "artwork")
+        texture:SetSize(30, 30)
+        return texture
+    end)
+
+    column:SetOnRender(function (frame, playerData)
+        local likes = 1
+        for _, liked in pairs(playerData.likedBy or {}) do
+            if (liked) then
+                likes = likes + math.random(0, 4)
+            end
+        end
+
+        frame:SetAtlas("Professions-ChatIcon-Quality-Tier" .. likes)
+    end)
+
+    addon.RegisterScoreboardColumn(column)
+end
+
 do -- player portrait
     local column = addon.ScoreboardColumn:Create("player-portrait", "", 60, function (line)
         local lineHeight = line:GetHeight()
@@ -240,12 +261,42 @@ end
 do -- Player name
     local column = addon.ScoreboardColumn:Create("player-name", L["SCOREBOARD_TITLE_PLAYER_NAME"], 110, function (line)
         return line:CreateFontString(nil, "overlay", "GameFontNormal")
-    end)
+    end, false)
 
+    ---@param playerData scoreboard_playerdata
     column:SetOnRender(function (frame, playerData)
         local classColor = RAID_CLASS_COLORS[playerData.class]
         frame:SetTextColor(classColor.r, classColor.g, classColor.b)
         frame:SetText(addon.PreparePlayerName(playerData.name))
+    end)
+
+    addon.RegisterScoreboardColumn(column)
+end
+
+do -- Like button
+    local likeButtonTemplate = "OPTIONS_CIRCLEBUTTON_TEMPLATE"
+
+    local column = addon.ScoreboardColumn:Create("player-like-button", "", 50, function (line)
+        local frame = DetailsFramework:CreateButton(line, function (self)
+            if (self.MyObject.OnClick) then
+                self.MyObject:OnClick()
+            end
+        end, 35, 22, nil, nil, nil, nil, nil, nil, nil, likeButtonTemplate, {font = "GameFontNormal", size = 12})
+        return frame
+    end)
+
+    column:SetOnRender(function (frame, playerData)
+        if (addon.profile.last_run_id ~= playerData.runId or thisPlayerName == playerData.name or (playerData.likedBy and playerData.likedBy[UnitName("player")])) then
+            frame.OnClick = nil
+            frame:Hide()
+        else
+            frame.OnClick = function()
+                addon.LikePlayer(playerData.name)
+                frame:Hide()
+            end
+            frame:SetText("gg")
+            frame:Show()
+        end
     end)
 
     addon.RegisterScoreboardColumn(column)

@@ -187,6 +187,7 @@
 ---@field interruptCastOverlapDone number how many times the player attempted to interrupt a spell with another player
 ---@field crowdControlSpells table<spellname, number> which spells the player casted that are crowd control
 ---@field deathLastHits death_last_hits[]
+---@field likedBy table<string, boolean> which players liked this player
 
 ---@class death_last_hits : table
 ---@field spellId number the spell id that caused the damage

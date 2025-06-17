@@ -8,6 +8,7 @@ addon.ScoreboardColumn = ScoreboardColumn
 ---@class scoreboard_column
 ---@field GetId fun(self: scoreboard_column) : string
 ---@field GetHeaderText fun(self: scoreboard_column) : string
+---@field ShouldShowHeaderText fun(self: scoreboard_column) : boolean
 ---@field GetWidth fun(self: scoreboard_column) : number
 ---@field SetOnRender fun(self: scoreboard_column, callback: fun(frame: frame, playerData: scoreboard_playerdata, isBest: boolean))
 ---@field CalculateBestPlayerData fun(self: scoreboard_column, allPlayerData: scoreboard_playerdata[]) : scoreboard_playerdata[]
@@ -24,15 +25,17 @@ local ScoreboardColumnMixin = {
     OnRender = function () end,
     OnCalculateBestLine = function () end,
     FrameObject = nil,
+    ShowHeaderText = nil,
 }
 
 ---@return scoreboard_column
-function ScoreboardColumn:Create(id, headerText, width, constructor)
+function ScoreboardColumn:Create(id, headerText, width, constructor, showHeaderText)
     local column = CreateFromMixins(ScoreboardColumnMixin)
     column.ColumnId = id
     column.Width = width
     column.Constructor = constructor
     column.HeaderText = headerText
+    column.ShowHeaderText = showHeaderText == nil or showHeaderText == true
 
     return column
 end
@@ -43,6 +46,10 @@ end
 
 function ScoreboardColumnMixin:GetHeaderText()
     return self.HeaderText
+end
+
+function ScoreboardColumnMixin:ShouldShowHeaderText()
+    return self.ShowHeaderText
 end
 
 function ScoreboardColumnMixin:GetWidth()

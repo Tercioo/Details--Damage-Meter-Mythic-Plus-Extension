@@ -160,5 +160,4 @@ addon.Migrations = {
         -- permanently delete old runs
         addon.profile.saved_runs = nil
     end,
-
 }
