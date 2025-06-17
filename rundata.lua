@@ -137,6 +137,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 ilevel = Details:GetItemLevelFromGuid(actorObject:GetGUID()),
                 deathEvents = {}, --information about when the player died
                 deathLastHits = {}, --information for the tooltip when the player died
+                likedBy = {},
             }
 
             runInfo.combatData.groupMembers[unitName] = playerInfo

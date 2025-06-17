@@ -64,6 +64,7 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 ---@field GetActor fun(self:scoreboard_button, actorMainAttribute):actor|nil, combat|nil
 
 ---@class scoreboard_playerdata : table
+---@field runId number
 ---@field name string
 ---@field unitName string same as 'name'
 ---@field class string
@@ -89,7 +90,7 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 ---@field keystoneLevel number
 ---@field keystoneIcon string|number
 ---@field keystoneMapId string|number
-
+---@field likedBy table<string, boolean>
 
 ---@class timeline_event : table
 ---@field type string
@@ -411,7 +412,7 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
 
     local headers = {}
     for _, column in ipairs(mythicPlusBreakdown.GetVisibleColumns()) do
-        table.insert(headers, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
+        table.insert(headers, {name = column:GetId(), text = column:ShouldShowHeaderText() and column:GetHeaderText() or "", width = column:GetWidth()})
     end
 
     ---@type scoreboard_header
@@ -510,7 +511,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
         local headers = {}
         local columns = mythicPlusBreakdown.GetVisibleColumns()
         for _, column in ipairs(columns) do
-            table.insert(headers, {name = column:GetId(), text = column:GetHeaderText(), width = column:GetWidth()})
+            table.insert(headers, {name = column:GetId(), text = column:ShouldShowHeaderText() and column:GetHeaderText() or "", width = column:GetWidth()})
         end
 
         headerFrame:SetHeaderTable(headers)
@@ -568,6 +569,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
 
             ---@type scoreboard_playerdata
             local thisPlayerData = {
+                runId = runData.runId,
                 name = playerName,
                 unitName = playerName,
                 class = playerInfo.class,
@@ -597,6 +599,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 keystoneLevel = 0,
                 keystoneIcon = keystoneDefaultTexture,
                 keystoneMapId = 0,
+                likedBy = playerInfo.likedBy
             }
 
             if (thisPlayerData.role == "NONE") then
