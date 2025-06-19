@@ -197,7 +197,7 @@ do -- player likes
         local likes = 1
         for _, liked in pairs(playerData.likedBy or {}) do
             if (liked) then
-                likes = likes + math.random(0, 4)
+                likes = likes + 1
             end
         end
 
@@ -286,17 +286,20 @@ do -- Like button
     end)
 
     column:SetOnRender(function (frame, playerData)
-        if (addon.profile.last_run_id ~= playerData.runId or thisPlayerName == playerData.name or (playerData.likedBy and playerData.likedBy[UnitName("player")])) then
+        local myName = UnitName("player")
+        if (addon.profile.last_run_id ~= playerData.runId or myName == playerData.name or (playerData.likedBy and playerData.likedBy[myName]) or not addon.Compress.HasLastRun()) then
             frame.OnClick = nil
             frame:Hide()
-        else
-            frame.OnClick = function()
-                addon.LikePlayer(playerData.name)
-                frame:Hide()
-            end
-            frame:SetText("gg")
-            frame:Show()
+
+            return
         end
+
+        frame.OnClick = function()
+            addon.LikePlayer(playerData.name)
+            frame:Hide()
+        end
+        frame:SetText("gg")
+        frame:Show()
     end)
 
     addon.RegisterScoreboardColumn(column)
