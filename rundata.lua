@@ -413,6 +413,7 @@ end
 ---@field GetSelectedRun fun() : runinfo return the uncompressed run data from the compressed run data
 ---@field SetValue fun(headerIndex:number, path:string, value:any) : boolean
 ---@field CompressRun fun(runInfo:runinfo) : string? compresses the run info and returns the compressed data
+---@field HasLastRun fun() : boolean checks if there's run info for GetLastRun
 ---@field GetLastRun fun() : runinfo? return the run info for the last run finished before the next one starts
 
 ---@diagnostic disable-next-line: missing-fields
@@ -425,14 +426,18 @@ function addon.Compress.GetSavedRuns()
 end
 
 ---return the run info for the last run finished before the next one starts
----@return runinfo?
-function addon.Compress.GetLastRun()
-    local hasRun = addon.profile.has_last_run
+---@return boolean
+function addon.Compress.HasLastRun()
+    return addon.profile.has_last_run
         and addon.profile.saved_runs_compressed_headers[1]
         and addon.profile.saved_runs_compressed_headers[1].endTime + CONST_LAST_RUN_TIMEOUT > time()
         and true or false
+end
 
-    return hasRun and addon.Compress.UncompressedRun(1)
+---return the run info for the last run finished before the next one starts
+---@return runinfo?
+function addon.Compress.GetLastRun()
+    return addon.Compress.HasLastRun() and addon.Compress.UncompressedRun(1)
 end
 
 ---return a table with headers where the first index in the newest run

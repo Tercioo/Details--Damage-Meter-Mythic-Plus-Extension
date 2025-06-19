@@ -39,11 +39,6 @@ function addon.Comm.Initialize()
         if (prefix == CONST_COMM_PREFIX) then
             sender = Ambiguate(sender, "none")
 
-            if (sender == UnitName("player")) then
-                --ignore messages sent by the player
-                --return
-            end
-
             --decode the data
             if (C_EncodingUtil) then
                 text = C_EncodingUtil.DecodeBase64(text)
@@ -111,16 +106,3 @@ function addon.Comm.Send(prefix, data, channel)
 		end
 	end
 end
-
-function addon.Comm.Test()
-    --register a callback
-    local prefix = "Q" .. math.random(1, 6) --test
-
-    addon.Comm.Register(prefix, function(sender, data)
-        print("Received " .. prefix .. " comm from: " .. sender .. " with data: ", data.text)
-    end)
-
-    addon.Comm.Send(prefix, {text = "this is a comm test"})
-end
-
-DetailsMythicPlusTestComm = addon.Comm.Test

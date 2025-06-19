@@ -19,34 +19,37 @@ function addon.PreparePlayerName(name)
     return addon.profile.translit and Translit:Transliterate(name, "!") or name
 end
 
-function addon.LikePlayer(playerLiked)
-    if (playerLiked == UnitName("player")) then
+local LikePlayer = function (whoLiked, playerLiked)
+    if (not playerLiked or whoLiked == playerLiked) then
         return
     end
 
-    -- todo: addon comms, that will eventually call addon.ProcessLikePlayer(sender, playerLiked)
-end
-
-
-function addon.ProcessLikePlayer(likedBy, playerLiked)
-    if (likedBy == playerLiked) then
-        return
-    end
-
-    local run = addon.Compress.GetLastRun() or addon.Compress.UncompressedRun(1) -- before release remove this line and replace with the one below
-    --local run = addon.Compress.GetLastRun()
-    --addon.Compress.SetValue(1, "combatData.groupMembers." .. playerLiked .. ".likedBy", {}) -- this line can be used to reset, remove before release
+    local run = addon.Compress.GetLastRun()
     if (not run or not run.combatData.groupMembers[playerLiked]) then
         return
     end
 
     if (not run.combatData.groupMembers[playerLiked].likedBy) then
-        addon.Compress.SetValue(1, "combatData.groupMembers." .. playerLiked .. ".likedBy", {[likedBy] = true})
+        addon.Compress.SetValue(1, "combatData.groupMembers." .. playerLiked .. ".likedBy", {[whoLiked] = true})
     else
-        addon.Compress.SetValue(1, "combatData.groupMembers." .. playerLiked .. ".likedBy." .. likedBy, true)
+        addon.Compress.SetValue(1, "combatData.groupMembers." .. playerLiked .. ".likedBy." .. whoLiked, true)
     end
 
     if (addon.GetSelectedRunIndex() == 1) then
         addon.RefreshOpenScoreBoard()
     end
+end
+
+function addon.LikePlayer(playerLiked)
+    local myName = UnitName("player")
+    if (playerLiked == myName) then
+        return
+    end
+
+    LikePlayer(myName, playerLiked)
+    addon.Comm.Send("L", {playerLiked = playerLiked})
+end
+
+function addon.ProcessLikePlayer(sender, data)
+    LikePlayer(sender, data.playerLiked)
 end

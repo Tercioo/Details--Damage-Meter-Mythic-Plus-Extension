@@ -140,6 +140,7 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
 
     addon.InitializeEvents()
     addon.Comm.Initialize()
+    addon.Comm.Register("L", addon.ProcessLikePlayer)
     addon.RegisterAddonCompartment()
     Details.SafeRun(addon.RegisterMinimap, "Register Minimap Icon", addon)
 
