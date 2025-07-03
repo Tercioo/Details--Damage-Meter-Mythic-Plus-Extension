@@ -234,12 +234,22 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                     local ccTotal = 0
                     local ccUsed = {}
 
-                    for spellName, casts in pairs(mythicPlusOverallSegment:GetCrowdControlSpells(unitName)) do
-                        local spellInfo = C_Spell.GetSpellInfo(spellName)
-                        local spellId = spellInfo and spellInfo.spellID or openRaidLib.GetCCSpellIdBySpellName(spellName)
-                        if (spellId ~= 197214) then
-                            ccUsed[spellName] = casts
-                            ccTotal = ccTotal + casts
+                    if (Details:GetCoreVersion() < 166) then
+                        for spellName, casts in pairs(mythicPlusOverallSegment:GetCrowdControlSpells(unitName)) do
+                            local spellInfo = C_Spell.GetSpellInfo(spellName)
+                            local spellId = spellInfo and spellInfo.spellID or openRaidLib.GetCCSpellIdBySpellName(spellName)
+                            if (spellId ~= 197214) then
+                                ccUsed[spellName] = casts
+                                ccTotal = ccTotal + casts
+                            end
+                        end
+                    else
+                        --at 166, Details! now uses the spellId instead of the spellName for crowd controls
+                        for spellId, casts in pairs(mythicPlusOverallSegment:GetCrowdControlSpells(unitName)) do
+                            if (spellId ~= 197214) then
+                                ccUsed[spellId] = casts
+                                ccTotal = ccTotal + casts
+                            end
                         end
                     end
 
