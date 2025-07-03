@@ -298,7 +298,7 @@ do -- Like button
             addon.LikePlayer(playerData.name)
             frame:Hide()
         end
-        frame:SetText("gg")
+        frame:SetText(L["SCOREBOARD_BUTTON_GG"])
         frame:Show()
     end)
 
