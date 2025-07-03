@@ -85,6 +85,7 @@ do
     L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"] = "Amount"
     L["SCOREBOARD_RELOADED_WARNING"] = "Incomplete Data"
     L["SCOREBOARD_RELOADED_TOOLTIP"] = "This run's data is incomplete, and possibly incorrect because of a reload or relog mid-run"
+    L["SCOREBOARD_BUTTON_GG"] = "gg"
 
     ------------------------------------------------------------
     --@localization(locale="enUS", format="lua_additive_table")@
