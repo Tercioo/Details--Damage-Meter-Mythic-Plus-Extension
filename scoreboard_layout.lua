@@ -65,8 +65,6 @@ local showCrowdControlTooltip = function(self, playerData)
             if (addon.profile.show_cc_cast_tooltip_percentage) then
                 ccText =  ccText .. " (" .. math.floor(totalUses / playerData.ccCasts * 100) .. "%)"
             end
-            GameCooltip:AddLine(spellName, ccText)
-            Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
 
             local spellInfo = C_Spell.GetSpellInfo(spellName)
             if (not spellInfo) then
@@ -75,6 +73,10 @@ local showCrowdControlTooltip = function(self, playerData)
                     spellInfo = C_Spell.GetSpellInfo(spellId)
                 end
             end
+
+            GameCooltip:AddLine(spellInfo.name or spellName, ccText)
+            Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
+
             -- set icon width to 0.00001 as workaround to ensure row height is consistent
             GameCooltip:AddIcon(spellInfo and spellInfo.iconID or 134400, 1, 1, spellInfo and 18 or 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
         end
