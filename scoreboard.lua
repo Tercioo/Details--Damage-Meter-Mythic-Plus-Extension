@@ -633,7 +633,13 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
             data[#data+1] = thisPlayerData
         end
 
-        table.sort(data, function(t1, t2) return t1.role > t2.role end)
+        table.sort(data, function(t1, t2)
+            if (t1.role ~= t2.role) then
+                return t1.role > t2.role
+            end
+
+            return t1.name < t2.name
+        end)
 
         for i = 1, lineAmount do
             lines[i]:Hide()
