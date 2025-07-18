@@ -190,8 +190,19 @@ end
 
 do -- player likes
     local column = addon.ScoreboardColumn:Create("player-likes", "", 34, function (line)
-        local texture = line:CreateTexture("$parentRankTexture", "artwork")
+        local texture = line:CreateTexture("$parentRankTexture", "ARTWORK")
         texture:SetSize(30, 30)
+
+        local hint = line:CreateTexture("$parentRankTextureHint", "OVERLAY")
+        hint:SetAtlas("UI-HUD-Minimap-Arrow-QuestTracking")
+        hint:SetPoint("TOPRIGHT", texture, "TOPRIGHT", 5, 5)
+        hint:SetSize(16, 16)
+        hint:Hide()
+
+        texture.Hint = hint
+        texture.Line = line
+        line.LikeHint = hint
+
         return texture
     end)
 
@@ -284,6 +295,13 @@ do -- Like button
                 self.MyObject:OnClick()
             end
         end, 35, 22, nil, nil, nil, nil, nil, nil, nil, likeButtonTemplate, {font = "GameFontNormal", size = 12})
+
+        frame:SetScript("OnEnter", function ()
+            line.LikeHint:Show()
+        end)
+        frame:SetScript("OnLeave", function ()
+            line.LikeHint:Hide()
+        end)
         return frame
     end)
 
