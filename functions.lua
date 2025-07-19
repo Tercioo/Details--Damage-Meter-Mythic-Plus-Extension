@@ -25,8 +25,24 @@ local LikePlayer = function (whoLiked, playerLiked)
     end
 
     local run = addon.Compress.GetLastRun()
-    if (not run or not run.combatData.groupMembers[playerLiked]) then
+    if (not run) then
         return
+    end
+
+    if (not run.combatData.groupMembers[playerLiked]) then
+        local matched
+        for possibleMatch, _ in pairs(run.combatData.groupMembers) do
+            if (playerLiked == Ambiguate(possibleMatch, "short") or possibleMatch == Ambiguate(playerLiked, "short")) then
+                matched = possibleMatch
+                break
+            end
+        end
+
+        if (matched == nil) then
+            return
+        end
+
+        playerLiked = matched
     end
 
     if (not run.combatData.groupMembers[playerLiked].likedBy) then
