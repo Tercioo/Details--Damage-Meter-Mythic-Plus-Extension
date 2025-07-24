@@ -20,7 +20,12 @@ function addon.PreparePlayerName(name)
 end
 
 local LikePlayer = function (whoLiked, playerLiked)
-    if (not playerLiked or whoLiked == playerLiked) then
+    if (not playerLiked) then
+        return
+    end
+
+    playerLiked = Ambiguate(playerLiked, "none")
+    if (playerLiked == whoLiked) then
         return
     end
 
@@ -30,19 +35,8 @@ local LikePlayer = function (whoLiked, playerLiked)
     end
 
     if (not run.combatData.groupMembers[playerLiked]) then
-        local matched
-        for possibleMatch, _ in pairs(run.combatData.groupMembers) do
-            if (playerLiked == Ambiguate(possibleMatch, "short") or possibleMatch == Ambiguate(playerLiked, "short")) then
-                matched = possibleMatch
-                break
-            end
-        end
-
-        if (matched == nil) then
-            return
-        end
-
-        playerLiked = matched
+        private.log("unable to match gg from " .. whoLiked .. " for " .. playerLiked .. " to a player in the group")
+        return
     end
 
     if (not run.combatData.groupMembers[playerLiked].likedBy) then
@@ -60,6 +54,10 @@ function addon.LikePlayer(playerLiked)
     local myName = UnitName("player")
     if (playerLiked == myName) then
         return
+    end
+
+    if (not playerLiked:match("%-")) then
+        playerLiked = playerLiked .. "-" .. GetRealmName("player")
     end
 
     LikePlayer(myName, playerLiked)
