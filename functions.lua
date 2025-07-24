@@ -57,7 +57,7 @@ function addon.LikePlayer(playerLiked)
     end
 
     if (not playerLiked:match("%-")) then
-        playerLiked = playerLiked .. "-" .. UnitRealm("player")
+        playerLiked = playerLiked .. "-" .. GetRealmName("player")
     end
 
     LikePlayer(myName, playerLiked)
