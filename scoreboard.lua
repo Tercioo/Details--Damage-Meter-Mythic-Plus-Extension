@@ -670,7 +670,9 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                     end
 
                     if (playerData) then
-                        frame.ColumnDefinition:Render(frame, playerData, isBest)
+                        xpcall(function (columnFrame, columnPlayerData, rowIsBest)
+                            frame.ColumnDefinition:Render(columnFrame, columnPlayerData, rowIsBest)
+                        end, geterrorhandler(), frame, playerData, isBest)
                     end
                 end
             end

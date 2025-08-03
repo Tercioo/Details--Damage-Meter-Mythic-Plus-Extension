@@ -105,13 +105,15 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 table.insert(damageTakenFromSpells, damageTaken)
             end
 
+            local guid = actorObject:GetGUID()
+
             ---@type playerinfo
             local playerInfo = {
                 name = unitName,
                 class = actorObject:Class(),
-                spec = actorObject:Spec(),
-                role = UnitGroupRolesAssigned(actorObject:Name()),
-                guid = actorObject:GetGUID(),
+                spec = Details:GetSpecFromSerial(guid) or actorObject:Spec() or 0,
+                role = UnitGroupRolesAssigned(unitName),
+                guid = guid,
                 loot = "",
                 score = 0,
                 playerOwns = UnitIsUnit(unitName, "player"),
@@ -134,7 +136,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 interruptWhat = {}, --done
                 interruptCastOverlapDone = addon.profile.last_run_data.interrupt_cast_overlap_done[unitName] or 0,
                 crowdControlSpells = {}, --done
-                ilevel = Details:GetItemLevelFromGuid(actorObject:GetGUID()),
+                ilevel = Details:GetItemLevelFromGuid(guid),
                 deathEvents = {}, --information about when the player died
                 deathLastHits = {}, --information for the tooltip when the player died
                 likedBy = {},
