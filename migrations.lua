@@ -184,6 +184,7 @@ addon.MigrationsPerCharacter = {
         end
 
         local playerGUID = UnitGUID("player")
+        local playerName = UnitName("player")
 
         for headerIndex = 1, #allRuns do
             local thisRun = addon.Compress.UncompressedRun(headerIndex)
@@ -202,7 +203,8 @@ addon.MigrationsPerCharacter = {
 
                             --this need to run once for each character the player logins
                             --this add the like the player himself gave into the main profile, will work cross all characters the player has
-                            if (playerGUID == playerInfo.guid) then
+                            --if (playerGUID == playerInfo.guid) then
+                            if (playerNameOfWhoLiked == playerName) then
                                 playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes] = playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes] or {0, {}}
                                 local likesGiven = playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes]
                                 likesGiven[1] = likesGiven[1] + 1 --increment the amount of likes given
