@@ -426,7 +426,7 @@ end
 ---@field SetValue fun(headerIndex:number, path:string, value:any) : boolean
 ---@field CompressRun fun(runInfo:runinfo) : string? compresses the run info and returns the compressed data
 ---@field HasLastRun fun() : boolean checks if there's run info for GetLastRun
----@field GetLastRun fun() : runinfo? return the run info for the last run finished before the next one starts
+---@field GetLastRun fun() : runinfo?, runinfocompressed_header? return the run info for the last run finished before the next one starts
 
 ---@diagnostic disable-next-line: missing-fields
 addon.Compress = {}
@@ -448,8 +448,13 @@ end
 
 ---return the run info for the last run finished before the next one starts
 ---@return runinfo?
+---@return runinfocompressed_header?
 function addon.Compress.GetLastRun()
-    return addon.Compress.HasLastRun() and addon.Compress.UncompressedRun(1)
+    if (addon.Compress.HasLastRun()) then
+        local umcompressedRun = addon.Compress.UncompressedRun(1)
+        local runHeader = addon.Compress.GetRunHeader(1)
+        return umcompressedRun, runHeader
+    end
 end
 
 ---return a table with headers where the first index in the newest run
@@ -586,6 +591,7 @@ function addon.Compress.CompressAndSaveRun(runInfo, atIndex)
         runId = runInfo.runId,
         instanceId = runInfo.instanceId,
         groupMembers = {},
+        likesGiven = {}, --table<playername, true>
     }
 
     for playerName, playerInfo in pairs(runInfo.combatData.groupMembers) do

@@ -161,3 +161,62 @@ addon.Migrations = {
         addon.profile.saved_runs = nil
     end,
 }
+
+addon.MigrationsPerCharacter = {
+    function (migrationIndex)
+        if (not addon.profile.migrations_data[migrationIndex]) then
+            --store [playerName] = true
+            addon.profile.migrations_data[migrationIndex] = {}
+        end
+
+        --if this migration was already done for this character, skip
+        if (addon.profile.migrations_data[UnitName("player")]) then
+            return
+        end
+
+        --iterate among all run infos and all to the runHeader the players who liked them
+        --iterate among all run infos and add to addon.profile.likesGive all the players whose the Player Himself liked
+        local playersWhosePlayerHimSelfLiked = addon.profile.likesGiven
+
+        --get all stored runs
+        local allRuns = addon.Compress.GetSavedRuns()
+        if (not allRuns) then
+            return
+        end
+
+        local playerGUID = UnitGUID("player")
+
+        for headerIndex = 1, #allRuns do
+            local thisRun = addon.Compress.UncompressedRun(headerIndex)
+            local thisHeader = addon.Compress.GetRunHeader(headerIndex)
+            if (thisRun and thisHeader) then
+                local groupMembersOfThisRun = thisRun.combatData.groupMembers
+                for playerNameWhoReceveidLikes, playerInfo in pairs(groupMembersOfThisRun) do
+                    local likedBy = playerInfo.likedBy --who liked this player
+                    if (likedBy) then
+                        for playerNameOfWhoLiked in pairs(likedBy) do
+                            if (not thisHeader.likesGiven) then
+                                thisHeader.likesGiven = {}
+                            end
+                            thisHeader.likesGiven[playerNameOfWhoLiked] = thisHeader.likesGiven[playerNameOfWhoLiked] or {}
+                            thisHeader.likesGiven[playerNameOfWhoLiked][playerNameWhoReceveidLikes] = true
+
+                            --this need to run once for each character the player logins
+                            --this add the like the player himself gave into the main profile, will work cross all characters the player has
+                            if (playerGUID == playerInfo.guid) then
+                                playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes] = playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes] or {0, {}}
+                                local likesGiven = playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes]
+                                likesGiven[1] = likesGiven[1] + 1 --increment the amount of likes given
+                                table.insert(likesGiven[2], thisHeader.runId) --add the runId where the like was given
+                                private.log("Migration: added playerHimselfLike to player " .. playerNameWhoReceveidLikes .. " for runId " .. thisHeader.runId)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        addon.profile.migrations_data[UnitName("player")] = true
+    end,
+
+}

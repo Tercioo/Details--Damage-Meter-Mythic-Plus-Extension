@@ -53,12 +53,14 @@
 ---@field keep_information_for_debugging boolean keep certain information for debugging
 ---@field developer_mode boolean enable certain information only useful when developing the addon
 ---@field migrations_done number[] the timestamp of when a migration was done, where the key is the migration number from migrations.lua
+---@field migrations_data table misc data for migrations
 ---@field font fontsettings font settings
 ---@field logs string[] logs of the addon
 ---@field logout_logs string[]
 ---@field minimap minimap the minimap settings
 ---@field last_run_id number the id of the last run
 ---@field visible_scoreboard_columns table<string, boolean> key is the id/name of the column, the value is whether or not it's shown
+---@field likesGiven table<playername, table<number, number[]>> store the ggs the player gave to other players, key is the player name, value is a table where the first index is the amount of ggs given and the second is an array with runIds where the ggs were given
 
 ---@class detailsmythicplus : table
 ---@field profile profile store the profile settings
@@ -71,7 +73,8 @@
 ---@field minimap table
 ---@field Compress compressrun
 ---@field Comm comm
----@field Migrations table<number, fun()>
+---@field Migrations table<function[]>
+---@field MigrationsPerCharacter table<function[]>
 ---@field selectedRunInfo runinfo currently run info in use (showing the data in the scoreboard), if any
 ---@field mythicPlusBreakdown details_mythicplus_breakdown
 ---@field activityTimeline activitytimeline namespace for functions related to the activity timeline
@@ -277,3 +280,5 @@
 ---@field runId number
 ---@field instanceId number
 ---@field groupMembers table<playername, class>
+---@field likesGiven table<playername, table<playername, boolean>>
+
