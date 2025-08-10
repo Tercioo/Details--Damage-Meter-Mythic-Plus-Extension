@@ -165,12 +165,11 @@ addon.Migrations = {
 addon.MigrationsPerCharacter = {
     function (migrationIndex)
         if (not addon.profile.migrations_data[migrationIndex]) then
-            --store [playerName] = true
             addon.profile.migrations_data[migrationIndex] = {}
         end
 
         --if this migration was already done for this character, skip
-        if (addon.profile.migrations_data[UnitName("player")]) then
+        if (addon.profile.migrations_data[migrationIndex][UnitName("player")]) then
             return
         end
 
@@ -216,7 +215,7 @@ addon.MigrationsPerCharacter = {
             end
         end
 
-        addon.profile.migrations_data[UnitName("player")] = true
+        addon.profile.migrations_data[migrationIndex][UnitName("player")] = true
     end,
 
 }
