@@ -50,10 +50,8 @@ local LikePlayer = function (whoLiked, playerLiked)
 
     local runOkay, errorText = pcall(function() --don't stop the flow if new code gives errors
         if (UnitIsUnit(whoLiked, "player")) then
-            addon.profile.likesGiven[playerLiked] = addon.profile.likesGiven[playerLiked] or {0, {}} --[1] amount of likes given, [2] runIds where the likes were given
-            local likesGiven = addon.profile.likesGiven[playerLiked]
-            likesGiven[1] = likesGiven[1] + 1 --increment the amount of likes given
-            table.insert(likesGiven[2], runHeader.runId) --add the runId where the like was given
+            addon.profile.likes_given[playerLiked] = addon.profile.likes_given[playerLiked] or {} --store a list of runIds
+            table.insert(addon.profile.likes_given[playerLiked], 1, runHeader.runId) --add the runId where the like was given
         end
     end)
 
@@ -84,6 +82,8 @@ function addon.ProcessLikePlayer(sender, data)
     LikePlayer(sender, data.playerLiked)
 end
 
+---@param targetPlayerName string
+---@return number amountOfLike amount of likes given by the player to the target player
 function DetailsMythicPlus.GetAmountOfLikesGivenByPlayerSelf(targetPlayerName)
     --get all stored runs
     local allRuns = addon.Compress.GetSavedRuns()
@@ -92,12 +92,28 @@ function DetailsMythicPlus.GetAmountOfLikesGivenByPlayerSelf(targetPlayerName)
     end
 
     ---@type table<number, number[]>
-    local likesGivenToTargetPlayer = addon.profile.likesGiven[targetPlayerName]
+    local likesGivenToTargetPlayer = addon.profile.likes_given[targetPlayerName]
     if (likesGivenToTargetPlayer) then
-        local amountOfLikes = likesGivenToTargetPlayer[1]
-        local runIds = likesGivenToTargetPlayer[2]
-        return amountOfLikes, runIds
+        return #likesGivenToTargetPlayer
     end
 
-    return 0, {}
+    return 0
+end
+
+---@param targetPlayerName string
+---@return number[] runIds
+function DetailsMythicPlus.GetRunIdLikesGivenByPlayerSelf(targetPlayerName)
+    --get all stored runs
+    local allRuns = addon.Compress.GetSavedRuns()
+    if (not allRuns) then
+        return {}
+    end
+
+    ---@type table<number, number[]>
+    local likesGivenToTargetPlayer = addon.profile.likes_given[targetPlayerName]
+    if (likesGivenToTargetPlayer) then
+        return likesGivenToTargetPlayer
+    end
+
+    return {}
 end

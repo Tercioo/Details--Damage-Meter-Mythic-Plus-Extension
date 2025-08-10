@@ -60,7 +60,7 @@
 ---@field minimap minimap the minimap settings
 ---@field last_run_id number the id of the last run
 ---@field visible_scoreboard_columns table<string, boolean> key is the id/name of the column, the value is whether or not it's shown
----@field likesGiven table<playername, table<number, number[]>> store the ggs the player gave to other players, key is the player name, value is a table where the first index is the amount of ggs given and the second is an array with runIds where the ggs were given
+---@field likes_given table<playername, number[]> store the ggs the player gave to other players, store the runIds #table is the amount of likes given
 
 ---@class detailsmythicplus : table
 ---@field profile profile store the profile settings

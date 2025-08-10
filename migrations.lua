@@ -168,22 +168,37 @@ addon.MigrationsPerCharacter = {
             addon.profile.migrations_data[migrationIndex] = {}
         end
 
-        --if this migration was already done for this character, skip
-        if (addon.profile.migrations_data[migrationIndex][UnitName("player")]) then
-            return
-        end
-
-        --iterate among all run infos and all to the runHeader the players who liked them
-        --iterate among all run infos and add to addon.profile.likesGive all the players whose the Player Himself liked
-        local playersWhosePlayerHimSelfLiked = addon.profile.likesGiven
-
         --get all stored runs
         local allRuns = addon.Compress.GetSavedRuns()
         if (not allRuns) then
             return
         end
 
-        local playerGUID = UnitGUID("player")
+        --reset for development
+        if (not addon.profile.migrations_data.repeat_index_one) then
+            addon.profile.migrations_data.repeat_index_one = true
+            table.wipe(addon.profile.migrations_data[migrationIndex])
+
+            for headerIndex = 1, #allRuns do
+                local thisRun = addon.Compress.UncompressedRun(headerIndex)
+                local thisHeader = addon.Compress.GetRunHeader(headerIndex)
+                if (thisRun and thisHeader) then
+                    if (thisHeader.likesGiven) then
+                        table.wipe(thisHeader.likesGiven) --clear the likes given table
+                    end
+                end
+            end
+        end
+
+        --if this migration was already done for this character, skip
+        local migrationsRan = addon.profile.migrations_data[migrationIndex][UnitName("player")]
+        if (migrationsRan and migrationsRan > 0) then
+            return
+        end
+
+        --iterate among all run infos and all to the runHeader the players who liked them
+        --iterate among all run infos and add to addon.profile.likes_given all the players whose the Player Himself liked
+        local playersWhosePlayerHimSelfLiked = addon.profile.likes_given
         local playerName = UnitName("player")
 
         for headerIndex = 1, #allRuns do
@@ -203,12 +218,9 @@ addon.MigrationsPerCharacter = {
 
                             --this need to run once for each character the player logins
                             --this add the like the player himself gave into the main profile, will work cross all characters the player has
-                            --if (playerGUID == playerInfo.guid) then
                             if (playerNameOfWhoLiked == playerName) then
-                                playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes] = playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes] or {0, {}}
-                                local likesGiven = playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes]
-                                likesGiven[1] = likesGiven[1] + 1 --increment the amount of likes given
-                                table.insert(likesGiven[2], thisHeader.runId) --add the runId where the like was given
+                                playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes] = playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes] or {}
+                                table.insert(playersWhosePlayerHimSelfLiked[playerNameWhoReceveidLikes], thisHeader.runId) --add the runId where the like was given
                                 private.log("Migration: added playerHimselfLike to player " .. playerNameWhoReceveidLikes .. " for runId " .. thisHeader.runId)
                             end
                         end
@@ -217,7 +229,10 @@ addon.MigrationsPerCharacter = {
             end
         end
 
-        addon.profile.migrations_data[migrationIndex][UnitName("player")] = true
+        if (not migrationsRan) then
+            migrationsRan = 0
+        end
+        addon.profile.migrations_data[migrationIndex][UnitName("player")] = migrationsRan + 1
     end,
 
 }

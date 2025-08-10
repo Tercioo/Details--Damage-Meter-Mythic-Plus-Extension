@@ -40,7 +40,7 @@ local defaultSettings = {
     },
     visible_scoreboard_columns = {},
 
-    likesGiven = {},
+    likes_given = {},
 
     font = {
         row_size = 12,
