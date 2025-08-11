@@ -109,6 +109,7 @@
 ---@field GetRunAverageHealingPerSecond fun(runInfo:runinfo, timeType:combattimetype) : number return the average healing per second
 ---@field SetSelectedRunIndex fun(index:number) set the selected run index
 ---@field GetSelectedRunIndex fun() : number get the selected run index
+---@field GetRunIndexById fun(runId:number) : number|nil get the index of the run by its ID
 ---@field GetDropdownRunDescription fun(runInfo:runinfo) : table indexed table containing: [1] dungeonName, [2] keyLevel, [3] runTime, [4] keyUpgradeLevels, [5] timeString, [6] onTime [7] mapId [8] dungeonId
 ---@field GetPlayerDeathReason fun(runInfo:runinfo, unitName:playername, deathIndex:number) : death_last_hits[]|nil return a table with subtables of type death_last_hits which tells the last hits that killed the player
 ---@field PreparePlayerName fun(name:string) : string removes the realm name, and transliterates if configured

@@ -40,3 +40,4 @@ slash.lua
 rundata.lua
 migrations.lua
 comm.lua
+public.lua

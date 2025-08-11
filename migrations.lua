@@ -2,8 +2,6 @@ local addonName, private = ...
 ---@type detailsmythicplus
 local addon = private.addon
 
-local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
-
 addon.Migrations = {
     function ()
         -- from a time before compressed runs
@@ -60,6 +58,8 @@ addon.Migrations = {
         if (not addon.profile.saved_runs) then
             return
         end
+
+        local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0", true)
 
         -- Sundering is not a CC in 99.99% of the PvE scenarios, especially in M+. For now we remove the data from
         -- existing runs

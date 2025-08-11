@@ -283,6 +283,21 @@ function addon.SetSelectedRunIndex(index)
     addon.RefreshOpenScoreBoard()
 end
 
+---get the runId passed and return the index of the run by iterating the headers
+---@param runId number
+---@return number|nil
+function addon.GetRunIndexById(runId)
+    local allHeaders = addon.Compress.GetHeaders()
+
+    for i, runHeader in ipairs(allHeaders) do
+        if (runHeader.runId == runId) then
+            return i
+        end
+    end
+
+    return nil
+end
+
 ---get the index of the latest selected run info
 ---@return number
 function addon.GetSelectedRunIndex()
