@@ -435,6 +435,7 @@ end
 ---@field GetSavedRuns fun() : string[] return a table with compressed run info where the first index in the newest run
 ---@field GetHeaders fun() : runinfocompressed_header[] return a table with headers where the first index in the newest run
 ---@field GetRunHeader fun(headerIndex:number) : runinfocompressed_header? return the compressed header from the saved run
+---@field GetRunHeaderById fun(runId:number) : runinfocompressed_header? return the header from the saved runId
 ---@field UncompressedRun fun(headerIndex:number) : runinfo? return the uncompressed run data from the compressed run data
 ---@field GetDropdownRunDescription fun(header:runinfocompressed_header) : table
 ---@field GetSelectedRun fun() : runinfo return the uncompressed run data from the compressed run data
@@ -476,6 +477,19 @@ end
 ---@return runinfocompressed_header[]
 function addon.Compress.GetHeaders()
     return addon.profile.saved_runs_compressed_headers
+end
+
+---return the header for the given runId
+---@param runId number
+---@return runinfocompressed_header|nil
+function addon.Compress.GetRunHeaderById(runId)
+    local headers = addon.Compress.GetHeaders()
+    for i, header in ipairs(headers) do
+        if (header.runId == runId) then
+            return header
+        end
+    end
+    return nil
 end
 
 ---return the header for a compressed run info
@@ -628,6 +642,8 @@ function addon.Compress.YeetRunsOverStorageLimit()
     while #addon.profile.saved_runs_compressed_headers > addon.profile.saved_runs_limit do
         table.remove(addon.profile.saved_runs_compressed_headers, addon.profile.saved_runs_limit + 1)
     end
+
+    --TODO: erase the runId from the likes given to players in the addon.profile.likes_given
 end
 
 ---return a table with data to be used in the dropdown menu to select which run to show in the scoreboard

@@ -199,6 +199,7 @@ addon.MigrationsPerCharacter = {
         --iterate among all run infos and all to the runHeader the players who liked them
         --iterate among all run infos and add to addon.profile.likes_given all the players whose the Player Himself liked
         local playersWhosePlayerHimSelfLiked = addon.profile.likes_given
+        --local playerName = "Neverious" or UnitName("player") --development debug
         local playerName = UnitName("player")
 
         for headerIndex = 1, #allRuns do
