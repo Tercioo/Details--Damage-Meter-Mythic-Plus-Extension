@@ -160,6 +160,12 @@ addon.Migrations = {
         -- permanently delete old runs
         addon.profile.saved_runs = nil
     end,
+    function ()
+        -- update the default setting for those who set it to a very low value as it doesn't take up much space anymore
+        if (addon.profile.saved_runs_limit < 500) then
+            addon.profile.saved_runs_limit = 500
+        end
+    end,
 }
 
 addon.MigrationsPerCharacter = {
