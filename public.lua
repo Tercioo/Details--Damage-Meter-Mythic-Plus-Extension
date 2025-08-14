@@ -6,7 +6,6 @@ local addon = private.addon
 ---@type detailsframework
 local detailsFramework = DetailsFramework
 
-
 ---@param targetPlayerName string
 ---@return number amountOfLike amount of likes given by the player to the target player
 function DetailsMythicPlus.GetAmountOfLikesGivenByPlayerSelf(targetPlayerName)
@@ -37,6 +36,14 @@ function DetailsMythicPlus.GetRunIdLikesGivenByPlayerSelf(targetPlayerName)
     ---@type table<number, number[]>
     local likesGivenToTargetPlayer = addon.profile.likes_given[targetPlayerName]
     if (likesGivenToTargetPlayer) then
+        local repeated = {}
+        for i = #likesGivenToTargetPlayer, 1, -1 do
+            if (repeated[likesGivenToTargetPlayer[i]]) then
+                table.remove(likesGivenToTargetPlayer, i)
+            else
+                repeated[likesGivenToTargetPlayer[i]] = true
+            end
+        end
         return likesGivenToTargetPlayer
     end
 
