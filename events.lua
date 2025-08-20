@@ -47,6 +47,8 @@ function addon.InitializeEvents()
                 if (addon.profile.when_to_automatically_open_scoreboard == "COMBAT_MYTHICPLUS_OVERALL_READY") then
                     addon.OpenScoreBoardAtEnd()
                 end
+
+                addon.FireEvent("RunFinished")
             end
         end)
 

@@ -66,11 +66,13 @@
 ---@field profile profile store the profile settings
 ---@field detailsEventListener table register and listen to Details! events
 ---@field loot loot
+---@field eventCallbacks table<string, table<function[]>> eventName = {functions to call[]}
 ---@field data table store data from the current mythic plus run
 ---@field Enum enum
 ---@field temporaryTimers timer[] store timers created with C_Timer, all timers here are stopped when an update in the scoreboard is about to start
 ---@field dataBroker table?
 ---@field minimap table
+---@field FireEvent fun(eventName: string, ...: any)
 ---@field Compress compressrun
 ---@field Comm comm
 ---@field Migrations table<function[]>

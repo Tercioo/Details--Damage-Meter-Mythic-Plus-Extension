@@ -61,6 +61,11 @@ local defaultSettings = {
 private.addon = detailsFramework:CreateNewAddOn(tocFileName, "Details_MythicPlusDB", defaultSettings)
 local addon = private.addon
 
+
+addon.eventCallbacks = {
+    ["RunFinished"] = {}, --triggers right after the the CreateRunInfo() ran successfully and after addon.OpenScoreBoardAtEnd().
+}
+
 --[[GLOBAL]] DetailsMythicPlus = {}
 
 ---@diagnostic disable-next-line: missing-fields
@@ -231,6 +236,19 @@ function addon:RegisterMinimap()
         end
 
         self.dataBroker = dataBroker
+    end
+end
+
+function addon.FireEvent(eventName, ...)
+    if (not addon.eventCallbacks[eventName]) then
+        return
+    end
+
+    for _, callback in ipairs(addon.eventCallbacks[eventName]) do
+        local success, errorText = pcall(callback, ...)
+        if (not success) then
+            print("Error firing event '" .. eventName .. "': " .. errorText)
+        end
     end
 end
 

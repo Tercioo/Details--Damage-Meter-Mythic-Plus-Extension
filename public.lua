@@ -89,3 +89,46 @@ function DetailsMythicPlus.GetLatestRunId()
     end
     return nil
 end
+
+---unregister a function from being called when an event is fired
+---@param event string
+---@param callbackFunction function
+---@return boolean
+function DetailsMythicPlus.UnregisterCallback(event, callbackFunction)
+    assert(type(event) == "string", "Event name must be a string. Use: DetailsMythicPlus.UnregisterCallback(event, callbackFunction)")
+    assert(type(callbackFunction) == "function", "Callback must be a function. Use: DetailsMythicPlus.UnregisterCallback(event, callbackFunction)")
+
+    local callbacks = addon.eventCallbacks[event]
+    if (not callbacks) then
+        error("Event not found:" .. event)
+    end
+
+    for i = #callbacks, 1, -1 do
+        if (callbacks[i] == callbackFunction) then
+            table.remove(callbacks, i)
+            return true
+        end
+    end
+
+    return false
+end
+
+---register a function to be called when an event is fired
+---@param event string
+---@param callbackFunction function
+---@return boolean
+function DetailsMythicPlus.RegisterCallback(event, callbackFunction)
+    assert(type(event) == "string", "Event name must be a string. Use: DetailsMythicPlus.RegisterCallback(event, callbackFunction)")
+    assert(type(callbackFunction) == "function", "Callback must be a function. Use: DetailsMythicPlus.RegisterCallback(event, callbackFunction)")
+
+    --search the registered callbacks to avoid registering duplicates
+    local callbacks = addon.eventCallbacks[event]
+    if (not callbacks) then
+        error("Event not found:" .. event)
+    end
+
+    --add the event
+    callbacks[#callbacks + 1] = callbackFunction
+
+    return true
+end
