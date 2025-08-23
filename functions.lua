@@ -62,6 +62,8 @@ local LikePlayer = function (whoLiked, playerLiked)
     if (addon.GetSelectedRunIndex() == 1) then
         addon.RefreshOpenScoreBoard()
     end
+
+    addon.FireEvent("PlayerLiked", DetailsMythicPlus.GetLatestRunId(), playerLiked)
 end
 
 function addon.LikePlayer(playerLiked)
@@ -79,5 +81,9 @@ function addon.LikePlayer(playerLiked)
 end
 
 function addon.ProcessLikePlayer(sender, data)
+    if (sender == UnitName("player")) then
+        return
+    end
+
     LikePlayer(sender, data.playerLiked)
 end
