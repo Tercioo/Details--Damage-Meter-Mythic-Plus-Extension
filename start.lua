@@ -63,7 +63,8 @@ local addon = private.addon
 
 
 addon.eventCallbacks = {
-    ["RunFinished"] = {}, --triggers right after the the CreateRunInfo() ran successfully and after addon.OpenScoreBoardAtEnd().
+    ["RunFinished"] = {}, --triggers right after the CreateRunInfo() and addon.OpenScoreBoardAtEnd(). Args: runId: number
+    ["PlayerLiked"] = {}, --triggers right after a player is liked by someone. Args: runId: number, playerName: string
 }
 
 --[[GLOBAL]] DetailsMythicPlus = {}
