@@ -709,3 +709,67 @@ function addon.Compress.GetSelectedRun()
 
     return addon.Compress.UncompressedRun(selectedRunIndex)
 end
+
+--given a table T, iterate among the values and create another table where the keys that are numbers, get converted to string
+local stringuifyTableKeys = function(T)
+    local newTable = {}
+    for k,v in pairs(T) do
+        if (type(k) == "number") then
+            k = tostring(k)
+        end
+        newTable[k] = v
+    end
+    return newTable
+end
+
+function addon.ExportToJson(runId)
+    local runInfo = addon.Compress.UncompressedRun(runId)
+    if (not runInfo) then
+        return
+    end
+
+    local t = {}
+    for k,v in pairs(runInfo) do
+        if (type(v) ~= "table") then
+            t[k] = v
+        end
+    end
+
+    local combatData = {
+        groupMembers = {},
+    }
+
+    for playerName, playerInfo in pairs(runInfo.combatData.groupMembers) do
+        local thisPlayerInfo = {}
+
+        for k,v in pairs(playerInfo) do
+            if (type(v) ~= "table") then
+                thisPlayerInfo[k] = v
+            end
+        end
+
+        thisPlayerInfo.likedBy = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.likedBy))
+        thisPlayerInfo.damageDoneBySpells = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.damageDoneBySpells))
+        thisPlayerInfo.deathEvents = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.deathEvents))
+        thisPlayerInfo.dispelWhat = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.dispelWhat))
+        thisPlayerInfo.deathLastHits = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.deathLastHits))
+        thisPlayerInfo.interruptWhat = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.interruptWhat))
+        thisPlayerInfo.crowdControlSpells = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.crowdControlSpells))
+        thisPlayerInfo.damageTakenFromSpells = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.damageTakenFromSpells))
+        thisPlayerInfo.healDoneBySpells = C_EncodingUtil.SerializeJSON(stringuifyTableKeys(playerInfo.healDoneBySpells))
+
+        combatData.groupMembers[playerName] = thisPlayerInfo
+    end
+
+    t["combatData"] = combatData --can't export
+    t["combatTimeline"] = runInfo.timeInCombat --okay
+    t["encounters"] = runInfo.encounters --okay
+    t["completionInfo"] = runInfo.completionInfo --okay
+
+    local jsonString = C_EncodingUtil.SerializeJSON(t)
+    if (not jsonString) then
+        return ""
+    end
+
+    return jsonString
+end
