@@ -9,6 +9,9 @@ local addon = private.addon
 local _ = nil
 local L = detailsFramework.Language.GetLanguageTable(addonName)
 
+---@class exportframe : frame
+---@field TextBox df_luaeditor
+
 function addon.ShowExportFrame(exportText)
     local exportFrame = addon.GetOrCreateExportFrame()
     exportFrame:Show()
@@ -27,20 +30,21 @@ function addon.GetOrCreateExportFrame()
     --a text entry box where it'll show the export data (text).
     --a button in the bottom right corner to close the panel.
 
-    if (DetailsMythicPlusExportFrame) then
-        return DetailsMythicPlusExportFrame
+    if (_G["DetailsMythicPlusExportFrame"]) then
+        return _G["DetailsMythicPlusExportFrame"]
     end
 
+    ---@type exportframe
     local exportFrame = CreateFrame("Frame", "DetailsMythicPlusExportFrame", UIParent)
     exportFrame:SetSize(600, 400)
-    exportFrame:SetPoint("CENTER")
+    exportFrame:SetPoint("center", UIParent, "center", 0, 0)
     exportFrame:SetFrameStrata("FULLSCREEN")
     exportFrame:Show()
 
     detailsFramework:ApplyStandardBackdrop(exportFrame)
 
     local title = exportFrame:CreateFontString(nil, "overlay", "GameFontNormalLarge")
-    title:SetPoint("TOP", 0, -5)
+    title:SetPoint("top", exportFrame, "top", 0, -5)
     title:SetText("Export M+ Run (JSON)")
 
     local luaEditFrame = detailsFramework:NewSpecialLuaEditorEntry(exportFrame, 1, 1, "editbox", "$parentEntry", true)
@@ -65,7 +69,7 @@ function addon.GetOrCreateExportFrame()
     end)
 
     local copyMessage = exportFrame:CreateFontString(nil, "overlay", "GameFontNormal")
-    copyMessage:SetPoint("BOTTOM", 0, 5)
+    copyMessage:SetPoint("bottom", exportFrame, "bottom", 0, 5)
     copyMessage:SetText("press ctrl+c to copy")
 
     exportFrame:SetScript("OnHide", function()
