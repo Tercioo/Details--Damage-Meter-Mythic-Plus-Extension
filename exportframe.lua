@@ -20,9 +20,15 @@ function addon.ShowExportFrame(exportText)
     exportFrame.TextBox.editbox:ClearFocus()
     exportFrame.TextBox:SetText("")
 
-    exportFrame.TextBox:SetText(exportText)
-    exportFrame.TextBox.editbox:SetFocus()
-    exportFrame.TextBox.editbox:HighlightText(0)
+    C_Timer.After(0, function()
+        exportFrame.TextBox.editbox:SetFocus()
+        exportFrame.TextBox:SetText(exportText)
+        exportFrame.TextBox.editbox:HighlightText(0)
+
+        C_Timer.After(0, function()
+            exportFrame.TextBox.editbox:HighlightText(0)
+        end)
+    end)
 end
 
 function addon.GetOrCreateExportFrame()
@@ -56,7 +62,9 @@ function addon.GetOrCreateExportFrame()
 
     exportFrame.TextBox.editbox:SetScript("OnKeyDown", function(self, key)
         if (IsControlKeyDown() and (key == "c" or key == "C")) then
-            exportFrame:Hide()
+            C_Timer.After(0, function()
+                exportFrame:Hide()
+            end)
         end
     end)
 
