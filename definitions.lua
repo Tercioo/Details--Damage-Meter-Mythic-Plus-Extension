@@ -66,6 +66,8 @@
 ---@field profile profile store the profile settings
 ---@field detailsEventListener table register and listen to Details! events
 ---@field loot loot
+---@field recentLikes table<string, number> store the recent likes given in the current session, key is the player name, value is the amount of likes received
+---@field LikesAmountFontString fontstring[] store fontstrings that show the amount of likes in the scoreboard
 ---@field eventCallbacks table<string, table<function[]>> eventName = {functions to call[]}
 ---@field data table store data from the current mythic plus run
 ---@field Enum enum
@@ -120,6 +122,7 @@
 ---@field CreateRunSelectorDropdown fun(readyFrame:scoreboard_mainframe) create a dropdown to select the run to show in the scoreboard
 ---@field GetOrCreateExportFrame fun() : exportframe get or create the export frame
 ---@field ShowExportFrame fun(exportText:string) show the export frame with the given text
+---@field WipeLikeCache fun() wipe the like cache, so the likes can be recounted
 
 ---@class scoreboard_keystone_texture: texture show the keystone dungeon icon the player has
 ---@field KeystoneDungeonLevel fontstring show the keystone level of the player

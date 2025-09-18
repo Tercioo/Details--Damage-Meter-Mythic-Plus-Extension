@@ -19,6 +19,14 @@ local CONST_LAST_RUN_TIMEOUT = 5 * 60
 --primaryAffix seens to not exists
 --local dungeonName, id, timeLimit, texture, backgroundTexture = C_ChallengeMode.GetMapUIInfo(challengemodecompletioninfo.mapChallengeModeID)
 
+function addon.WipeLikeCache()
+    table.wipe(addon.recentLikes)
+    for i = 1, #addon.LikesAmountFontString do
+        addon.LikesAmountFontString[i]:SetText("0")
+        addon.LikesAmountFontString[i].amount = 0
+    end
+end
+
 ---runs on details! event COMBAT_MYTHICPLUS_OVERALL_READY
 function addon.CreateRunInfo(mythicPlusOverallSegment)
     local completionInfo = C_ChallengeMode.GetChallengeCompletionInfo()
@@ -28,6 +36,8 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
     end
 
     local combatTime = mythicPlusOverallSegment:GetCombatTime()
+
+    addon.WipeLikeCache()
 
     --debug
     if (not addon.profile.last_run_data.encounter_timeline) then
@@ -278,6 +288,7 @@ end
 ---set the index of the latest selected run info
 ---@param index number
 function addon.SetSelectedRunIndex(index)
+    addon.WipeLikeCache()
     addon.profile.saved_runs_selected_index = index
     --call refresh on the score board
     addon.RefreshOpenScoreBoard()

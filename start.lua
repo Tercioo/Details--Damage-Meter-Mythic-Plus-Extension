@@ -101,7 +101,8 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     end
 
     addon.data = {}
-
+    addon.recentLikes = {}
+    addon.LikesAmountFontString = {}
     addon.temporaryTimers = {}
 
     local detailsEventListener = Details:CreateEventListener()

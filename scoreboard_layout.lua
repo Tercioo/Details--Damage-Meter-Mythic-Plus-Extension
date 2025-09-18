@@ -194,31 +194,92 @@ end
 
 do -- player likes
     local column = addon.ScoreboardColumn:Create("player-likes", "", 34, function (line)
-        local texture = line:CreateTexture("$parentRankTexture", "ARTWORK")
-        texture:SetSize(30, 30)
+        local anchorFrame = CreateFrame("frame", "$parentLikesAnchorFrame", line)
+        anchorFrame:SetSize(32, 26)
 
-        local hint = line:CreateTexture("$parentRankTextureHint", "OVERLAY")
+        anchorFrame:SetScript("OnShow", function()
+        end)
+
+        local likesFontString = anchorFrame:CreateFontString("$parentLikesFontString", "overlay", "GameFontNormal")
+        likesFontString:SetText("LIKES")
+        likesFontString:SetPoint("bottom", anchorFrame, "bottom", 0, 0)
+        DetailsFramework:SetFontSize(likesFontString, 7)
+        anchorFrame.LikesFontString = likesFontString
+
+        local likesAmountFontString = anchorFrame:CreateFontString("$parentLikesAmountFontString", "overlay", "GameFontNormal")
+        likesAmountFontString:SetText("0")
+        likesAmountFontString:SetPoint("bottom", likesFontString, "top", 0, 2)
+        likesAmountFontString.amount = 0
+        DetailsFramework:SetFontSize(likesAmountFontString, 16)
+        anchorFrame.LikesAmountFontString = likesAmountFontString
+        addon.LikesAmountFontString[#addon.LikesAmountFontString + 1] = likesAmountFontString
+        --likesFontString:SetPoint("TOPLEFT", line, "TOPLEFT", 5, -5)
+
+        local nextLikesAmountFontString = anchorFrame:CreateFontString("$parentNextLikesAmountFontString", "overlay", "GameFontNormal") --this fontstring is only used for animation purposes
+        nextLikesAmountFontString:SetText("0")
+        nextLikesAmountFontString:SetPoint("bottom", likesFontString, "top", 0, -18)
+        DetailsFramework:SetFontSize(nextLikesAmountFontString, 16)
+        anchorFrame.NextLikesFontString = nextLikesAmountFontString
+        nextLikesAmountFontString:Hide()
+
+        --create two animations using detailsframework, one when a player receives a like, the fontstring likesAmountFontString will from where it is now to up and fadeout, while the nextLikesAmountFontString will move up from below and fade in stopping where the likesAmountFontString was.
+        do
+            local order = 1
+            local duration = 0.2
+
+            local likeReceivedAnimation = DetailsFramework:CreateAnimationHub(likesAmountFontString, nil, function() likesAmountFontString:Hide(); likesAmountFontString:SetText(nextLikesAmountFontString:GetText()) end)
+            DetailsFramework:CreateAnimation(likeReceivedAnimation, "Alpha", order, duration, 1, 0)
+            DetailsFramework:CreateAnimation(likeReceivedAnimation, "Translation", order, duration, 0, 20)
+            likesAmountFontString.LikeReceivedAnimation = likeReceivedAnimation
+
+            local nextLikeReceivedAnimation = DetailsFramework:CreateAnimationHub(nextLikesAmountFontString, function() nextLikesAmountFontString:Show() end, function() nextLikesAmountFontString:Hide(); likesAmountFontString:Show(); end)
+            DetailsFramework:CreateAnimation(nextLikeReceivedAnimation, "Alpha", order, duration, 0, 1)
+            DetailsFramework:CreateAnimation(nextLikeReceivedAnimation, "Translation", order, duration-0.05, 0, 23)
+            DetailsFramework:CreateAnimation(nextLikeReceivedAnimation, "Translation", order+1, 0.05, 0, -3)
+            --DetailsFramework:CreateAnimation(nextLikeReceivedAnimation, "Translation", order+3, 0.05, 0, -3)
+            nextLikesAmountFontString.LikeReceivedAnimation = nextLikeReceivedAnimation
+        end
+
+
+        local texture = anchorFrame:CreateTexture("$parentRankTexture", "artwork")
+        texture:SetSize(30, 30)
+        texture:SetPoint("center", anchorFrame, "center", 0, 0)
+        texture:SetAlpha(0.1)
+        anchorFrame.LikesTexture = texture
+
+        local hint = anchorFrame:CreateTexture("$parentRankTextureHint", "overlay")
         hint:SetAtlas("UI-HUD-Minimap-Arrow-QuestTracking")
         hint:SetPoint("TOPRIGHT", texture, "TOPRIGHT", 5, 5)
         hint:SetSize(16, 16)
         hint:Hide()
 
-        texture.Hint = hint
-        texture.Line = line
         line.LikeHint = hint
+        anchorFrame.LikeHintTexture = hint
+        texture.Line = line
 
-        return texture
+        return anchorFrame
     end)
 
-    column:SetOnRender(function (frame, playerData)
-        local likes = 1
-        for _, liked in pairs(playerData.likedBy or {}) do
+    column:SetOnRender(function (anchorFrame, playerData)
+        local likes = 0
+        for playerName, liked in pairs(playerData.likedBy or {}) do
             if (liked) then
+                --print(playerName .. " liked " .. playerData.name) --DEBUG
                 likes = likes + 1
             end
         end
 
-        frame:SetAtlas("Professions-ChatIcon-Quality-Tier" .. likes)
+        local currentLikes = anchorFrame.LikesAmountFontString.amount
+
+        anchorFrame.NextLikesFontString:SetText(likes)
+        anchorFrame.LikesTexture:SetAtlas("Professions-ChatIcon-Quality-Tier" .. (likes + 1))
+
+        --play animation if likes increased
+        if (likes > currentLikes) then
+            anchorFrame.LikesAmountFontString.LikeReceivedAnimation:Play()
+            anchorFrame.NextLikesFontString.LikeReceivedAnimation:Play()
+            anchorFrame.LikesAmountFontString.amount = likes
+        end
     end)
 
     addon.RegisterScoreboardColumn(column)
@@ -294,10 +355,16 @@ end
 
 do -- Like button
     local likeButtonTemplate = "OPTIONS_CIRCLEBUTTON_TEMPLATE"
-
     local likeButtonWidth = 45
+    local likeButtonDebug = true --avoid hiding the like button
+
+    ---@class likebutton : df_button
+    ---@field LikeTextureAnimation animationgroup
+    ---@field OnClickAnimation animationgroup
+    ---@field ShinnyBarAnimation animationgroup
 
     local column = addon.ScoreboardColumn:Create("player-like-button", "", 50, function (line)
+        ---@type likebutton
         local likeButton = DetailsFramework:CreateButton(line, function (self)
             if (self.MyObject.OnClick) then
                 self.MyObject:OnClick()
@@ -311,16 +378,77 @@ do -- Like button
         likeTexture:SetSize(20, 20)
         likeTexture:SetPoint("left", likeButton.widget, "left", 2, 0)
 
+        --create a details framework animation to move the likeTexture down and up once
+        do
+            local likeTextureAnimation = DetailsFramework:CreateAnimationHub(likeTexture)
+            local order = 1
+            local duration = 0.075
+            local pixelsToMove = 1
+            DetailsFramework:CreateAnimation(likeTextureAnimation, "Translation", order, duration, 0, -pixelsToMove)
+            DetailsFramework:CreateAnimation(likeTextureAnimation, "Translation", order + 1, duration, 0, pixelsToMove)
+            likeButton.LikeTextureAnimation = likeTextureAnimation
+        end
+
+        do
+            --create a details framework animation which decreases the alpha of the likeButton from 1 to 0 and the scale from 1 to 2, in 0.4 seconds
+            local likeButtonAnimation = DetailsFramework:CreateAnimationHub(likeButton.widget, function() likeButton.widget:Show() end, function() likeButton.widget:Hide() end)
+            local order = 1
+            local duration = 0.2
+            DetailsFramework:CreateAnimation(likeButtonAnimation, "Alpha", order, duration, 1, 0)
+            DetailsFramework:CreateAnimation(likeButtonAnimation, "Scale", order, duration, 1, 1, 1.5, 1.5)
+            likeButton.OnClickAnimation = likeButtonAnimation
+        end
+
         local textFontString = likeButton:GetFontString()
         textFontString:ClearAllPoints()
         textFontString:SetPoint("left", likeTexture, "right", 2, 0)
 
+        local onEnterTooltipText1 = "Give an annonymous GG to this player."
+        local onEnterTooltipText2 = "The player is saved to later references."
+
         likeButton:SetScript("OnEnter", function ()
             line.LikeHint:Show()
+            --show cooltip with the text enEnterTooltipText
+            GameCooltip:Preset(2)
+            GameCooltip:AddLine(onEnterTooltipText1)
+            GameCooltip:AddIcon("common-radiobutton-dot", 1, 1, 12, 12)
+            GameCooltip:AddLine(onEnterTooltipText2)
+            GameCooltip:AddIcon("common-radiobutton-dot", 1, 1, 12, 12)
+            GameCooltip:SetOwner(likeButton.widget, "bottom", "top", 0, -4)
+            GameCooltip:SetOption("FixedWidth", false)
+            GameCooltip:Show()
+
+            likeButton.LikeTextureAnimation:Play()
         end)
+
         likeButton:SetScript("OnLeave", function ()
             line.LikeHint:Hide()
+            GameCooltip:Hide()
         end)
+
+        local shinnyBarTexture = likeButton:CreateTexture("$parentShinnyBarTexture", "overlay")
+        shinnyBarTexture:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Textures\shinebar.png]])
+        shinnyBarTexture:SetSize(32, 32)
+        shinnyBarTexture:SetPoint("left", likeButton.widget, "left", -20, 0)
+        shinnyBarTexture:Hide()
+
+        DetailsFramework:SetMask(shinnyBarTexture, [[Interface\AddOns\Details_MythicPlus\Assets\Textures\rectanglemask.png]])
+        shinnyBarTexture.MaskTexture:ClearAllPoints()
+        shinnyBarTexture.MaskTexture:SetAllPoints(likeButton.widget)
+
+        local highlightTexture = likeButton:CreateTexture("$parentTextMask", "highlight")
+        highlightTexture:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Textures\rectanglemask.png]])
+        highlightTexture:SetAlpha(0.1)
+        highlightTexture:SetPoint("topleft", likeButton.widget, "topleft", 1, -1)
+        highlightTexture:SetPoint("bottomright", likeButton.widget, "bottomright", -1, 1)
+
+        --create a details framework animation to show the shinny bar, move it with translation from left to right, and when finishes, hide the texture
+        local shinnyBarAnimation = DetailsFramework:CreateAnimationHub(shinnyBarTexture, function() shinnyBarTexture:Show() end, function() shinnyBarTexture:Hide() end)
+        local order = 1
+        local duration = 0.35
+        DetailsFramework:CreateAnimation(shinnyBarAnimation, "Translation", order, duration, likeButtonWidth + 20, 0, 0)
+        likeButton.ShinnyBarAnimation = shinnyBarAnimation
+
         return likeButton
     end)
 
@@ -329,16 +457,23 @@ do -- Like button
         if (addon.profile.last_run_id ~= playerData.runId or myName == playerData.name or (playerData.likedBy and playerData.likedBy[myName]) or not addon.Compress.HasLastRun()) then
             likeButton.OnClick = nil
             likeButton:Hide()
-            return
+            if not likeButtonDebug then
+                return
+            end
         end
 
         likeButton.OnClick = function()
             addon.LikePlayer(playerData.name)
-            likeButton:Hide()
+            likeButton.OnClickAnimation:Play()
+            --likeButton:Hide()
         end
         likeButton:SetText(L["SCOREBOARD_BUTTON_GG"])
         --likeButton:SetText("Like")
         likeButton:Show()
+
+        C_Timer.After(1, function()
+            likeButton.ShinnyBarAnimation:Play()
+        end)
     end)
 
     addon.RegisterScoreboardColumn(column)
