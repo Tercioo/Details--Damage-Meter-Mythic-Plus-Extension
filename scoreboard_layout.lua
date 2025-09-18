@@ -39,7 +39,7 @@ end
 local function DoPlayerTooltip(playerData, owner, renderContent, rightHeaderColumn, r, g, b)
     GameCooltip:Preset(2)
 
-    local classColor = RAID_CLASS_COLORS[playerData.class]
+    local classColor = RAID_CLASS_COLORS[playerData.class] or {r = 1, g = 1, b = 1, a = 1}
     GameCooltip:AddLine(addon.PreparePlayerName(playerData.name), rightHeaderColumn, nil, classColor.r, classColor.g, classColor.b, 1, r, g, b, 1)
     if (playerData.spec) then
         GameCooltip:AddIcon(select(4, GetSpecializationInfoByID(playerData.spec)), 1, 1, 18, 18)
@@ -345,7 +345,7 @@ do -- Player name
 
     ---@param playerData scoreboard_playerdata
     column:SetOnRender(function (frame, playerData)
-        local classColor = RAID_CLASS_COLORS[playerData.class]
+        local classColor = RAID_CLASS_COLORS[playerData.class] or {r = 1, g = 1, b = 1, a = 1}
         frame:SetTextColor(classColor.r, classColor.g, classColor.b)
         frame:SetText(addon.PreparePlayerName(playerData.name))
     end)
