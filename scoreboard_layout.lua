@@ -1,6 +1,8 @@
 local addonName, private = ...
 local Details, DetailsFramework = Details, DetailsFramework
 
+---@cast DetailsFramework detailsframework
+
 ---@type detailsmythicplus
 local addon = private.addon
 
@@ -293,37 +295,50 @@ end
 do -- Like button
     local likeButtonTemplate = "OPTIONS_CIRCLEBUTTON_TEMPLATE"
 
+    local likeButtonWidth = 45
+
     local column = addon.ScoreboardColumn:Create("player-like-button", "", 50, function (line)
-        local frame = DetailsFramework:CreateButton(line, function (self)
+        local likeButton = DetailsFramework:CreateButton(line, function (self)
             if (self.MyObject.OnClick) then
                 self.MyObject:OnClick()
             end
-        end, 35, 22, nil, nil, nil, nil, nil, nil, nil, likeButtonTemplate, {font = "GameFontNormal", size = 12})
+        end, likeButtonWidth, 22, nil, nil, nil, nil, nil, nil, nil, likeButtonTemplate, {font = "GameFontNormal", size = 12})
 
-        frame:SetScript("OnEnter", function ()
+        --like texture
+        ---@type texture
+        local likeTexture = likeButton:CreateTexture("$parentLikeTexture", "overlay")
+        likeTexture:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Textures\thumbsup.png]])
+        likeTexture:SetSize(20, 20)
+        likeTexture:SetPoint("left", likeButton.widget, "left", 2, 0)
+
+        local textFontString = likeButton:GetFontString()
+        textFontString:ClearAllPoints()
+        textFontString:SetPoint("left", likeTexture, "right", 2, 0)
+
+        likeButton:SetScript("OnEnter", function ()
             line.LikeHint:Show()
         end)
-        frame:SetScript("OnLeave", function ()
+        likeButton:SetScript("OnLeave", function ()
             line.LikeHint:Hide()
         end)
-        return frame
+        return likeButton
     end)
 
-    column:SetOnRender(function (frame, playerData)
+    column:SetOnRender(function (likeButton, playerData)
         local myName = UnitName("player")
         if (addon.profile.last_run_id ~= playerData.runId or myName == playerData.name or (playerData.likedBy and playerData.likedBy[myName]) or not addon.Compress.HasLastRun()) then
-            frame.OnClick = nil
-            frame:Hide()
-
+            likeButton.OnClick = nil
+            likeButton:Hide()
             return
         end
 
-        frame.OnClick = function()
+        likeButton.OnClick = function()
             addon.LikePlayer(playerData.name)
-            frame:Hide()
+            likeButton:Hide()
         end
-        frame:SetText(L["SCOREBOARD_BUTTON_GG"])
-        frame:Show()
+        likeButton:SetText(L["SCOREBOARD_BUTTON_GG"])
+        --likeButton:SetText("Like")
+        likeButton:Show()
     end)
 
     addon.RegisterScoreboardColumn(column)
