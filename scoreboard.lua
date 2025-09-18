@@ -572,7 +572,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 runId = runData.runId,
                 name = playerName,
                 unitName = playerName,
-                class = playerInfo.class,
+                class = playerInfo.class or "WARRIOR",
                 spec = playerInfo.spec,
                 role = playerInfo.role or UnitGroupRolesAssigned(unitId),
                 score = score,
