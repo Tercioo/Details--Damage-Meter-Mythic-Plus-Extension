@@ -201,7 +201,7 @@ do -- player likes
         end)
 
         local likesFontString = anchorFrame:CreateFontString("$parentLikesFontString", "overlay", "GameFontNormal")
-        likesFontString:SetText("LIKES")
+        likesFontString:SetText(L["SCOREBOARD_BUTTON_GG_LIKE"])
         likesFontString:SetPoint("bottom", anchorFrame, "bottom", 0, 0)
         DetailsFramework:SetFontSize(likesFontString, 7)
         anchorFrame.LikesFontString = likesFontString
@@ -356,7 +356,7 @@ end
 do -- Like button
     local likeButtonTemplate = "OPTIONS_CIRCLEBUTTON_TEMPLATE"
     local likeButtonWidth = 45
-    local likeButtonDebug = true --avoid hiding the like button
+    local likeButtonDebug = false --avoid hiding the like button
 
     ---@class likebutton : df_button
     ---@field LikeTextureAnimation animationgroup
@@ -403,16 +403,13 @@ do -- Like button
         textFontString:ClearAllPoints()
         textFontString:SetPoint("left", likeTexture, "right", 2, 0)
 
-        local onEnterTooltipText1 = "Give an annonymous GG to this player."
-        local onEnterTooltipText2 = "The player is saved to later references."
-
         likeButton:SetScript("OnEnter", function ()
             line.LikeHint:Show()
             --show cooltip with the text enEnterTooltipText
             GameCooltip:Preset(2)
-            GameCooltip:AddLine(onEnterTooltipText1)
+            GameCooltip:AddLine(L["SCOREBOARD_BUTTON_GG_TOOLTIP_LINE_1"])
             GameCooltip:AddIcon("common-radiobutton-dot", 1, 1, 12, 12)
-            GameCooltip:AddLine(onEnterTooltipText2)
+            GameCooltip:AddLine(L["SCOREBOARD_BUTTON_GG_TOOLTIP_LINE_2"])
             GameCooltip:AddIcon("common-radiobutton-dot", 1, 1, 12, 12)
             GameCooltip:SetOwner(likeButton.widget, "bottom", "top", 0, -4)
             GameCooltip:SetOption("FixedWidth", false)
@@ -468,7 +465,6 @@ do -- Like button
             --likeButton:Hide()
         end
         likeButton:SetText(L["SCOREBOARD_BUTTON_GG"])
-        --likeButton:SetText("Like")
         likeButton:Show()
 
         C_Timer.After(1, function()
