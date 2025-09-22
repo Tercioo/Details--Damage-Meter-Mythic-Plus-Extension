@@ -105,7 +105,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
     for _, actorObject in damageContainer:ListActors() do
         ---@cast actorObject actordamage
 
-        if (actorObject:IsPlayer()) then
+        if (actorObject:IsPlayer() and actorObject:Class() ~= "UNGROUPPLAYER") then
             local unitName = actorObject:Name()
             local damageTakenFromSpells = {}
             for i, damageTaken in pairs(mythicPlusOverallSegment:GetDamageTakenBySpells(unitName)) do
