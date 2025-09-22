@@ -590,6 +590,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 interrupts = playerInfo.totalInterrupts or 0,
                 interruptCastOverlapDone = playerInfo.interruptCastOverlapDone or 0,
                 interruptCasts = playerInfo.totalInterruptsCasts or 0,
+                ilevel = playerInfo.ilevel,
                 dispels = playerInfo.totalDispels or 0,
                 ccCasts = playerInfo.totalCrowdControlCasts,
                 ccSpellsUsed = playerInfo.crowdControlSpells,

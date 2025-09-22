@@ -138,7 +138,7 @@ end
 local CreateLootSquare = function(line)
     ---@type details_lootsquare
     local lootSquare = CreateFrame("frame", "$parentLootSquare", line)
-    lootSquare:SetSize(46, 46)
+    lootSquare:SetSize(50, 50)
     lootSquare:SetFrameLevel(line:GetFrameLevel()+10)
     lootSquare:Hide()
 
@@ -164,29 +164,30 @@ local CreateLootSquare = function(line)
     end)
 
     local lootIcon = lootSquare:CreateTexture("$parentLootIcon", "artwork")
-    lootIcon:SetSize(46, 46)
-    lootIcon:SetPoint("center", lootSquare, "center", 0, 0)
+    lootIcon:SetSize(50, 50)
+    lootIcon:SetPoint("center", lootSquare, "center", 0, 2)
     lootIcon:SetTexture([[Interface\ICONS\INV_Misc_QuestionMark]])
     lootSquare.LootIcon = lootIcon
 
     local lootIconBorder = lootSquare:CreateTexture("$parentLootSquareBorder", "overlay")
     lootIconBorder:SetTexture([[Interface\COMMON\WhiteIconFrame]])
     lootIconBorder:SetTexCoord(0, 1, 0, 1)
-    lootIconBorder:SetSize(46, 46)
+    lootIconBorder:SetSize(50, 50)
     lootIconBorder:SetPoint("center", lootIcon, "center", 0, 0)
     lootSquare.LootIconBorder = lootIconBorder
 
     local lootItemLevel = lootSquare:CreateFontString("$parentLootItemLevel", "overlay", "GameFontNormal")
-    lootItemLevel:SetPoint("bottom", lootSquare, "bottom", 0, 0)
+    lootItemLevel:SetPoint("bottom", lootSquare, "bottom", 0, 2)
     lootItemLevel:SetTextColor(1, 1, 1)
     DetailsFramework:SetFontSize(lootItemLevel, 11)
     lootSquare.LootItemLevel = lootItemLevel
 
-    local lootItemLevelBackgroundTexture = lootSquare:CreateTexture("$parentItemLevelBackgroundTexture", "artwork")
+    local lootItemLevelBackgroundTexture = lootSquare:CreateTexture("$parentItemLevelBackgroundTexture", "overlay")
     lootItemLevelBackgroundTexture:SetTexture([[Interface\Cooldown\LoC-ShadowBG]])
+    lootItemLevelBackgroundTexture:SetDrawLayer("overlay", 5)
     lootItemLevelBackgroundTexture:SetPoint("bottomleft", lootSquare, "bottomleft", -7, 1)
-    lootItemLevelBackgroundTexture:SetPoint("bottomright", lootSquare, "bottomright", 7, -11)
-    lootItemLevelBackgroundTexture:SetHeight(10)
+    lootItemLevelBackgroundTexture:SetPoint("bottomright", lootSquare, "bottomright", 7, 1)
+    lootItemLevelBackgroundTexture:SetHeight(14)
     lootSquare.LootItemLevelBackgroundTexture = lootItemLevelBackgroundTexture
 
     return lootSquare
@@ -295,6 +296,21 @@ do -- player portrait
         playerPortrait.RoleIcon:SetSize(18, 18)
         playerPortrait.RoleIcon:ClearAllPoints()
         playerPortrait.RoleIcon:SetPoint("bottomleft", playerPortrait.Portrait, "bottomright", -9, -2)
+        playerPortrait.RoleIcon:SetDrawLayer("overlay", 6)
+
+        local itemLevelText = playerPortrait:CreateFontString("$parentLootItemLevel", "overlay", "GameFontNormal")
+        itemLevelText:SetPoint("bottom", playerPortrait, "bottom", 0, 0)
+        itemLevelText:SetTextColor(1, 1, 1)
+        DetailsFramework:SetFontSize(itemLevelText, 11)
+        playerPortrait.ItemLevelText = itemLevelText
+
+        local itemLevelBg = playerPortrait:CreateTexture("$parentItemLevelBackgroundTexture", "overlay")
+        itemLevelBg:SetDrawLayer("overlay", 5)
+        itemLevelBg:SetTexture([[Interface\Cooldown\LoC-ShadowBG]])
+        itemLevelBg:SetPoint("bottomleft", playerPortrait.Portrait, "bottomleft", -7, -1)
+        itemLevelBg:SetPoint("bottomright", playerPortrait.Portrait, "bottomright", 7, -1)
+        itemLevelBg:SetHeight(14)
+        playerPortrait.ItemLevelBg = itemLevelBg
 
         return playerPortrait
     end)
@@ -307,6 +323,17 @@ do -- player portrait
             local class = playerData.class
             frame.Portrait:SetTexture("Interface\\TargetingFrame\\UI-Classes-Circles")
             frame.Portrait:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+        end
+
+        if (playerData.ilevel) then
+            local classColor = RAID_CLASS_COLORS[playerData.class] or {r = 1, g = 1, b = 1, a = 1}
+            frame.ItemLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+            frame.ItemLevelText:SetText(DetailsFramework.Math.Round(playerData.ilevel))
+            frame.ItemLevelText:Show()
+            frame.ItemLevelBg:Show()
+        else
+            frame.ItemLevelText:Hide()
+            frame.ItemLevelBg:Hide()
         end
 
         local role = playerData.role
@@ -514,14 +541,14 @@ do -- keystone
         keystoneDungeonIcon.DungeonBorderTexture = keystoneDungeonBorderTexture
 
         local keystoneDungeonLevelFontstring = line:CreateFontString("$parentDungeonLevelFontstring", "overlay", "GameFontNormal")
-        keystoneDungeonLevelFontstring:SetPoint("bottom", keystoneDungeonIcon, "bottom", 0, -2)
-        DetailsFramework:SetFontSize(keystoneDungeonLevelFontstring, 15)
+        keystoneDungeonLevelFontstring:SetPoint("bottom", keystoneDungeonIcon, "bottom", 0, -1)
+        DetailsFramework:SetFontSize(keystoneDungeonLevelFontstring, 12)
         keystoneDungeonIcon.KeystoneDungeonLevel = keystoneDungeonLevelFontstring
 
         local keystoneDungeonLevelBackgroundTexture = line:CreateTexture("$parentDungeonLevelBackgroundTexture", "artwork", nil, 6)
         keystoneDungeonLevelBackgroundTexture:SetTexture([[Interface\Cooldown\LoC-ShadowBG]])
-        keystoneDungeonLevelBackgroundTexture:SetPoint("bottomleft", keystoneDungeonIcon, "bottomleft", -10, -2)
-        keystoneDungeonLevelBackgroundTexture:SetPoint("bottomright", keystoneDungeonIcon, "bottomright", 10, -15)
+        keystoneDungeonLevelBackgroundTexture:SetPoint("bottomleft", keystoneDungeonIcon, "bottomleft", -5, -1)
+        keystoneDungeonLevelBackgroundTexture:SetPoint("bottomright", keystoneDungeonIcon, "bottomright", 5, -1)
         keystoneDungeonLevelBackgroundTexture:SetHeight(12)
         keystoneDungeonIcon.KeystoneDungeonLevelBackground = keystoneDungeonLevelBackgroundTexture
 
@@ -557,8 +584,10 @@ do -- keystone
 
             if (tonumber(playerData.keystoneLevel) == 0) then
                 keystoneLevel:SetText("")
+                frame.KeystoneDungeonLevelBackground:Hide()
             else
                 keystoneLevel:SetText(playerData.keystoneLevel)
+                frame.KeystoneDungeonLevelBackground:Show()
             end
 
             --the scoreboard open after the local player open the loot cache.
