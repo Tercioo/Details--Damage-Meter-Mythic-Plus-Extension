@@ -85,6 +85,10 @@ do
     L["SCOREBOARD_TOOLTIP_CC_CAST_HEADER"] = "Суммарно"
     L["SCOREBOARD_RELOADED_WARNING"] = "Неполные данные"
     L["SCOREBOARD_RELOADED_TOOLTIP"] = "Данные этого забега неполные и, возможно, неверные из-за перезагрузки или перезахода в игру в середине забега"
+    L["SCOREBOARD_BUTTON_GG"] = "GG"
+    L["SCOREBOARD_BUTTON_GG_LIKE"] = "НРАВИТСЯ"
+    L["SCOREBOARD_BUTTON_GG_TOOLTIP_LINE_1"] = "Оставить анонимный GG этому игроку"
+    L["SCOREBOARD_BUTTON_GG_TOOLTIP_LINE_2"] = "Оставленные Вами GG сохраняются для дальнейшего использования"
 
     ------------------------------------------------------------
     --@localization(locale="ruRU", format="lua_additive_table")@
