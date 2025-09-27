@@ -1,8 +1,8 @@
-## Interface: 110200
+## Interface: 110205, 110200
 ## Title: Details!: Mythic Plus Extension
 ## Title-ruRU: Details!: Расширение М+
 ## Notes: Add Mythic Plus stuff on Details!
-## Notes-ruRU: Добавляет в Details! гибкое расширение М+
+## Notes-ruRU: Добавляет в Details! гибкое расширение для М+ подземелий
 ## SavedVariables: Details_MythicPlusDB
 ## SavedVariablesPerCharacter: Details_MythicPlus_CharacterDB
 ## RequiredDeps: Details
