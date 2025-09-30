@@ -20,10 +20,12 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 ---@class scoreboard_object : table
 ---@field lines scoreboard_line[]
 ---@field CreateScoreboardFrame fun():scoreboard_mainframe
+---@field RegisteredColumns table<number, scoreboard_column>
 ---@field CreateLineForScoreboardFrame fun(parent:scoreboard_mainframe, header:scoreboard_header, index:number):scoreboard_line
 ---@field CreateActivityPanel fun(parent:scoreboard_mainframe):scoreboard_activityframe
 ---@field RefreshScoreboardFrame fun(mainFrame:scoreboard_mainframe, runData:runinfo):boolean true when it has data, false when it does not and probably should be hidden
 ---@field SetFontSettings fun() set the default font settings
+---@field GetVisibleColumns fun() : scoreboard_column[] return a table with all visible columns
 
 ---@class scoreboard_mainframe : frame
 ---@field HeaderFrame scoreboard_header
@@ -43,10 +45,13 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 ---@field LeftFiligree texture
 ---@field RightFiligree texture
 ---@field BottomFiligree texture
----@field YellowSpikeCircle texture
+---@field YellowSpikeCircle yellowspikecircle
 ---@field YellowFlash texture
 ---@field Level fontstring
 ---@field ConfigButton df_button
+
+---@class yellowspikecircle : texture
+---@field OnShowAnimation animationgroup
 
 ---@class scoreboard_header : df_headerframe
 ---@field lines table<number, scoreboard_line>
@@ -98,7 +103,6 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
 ---@field arguments table
 
 ---@type scoreboard_object
----@field RegisteredColumns table<number, scoreboard_column>
 ---@diagnostic disable-next-line: missing-fields
 local mythicPlusBreakdown = {
     lines = {},
@@ -519,7 +523,10 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
             local line = lines[i]
             line:ResetFramesToHeaderAlignment()
             for _, column in ipairs(columns) do
-                line:AddFrameToHeaderAlignment(column:GetFrameObject())
+                local frameObject = column:GetFrameObject()
+                if (frameObject) then
+                    line:AddFrameToHeaderAlignment(frameObject)
+                end
             end
             line:AlignWithHeader(headerFrame, "left")
         end

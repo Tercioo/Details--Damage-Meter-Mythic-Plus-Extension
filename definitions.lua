@@ -94,7 +94,8 @@
 ---@field OnPlayerLeaveCombat fun(...) run on COMBAT_PLAYER_LEAVE
 ---@field StartParser fun() start the combatlog parser
 ---@field StopParser fun() stop the combatlog parser
----@field IsParsing fun():boolean whether or parsing at the moment
+---@field IsParsing fun():boolean whether or parsing at the 
+---@field CreateScoreboardFrame fun() : scoreboard_mainframe create the mythic plus breakdown big frame
 ---@field CreateRunInfo fun(segment:combat) : runinfo create a run info from the mythic+ overall segment
 ---@field OpenScoreboardFrame fun() open the mythic plus breakdown big frame
 ---@field RefreshOpenScoreBoard fun():scoreboard_mainframe Refreshes the score board, but only if it's visible
@@ -116,6 +117,8 @@
 ---@field GetRunIndexById fun(runId:number) : number|nil get the index of the run by its ID
 ---@field GetDropdownRunDescription fun(runInfo:runinfo) : table indexed table containing: [1] dungeonName, [2] keyLevel, [3] runTime, [4] keyUpgradeLevels, [5] timeString, [6] onTime [7] mapId [8] dungeonId
 ---@field GetPlayerDeathReason fun(runInfo:runinfo, unitName:playername, deathIndex:number) : death_last_hits[]|nil return a table with subtables of type death_last_hits which tells the last hits that killed the player
+---@field GetRegisteredColumns fun() : scoreboard_column[] return a table with all registered columns
+---@field SignalHeadersChanged fun() signal that the headers have changed and the scoreboard should be updated
 ---@field PreparePlayerName fun(name:string) : string removes the realm name, and transliterates if configured
 ---@field ShowMythicPlusOptionsWindow fun() opens the options window for the addon
 ---@field RegisterScoreboardColumn fun(column:scoreboard_column) register a column to be shown in the scoreboard
@@ -259,9 +262,10 @@
 ---@field maxEvents number
 ---@field UpdateBossWidgets fun(self:scoreboard_activityframe, runData:runinfo, multiplier:number) update the boss widgets showing the kill time of each boss
 ---@field UpdateBloodlustWidgets fun(self:scoreboard_activityframe, runData:runinfo, multiplier:number) update the bloodlust widgets showing the time of bloodlust usage
+---@field UpdateTimeSections fun(self:scoreboard_activityframe, totalRuntime:number, multiplier:number) update the time section labels showing sections of time in the timeline
 ---@field ResetSegmentTextures fun(self:scoreboard_activityframe) reset the next index of texture to use and hide all existing textures
 ---@field GetSegmentTexture fun(self:scoreboard_activityframe) : texture return a texture to be used as a segment of the activity bar
----@field RenderKeyFinishedMarker fun(frame:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker) : activitytimeline_marker_data
+---@field RenderKeyFinishedMarker fun(frame:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker, runData:runinfo) : activitytimeline_marker_data
 ---@field RenderDeathMarker fun(frame:scoreboard_activityframe, event:timeline_event, marker:activitytimeline_marker, runData:runinfo) : activitytimeline_marker_data
 ---@field PrepareEventFrames fun(frame:scoreboard_activityframe, events:timeline_event[]) : timeline_event, activitytimeline_marker
 
