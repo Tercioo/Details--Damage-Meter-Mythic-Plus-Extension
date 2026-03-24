@@ -296,7 +296,13 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
 
     readyFrame:SetBackdropColor(.1, .1, .1, 0)
     readyFrame:SetBackdropBorderColor(.1, .1, .1, 0)
-    detailsFramework:AddRoundedCornersToFrame(readyFrame, Details.PlayerBreakdown.RoundedCornerPreset)
+
+    local roundedCornerPreset = {
+        roundness = 12,
+        color = {.1, .1, .1, 0.834},
+    }
+
+    detailsFramework:AddRoundedCornersToFrame(readyFrame, roundedCornerPreset)
 
     local backgroundDungeonTexture = readyFrame:CreateTexture("$parentDungeonBackdropTexture", "background")
     backgroundDungeonTexture:SetPoint("topleft", readyFrame, "topleft", 3, -3)
@@ -320,12 +326,12 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
     addon.CreateRunSelectorDropdown(readyFrame)
 
     local normalTexture = configButton:CreateTexture(nil, "overlay")
-    normalTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+    normalTexture:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Textures\end_of_mplus.png]], nil, nil, "TRILINEAR")
     normalTexture:SetTexCoord(79/512, 113/512, 0/512, 36/512)
     normalTexture:SetDesaturated(true)
 
     local pushedTexture = configButton:CreateTexture(nil, "overlay")
-    pushedTexture:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+    pushedTexture:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Textures\end_of_mplus.png]], nil, nil, "TRILINEAR")
     pushedTexture:SetTexCoord(114/512, 148/512, 0/512, 36/512)
     pushedTexture:SetDesaturated(true)
 
@@ -430,7 +436,7 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
     do --mythic+ run data
         --clock texture and icon to show the wasted time (time out of combat)
         local outOfCombatIcon = readyFrame:CreateTexture("$parentOutOfCombatIcon", "artwork", nil, 2)
-        outOfCombatIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+        outOfCombatIcon:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Textures\end_of_mplus.png]], nil, nil, "TRILINEAR")
         outOfCombatIcon:SetTexCoord(172/512, 235/512, 84/512, 147/512)
         outOfCombatIcon:SetVertexColor(detailsFramework:ParseColors("silver"))
         outOfCombatIcon:SetSize(24, 24)
@@ -446,7 +452,7 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
         readyFrame.OutOfCombatText = outOfCombatText
 
         local itemLevelIcon = readyFrame:CreateTexture("$parentItemLevelIcon", "artwork", nil, 2)
-        itemLevelIcon:SetTexture([[Interface\AddOns\Details\images\end_of_mplus.png]], nil, nil, "TRILINEAR")
+        itemLevelIcon:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Textures\end_of_mplus.png]], nil, nil, "TRILINEAR")
         itemLevelIcon:SetPoint("left", outOfCombatIcon, "right", 260, 0)
         do
             local left, right, top, bottom = 79, 131, 229, 271

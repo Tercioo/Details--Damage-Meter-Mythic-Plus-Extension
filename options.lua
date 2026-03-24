@@ -1,11 +1,8 @@
 
---mythic+ extension for Details! Damage Meter
 --[[
     This file is responsible for the options windows
 ]]
 
----@type details
-local Details = _G.Details
 ---@type detailsframework
 local detailsFramework = _G.DetailsFramework
 local addonName, private = ...

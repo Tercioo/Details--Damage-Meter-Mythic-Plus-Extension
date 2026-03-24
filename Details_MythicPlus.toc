@@ -1,4 +1,4 @@
-## Interface: 120000
+## Interface: 120001
 ## Title: Details!: Mythic Plus Extension
 ## Title-ruRU: Details!: Расширение М+
 ## Notes: Add Mythic Plus stuff on Details!
@@ -26,6 +26,7 @@ locales\zhTW.lua
 
 start.lua
 templates.lua
+dummytails.lua
 frames.lua
 parser.lua
 options.lua

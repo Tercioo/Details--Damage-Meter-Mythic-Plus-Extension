@@ -1,7 +1,6 @@
 
 ---@type details
 ---@diagnostic disable-next-line: undefined-field
-local Details = _G.Details
 ---@type detailsframework
 local detailsFramework = _G.DetailsFramework
 local addonName, private = ...
@@ -50,7 +49,7 @@ function addon.CreateRunSelectorDropdown(readyFrame)
             }
 
             if (i == selectedRunIndex) then
-                option.statusbar = [[Interface\AddOns\Details\images\bar_serenity]]
+                option.statusbar = [[Interface\AddOns\Details_MythicPlus\Assets\Textures\bar_serenity]]
                 option.statusbarcolor = {0.4, 0.4, 0, 0.5}
                 option.color = "yellow"
             end
@@ -95,7 +94,7 @@ function addon.CreateRunSelectorDropdown(readyFrame)
 
             optionFrame.ExportButton = CreateFrame("Button", nil, optionFrame)
             optionFrame.ExportButton:SetSize(60, 18)
-            optionFrame.ExportButton:SetNormalTexture([[Interface\AddOns\Details\images\export]])
+            optionFrame.ExportButton:SetNormalTexture([[Interface\AddOns\Details\images\export]]) --this image does not exists in Details
             optionFrame.ExportButton:SetPoint("right", optionFrame, "right", -5, 0)
             optionFrame.ExportButton:SetText("export")
 
