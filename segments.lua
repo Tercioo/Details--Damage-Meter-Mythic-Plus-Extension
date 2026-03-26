@@ -231,6 +231,14 @@ private.Segments = {
                 return self[i]
             end,
 
+            GetCombatTime = function(self)
+                return self.combatTime
+            end,
+
+            GetCombatUID = function(self)
+                return self.combatId
+            end,
+
             GetPlayerDeaths = function(self, unitName)
                 local deaths = 0
                 for i = 1, #self.last_events_tables do
@@ -384,6 +392,8 @@ private.Segments = {
         local segments = private.Segments.GetAllCombatTypes()
         local damageContainer, healingContainer, utilityContainer
         local tempo = segments[1].durationSeconds
+        currentCombat.combatTime = tempo
+        currentCombat.combatId = math.random(10000, 500000)
 
         do
             local damageActorList = private.Segments.GetCombatActors(segments[1])
