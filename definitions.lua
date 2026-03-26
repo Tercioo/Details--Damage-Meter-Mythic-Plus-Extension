@@ -8,6 +8,7 @@
 ---@field log fun(...) log a message to the addon logs
 ---@field buildVersion number the current wow build version
 ---@field buildVersionCutOff number the build version cutoff to apply certain code paths
+---@field Segments segments namespace for functions related to segments
 
 ---@class combattimetype : table
 ---@field RunTime number
@@ -33,6 +34,15 @@
 
 ---@class minimap : table
 ---@field hide boolean whether or not to hide the minimap icon
+
+---@class segments : table
+---@field serverTicker table|nil
+---@field CreateOBFS fun()
+---@field CreateDetailsCombat fun() : combat
+---@field GetAllCombatTypes fun() : table[]
+---@field GetActorSpells fun(damageMeterType:number, sourceGUID:string) : table
+---@field IsServerInCombat fun() : boolean
+---@field WaitServerDropCombat fun()
 
 ---@class profile : table
 ---@field has_last_run boolean whether or not there's a last run. This run will be cleared when the next one starts.

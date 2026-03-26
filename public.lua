@@ -132,3 +132,11 @@ function DetailsMythicPlus.RegisterCallback(event, callbackFunction)
 
     return true
 end
+
+function DetailsMythicPlus.TestApocalypse()
+    if detailsFramework.IsAddonApocalypseWow() then
+        if not private.Segments.IsServerInCombat() then
+            addon.OnMythicDungeonEnd()
+        end
+    end
+end

@@ -7,8 +7,11 @@ local _
 local tocFileName, private = ...
 local addon = private.addon
 
+---@type detailsframework
+local detailsFramework = DetailsFramework
+
 function addon.InitializeEvents()
-    if not Details then
+    if detailsFramework.IsAddonApocalypseWow() then
         local e = CreateFrame("Frame")
         e:RegisterEvent("PLAYER_REGEN_ENABLED")
         e:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -33,18 +36,16 @@ function addon.InitializeEvents()
                 private.log(event)
                 addon.OnMythicDungeonEnd(...)
             end
-
-            --missing on m+ overall segment is ready
-            --missing on m+ continue (after a reload or leave and enter instance for talent change)
-
         end)
-        return
     end
 
     --event listener:
     local detailsEventListener = addon.detailsEventListener
 
     function detailsEventListener.OnDetailsEvent(contextObject, event, ...)
+        if detailsFramework.IsAddonApocalypseWow() then
+            return
+        end
         if (event == "COMBAT_MYTHICDUNGEON_START") then
             private.log(event)
             addon.OnMythicDungeonStart(...)
@@ -56,7 +57,7 @@ function addon.InitializeEvents()
             addon.OnMythicDungeonContinue(...)
         elseif (event == "COMBAT_MYTHICPLUS_OVERALL_READY") then
             private.log(event)
-            addon.OnMythicPlusOverallReady(...)
+            addon.OnMythicPlusOverallReady(...) --Details! entry point
         elseif (event == "COMBAT_ENCOUNTER_START") then
             addon.OnEncounterStart(...)
         elseif (event == "COMBAT_ENCOUNTER_END") then
@@ -68,8 +69,18 @@ function addon.InitializeEvents()
         end
     end
 
-    function addon.OnMythicPlusOverallReady(...)
-        local mythicPlusOverallSegment = Details:GetCurrentCombat()
+    function addon.ApocalypseSegmentCreated(segment)
+        private.log("Apocalypse segment received from CreateOBFS.")
+        addon.OnMythicPlusOverallReady(segment)
+    end
+
+    function addon.OnMythicPlusOverallReady(segment) --only from Details!, called from scoreboard when no apocalypse
+        local mythicPlusOverallSegment
+        if detailsFramework.IsAddonApocalypseWow() then
+            mythicPlusOverallSegment = segment
+        else
+            mythicPlusOverallSegment = Details:GetCurrentCombat()
+        end
 
         local okay, errorText = pcall(function()
             local runInfo = addon.CreateRunInfo(mythicPlusOverallSegment)
@@ -94,8 +105,8 @@ function addon.InitializeEvents()
         end
     end
 
-    function addon.OnMythicDungeonStart(...)
-        if (addon.IsParsing()) then
+    function addon.OnMythicDungeonStart(...) --shared
+        if (addon.IsParsing()) then --for midnight, Parsing does nothing
             -- edge case because COMBAT_MYTHICDUNGEON_END is not fired when
             -- abandoning a run and then starting a new one
             private.log("OnMythicDungeonStart: IsParsing = true")
@@ -114,9 +125,16 @@ function addon.InitializeEvents()
         addon.profile.last_run_data.interrupt_cast_overlap_done = {}
 
         addon.StartParser()
+
+        if detailsFramework.IsAddonApocalypseWow() then
+            if not Details then
+                --reset the ingame damage meter
+                C_DamageMeter.ResetAllCombatSessions()
+            end
+        end
     end
 
-    function addon.OnMythicDungeonEnd(...)
+    function addon.OnMythicDungeonEnd(...) --shared, apocalypse entry point
         addon.profile.is_run_ongoing = false
         addon.profile.last_run_data.end_time = time()
         local combatTimeline = addon.profile.last_run_data.incombat_timeline
@@ -132,9 +150,19 @@ function addon.InitializeEvents()
         end
 
         addon.StopParser()
+
+        if detailsFramework.IsAddonApocalypseWow() then
+            C_Timer.After(2, function()
+                if not private.Segments.IsServerInCombat() then
+                    private.Segments.CreateOBFS() -- <- entry point
+                else
+                    private.Segments.WaitServerDropCombat() --calls CreateOBFS after combat ends
+                end
+            end)
+        end
     end
 
-    function addon.OnMythicDungeonContinue(...)
+    function addon.OnMythicDungeonContinue(...) --only from Details!, only called here
         if (not addon.profile.is_run_ongoing) then
             private.log("Detected run continue, but the run is not marked as ongoing. Not starting the parser")
             return
@@ -146,7 +174,7 @@ function addon.InitializeEvents()
         addon.StartParser()
     end
 
-    function addon.OnEncounterStart(dungeonEncounterId, encounterName, difficultyId, raidSize)
+    function addon.OnEncounterStart(dungeonEncounterId, encounterName, difficultyId, raidSize) --shared
         if (not addon.profile.is_run_ongoing) then
             return
         end
@@ -165,7 +193,7 @@ function addon.InitializeEvents()
         private.log("Encounter started: ", encounterName)
     end
 
-    function addon.OnEncounterEnd(dungeonEncounterId, encounterName, difficultyId, raidSize, endStatus)
+    function addon.OnEncounterEnd(dungeonEncounterId, encounterName, difficultyId, raidSize, endStatus) --shared
         if (not addon.profile.is_run_ongoing) then
             return
         end
@@ -184,13 +212,13 @@ function addon.InitializeEvents()
         private.log("Encounter ended: ", encounterName, " defeated: ", endStatus == 1)
     end
 
-    function addon.OnPlayerEnterCombat(...)
+    function addon.OnPlayerEnterCombat(...) --shared
         if (addon.profile.is_run_ongoing) then
             table.insert(addon.profile.last_run_data.incombat_timeline, time())
         end
     end
 
-    function addon.OnPlayerLeaveCombat(...)
+    function addon.OnPlayerLeaveCombat(...) --shared
         if (addon.profile.is_run_ongoing) then
             table.insert(addon.profile.last_run_data.incombat_timeline, time())
         end

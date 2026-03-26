@@ -119,7 +119,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 name = unitName,
                 class = actorObject:Class(),
                 spec = private.Details:GetSpecFromSerial(guid) or actorObject:Spec() or 0,
-                role = UnitGroupRolesAssigned(unitName),
+                role = UnitGroupRolesAssigned(unitName) or "DAMAGER",
                 guid = guid,
                 loot = "",
                 score = 0,
@@ -167,7 +167,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             for i = 1, #deathTable do
                 local thisDeathTable = deathTable[i]
                 --deathTime is time()
-                local playerName, playerClass, deathTime, deathCombatTime, deathTimeString, playerMaxHealth, deathEvents, lastCooldown, spec = private.Details:UnpackDeathTable(thisDeathTable)
+                local playerName, playerClass, deathTime, deathCombatTime, deathTimeString, playerMaxHealth, deathEvents, lastCooldown, spec = private.Segments.UnpackDeathTable(thisDeathTable)
                 if (playerName == unitName) then
                     playerInfo.deathEvents[#playerInfo.deathEvents+1] = {
                         type = addon.Enum.ScoreboardEventType.Death,
@@ -183,7 +183,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                     for j = #deathEvents, 1, -1 do
                         ---@type deathtable
                         local thisEvent = deathEvents[j]
-                        local evType, spellId, amount, eventTime, heathPercent, sourceName, absorbed, spellSchool, friendlyFire, overkill, criticalHit, crushing = private.Details:UnpackDeathEvent(thisEvent)
+                        local evType, spellId, amount, eventTime, heathPercent, sourceName, absorbed, spellSchool, friendlyFire, overkill, criticalHit, crushing = private.Segments.UnpackDeathEvent(thisEvent)
 
                         if (evType == true) then --a boolean true means a damage event
                             ---@type death_last_hits
@@ -243,28 +243,34 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                     local ccTotal = 0
                     local ccUsed = {}
 
-                    if (private.Details:GetCoreVersion() < 166) then
-                        for spellName, casts in pairs(mythicPlusOverallSegment:GetCrowdControlSpells(unitName)) do
-                            local spellInfo = C_Spell.GetSpellInfo(spellName)
-                            local spellId = spellInfo and spellInfo.spellID or (openRaidLib and openRaidLib.GetCCSpellIdBySpellName(spellName) or 0)
-                            if (spellId ~= 197214) then
-                                ccUsed[spellName] = casts
-                                ccTotal = ccTotal + casts
+                    if not detailsFramework.IsAddonApocalypseWow() then
+                        if (private.Details:GetCoreVersion() < 166) then
+                            for spellName, casts in pairs(mythicPlusOverallSegment:GetCrowdControlSpells(unitName)) do
+                                local spellInfo = C_Spell.GetSpellInfo(spellName)
+                                local spellId = spellInfo and spellInfo.spellID or (openRaidLib and openRaidLib.GetCCSpellIdBySpellName(spellName) or 0)
+                                if (spellId ~= 197214) then
+                                    ccUsed[spellName] = casts
+                                    ccTotal = ccTotal + casts
+                                end
                             end
-                        end
-                    else
-                        --at 166, Details! now uses the spellId instead of the spellName for crowd controls
-                        for spellId, casts in pairs(mythicPlusOverallSegment:GetCrowdControlSpells(unitName)) do
-                            if (spellId ~= 197214) then
-                                ccUsed[spellId] = casts
-                                ccTotal = ccTotal + casts
+                        else
+                            --at 166, Details! now uses the spellId instead of the spellName for crowd controls
+                            for spellId, casts in pairs(mythicPlusOverallSegment:GetCrowdControlSpells(unitName)) do
+                                if (spellId ~= 197214) then
+                                    ccUsed[spellId] = casts
+                                    ccTotal = ccTotal + casts
+                                end
                             end
                         end
                     end
 
                     playerInfo.totalDispels = utilityActorObject.dispell
                     playerInfo.totalInterrupts = utilityActorObject.interrupt
-                    playerInfo.totalInterruptsCasts = mythicPlusOverallSegment:GetInterruptCastAmount(unitName)
+
+                    if not detailsFramework.IsAddonApocalypseWow() then
+                        playerInfo.totalInterruptsCasts = mythicPlusOverallSegment:GetInterruptCastAmount(unitName)
+                    end
+
                     playerInfo.totalCrowdControlCasts = ccTotal
                     playerInfo.dispelWhat = detailsFramework.table.copy({}, utilityActorObject.dispell_oque or {})
                     playerInfo.interruptWhat = detailsFramework.table.copy({}, utilityActorObject.interrompeu_oque or {})

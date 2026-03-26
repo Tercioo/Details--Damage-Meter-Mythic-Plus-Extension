@@ -197,7 +197,9 @@ function addon.OpenScoreBoardAtEnd()
     if (not addon.profile.has_last_run) then
         -- workaround for the event not firing if reloaded in-between
         -- this change should be removed when COMBAT_MYTHICPLUS_OVERALL_READY is being triggered in reloaded runs
-        addon.OnMythicPlusOverallReady()
+        if not detailsFramework.IsAddonApocalypseWow() then
+            addon.OnMythicPlusOverallReady()
+        end
     end
     if (not addon.profile.has_last_run) then
         private.log("No last run found while trying to open the scoreboard.")
