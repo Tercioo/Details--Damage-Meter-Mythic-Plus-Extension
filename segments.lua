@@ -239,6 +239,7 @@ private.Segments = {
                 return self.combatId
             end,
 
+            --[[
             GetPlayerDeaths = function(self, unitName)
                 local deaths = 0
                 for i = 1, #self.last_events_tables do
@@ -247,6 +248,22 @@ private.Segments = {
                         deaths = deaths + 1
                     end
                 end
+                return deaths
+            end,
+            --]]
+
+            GetPlayerDeaths = function(self, deadPlayerName)
+                local allDeaths = self:GetDeaths()
+                local deaths = {}
+
+                for i = 1, #allDeaths do
+                    local thisDeath = allDeaths[i]
+                    local thisPlayerName = thisDeath[3]
+                    if (deadPlayerName == thisPlayerName) then
+                        deaths[#deaths+1] = thisDeath
+                    end
+                end
+
                 return deaths
             end,
 
