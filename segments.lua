@@ -539,7 +539,7 @@ private.Segments = {
                     actor.interrompeu_oque = {}
 
                     actor.nome = thisActor.name
-                    actor.interrupt = thisActor.totalAmount + Details:GetOrderNumber()
+                    actor.interrupt = thisActor.totalAmount
                     actor.classe = thisActor.classFilename
                     actor.specIcon = thisActor.specIconID
                     actor.serial = thisActor.sourceGUID
@@ -573,7 +573,7 @@ private.Segments = {
                     actor.dispell_oque = {}
 
                     actor.nome = thisActor.name
-                    actor.dispell = thisActor.totalAmount + Details:GetOrderNumber()
+                    actor.dispell = thisActor.totalAmount
                     actor.classe = thisActor.classFilename
                     actor.specIcon = thisActor.specIconID
                     actor.serial = thisActor.sourceGUID

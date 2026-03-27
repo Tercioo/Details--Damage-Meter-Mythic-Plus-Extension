@@ -120,7 +120,7 @@ function addon.InitializeEvents()
         addon.profile.last_run_data.reloaded = false
         addon.profile.last_run_data.start_time = time()
         addon.profile.last_run_data.time_lost_to_deaths = 0
-        addon.profile.last_run_data.map_id = Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
+        addon.profile.last_run_data.map_id = private.Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
         addon.profile.last_run_data.incombat_timeline = {time()} --store the first value in the in combat timeline.
         addon.profile.last_run_data.encounter_timeline = {}
         addon.profile.last_run_data.interrupt_spells_cast = {}
