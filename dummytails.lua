@@ -75,21 +75,8 @@ private.SaveGroupMembersKeystoneAndRatingLevel = function()
     wipe(private.KeystoneLevels)
     wipe(private.PlayerRatings)
 
-    local libOpenRaid = LibStub("LibOpenRaid-1.0", true)
-    if (libOpenRaid) then
-        for i = 1, GetNumGroupMembers()-1 do
-            local unitId = "party" .. i
-            if (UnitExists(unitId)) then
-                local unitName = private.Details:GetFullName(unitId)
-                local unitKeystoneInfo = private.GetKeystoneInfo(unitName)
-                if (unitKeystoneInfo) then
-                    private.KeystoneLevels[unitName] = unitKeystoneInfo.level
-                    private.PlayerRatings[unitName] = unitKeystoneInfo.rating
-                end
-            end
-        end
-
-        local unitId = "player"
+    for i = 1, GetNumGroupMembers()-1 do
+        local unitId = "party" .. i
         if (UnitExists(unitId)) then
             local unitName = private.Details:GetFullName(unitId)
             local unitKeystoneInfo = private.GetKeystoneInfo(unitName)
@@ -97,6 +84,16 @@ private.SaveGroupMembersKeystoneAndRatingLevel = function()
                 private.KeystoneLevels[unitName] = unitKeystoneInfo.level
                 private.PlayerRatings[unitName] = unitKeystoneInfo.rating
             end
+        end
+    end
+
+    local unitId = "player"
+    if (UnitExists(unitId)) then
+        local unitName = private.Details:GetFullName(unitId)
+        local unitKeystoneInfo = private.GetKeystoneInfo(unitName)
+        if (unitKeystoneInfo) then
+            private.KeystoneLevels[unitName] = unitKeystoneInfo.level
+            private.PlayerRatings[unitName] = unitKeystoneInfo.rating
         end
     end
 end
