@@ -156,7 +156,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             end
             local score = actorObject.mrating or 0
             playerInfo.score = score
-            playerInfo.scorePrevious = private.Details.PlayerRatings[unitName] or score
+            playerInfo.scorePrevious = private.PlayerRatings[unitName] or score
 
             playerInfo.activityTimeDamage = actorObject:Tempo()
 

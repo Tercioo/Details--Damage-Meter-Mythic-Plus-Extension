@@ -115,6 +115,8 @@ function addon.InitializeEvents()
             addon.StopParser()
         end
 
+        private.SaveGroupMembersKeystoneAndRatingLevel()
+
         addon.profile.has_last_run = false
         addon.profile.is_run_ongoing = true
         addon.profile.last_run_data.reloaded = false

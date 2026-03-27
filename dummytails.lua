@@ -30,6 +30,7 @@ function private.GetKeystoneInfo(playerName)
     if (playerKeystoneInfo) then
         returnTable.keystoneLevel = playerKeystoneInfo.level
         returnTable.keystoneMapId = playerKeystoneInfo.challengeMapID
+        returnTable.rating = playerKeystoneInfo.rating
         ---@type details_instanceinfo
         local instanceInfo = private.Details:GetInstanceInfo(playerKeystoneInfo.mapID)
         if (instanceInfo) then
@@ -44,6 +45,7 @@ function private.GetKeystoneInfo(playerName)
             if keystoneInfo then
                 returnTable.keystoneLevel = keystoneInfo.level
                 returnTable.keystoneMapId = keystoneInfo.mythicPlusMapID
+                returnTable.rating = keystoneInfo.rating
                 ---@type details_instanceinfo
                 local instanceInfo = private.Details:GetInstanceInfo(keystoneInfo.mapID)
                 if (instanceInfo) then
@@ -63,6 +65,42 @@ function private.GetKeystoneInfo(playerName)
 
     return returnTable
 end
+
+---@type table<string, number>
+private.KeystoneLevels = {}
+---@type table<string, number>
+private.PlayerRatings = {}
+
+private.SaveGroupMembersKeystoneAndRatingLevel = function()
+    wipe(private.KeystoneLevels)
+    wipe(private.PlayerRatings)
+
+    local libOpenRaid = LibStub("LibOpenRaid-1.0", true)
+    if (libOpenRaid) then
+        for i = 1, GetNumGroupMembers()-1 do
+            local unitId = "party" .. i
+            if (UnitExists(unitId)) then
+                local unitName = private.Details:GetFullName(unitId)
+                local unitKeystoneInfo = private.GetKeystoneInfo(unitName)
+                if (unitKeystoneInfo) then
+                    private.KeystoneLevels[unitName] = unitKeystoneInfo.level
+                    private.PlayerRatings[unitName] = unitKeystoneInfo.rating
+                end
+            end
+        end
+
+        local unitId = "player"
+        if (UnitExists(unitId)) then
+            local unitName = private.Details:GetFullName(unitId)
+            local unitKeystoneInfo = private.GetKeystoneInfo(unitName)
+            if (unitKeystoneInfo) then
+                private.KeystoneLevels[unitName] = unitKeystoneInfo.level
+                private.PlayerRatings[unitName] = unitKeystoneInfo.rating
+            end
+        end
+    end
+end
+
 
 local abbreviateOptionsDamage =
 {
