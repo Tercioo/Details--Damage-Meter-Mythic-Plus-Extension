@@ -6,10 +6,6 @@ local detailsFramework = DetailsFramework
 
 private.Details = Details
 
-if private.Details then
-    return
-end
-
 ---@class keystone_info : table
 ---@field keystoneLevel number
 ---@field keystoneMapId number
@@ -155,6 +151,9 @@ if CreateAbbreviateConfig then
     private.abbreviateOptionsDPS = abbreviateSettingsDPS
 end
 
+if private.Details then
+    return
+end
 
 private.Details = {
     CreatePlayerPortrait = function(Details, parent, name)
