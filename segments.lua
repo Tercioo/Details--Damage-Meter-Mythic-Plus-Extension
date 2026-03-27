@@ -562,7 +562,7 @@ private.Segments = {
         end
 
         do
-            local actorList = segments[6].combatSources
+            local actorList = segments[7].combatSources
             for i = 1, #actorList do
                 ---@type damagemeter_combat_source
                 local thisActor = actorList[i]
