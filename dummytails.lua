@@ -10,6 +10,61 @@ if private.Details then
     return
 end
 
+---@class keystone_info : table
+---@field keystoneLevel number
+---@field keystoneMapId number
+---@field keystoneIcon number
+
+local keystoneDefaultTexture = 4352494 --when no keystone is found, this texture is shown
+
+---@param playerName string
+---@return keystone_info
+function private.GetKeystoneInfo(playerName)
+    local returnTable = {
+        keystoneLevel = 0,
+        keystoneMapId = 0,
+        keystoneIcon = keystoneDefaultTexture,
+    }
+
+    local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0", true)
+    local playerKeystoneInfo = openRaidLib and openRaidLib.GetKeystoneInfo(playerName)
+
+    if (playerKeystoneInfo) then
+        returnTable.keystoneLevel = playerKeystoneInfo.level
+        returnTable.keystoneMapId = playerKeystoneInfo.challengeMapID
+        ---@type details_instanceinfo
+        local instanceInfo = private.Details:GetInstanceInfo(playerKeystoneInfo.mapID)
+        if (instanceInfo) then
+            returnTable.keystoneIcon = instanceInfo.iconLore
+        end
+    end
+
+    if PlayerInfo then
+        local playerInfo = GetPlayerInfo(playerName)
+        if playerInfo then
+            local keystoneInfo = playerInfo.keystoneInfo
+            if keystoneInfo then
+                returnTable.keystoneLevel = keystoneInfo.level
+                returnTable.keystoneMapId = keystoneInfo.mythicPlusMapID
+                ---@type details_instanceinfo
+                local instanceInfo = private.Details:GetInstanceInfo(keystoneInfo.mapID)
+                if (instanceInfo) then
+                    returnTable.keystoneIcon = instanceInfo.iconLore
+                end
+
+                --keystoneInfo.level
+                --keystoneInfo.mapID
+                --keystoneInfo.challengeMapID
+                --keystoneInfo.classID
+                --keystoneInfo.rating
+                --keystoneInfo.mythicPlusMapID
+                --keystoneInfo.specID
+            end
+        end
+    end
+
+    return returnTable
+end
 
 local abbreviateOptionsDamage =
 {

@@ -613,31 +613,27 @@ do -- keystone
             local looperCallback = function(thisPlayerData)
                 local playerName = thisPlayerData.name
                 if (UnitExists(playerName)) then
-                    local unitKeystoneInfo
-                    if openRaidLib then
-                        unitKeystoneInfo = openRaidLib.GetKeystoneInfo(playerName)
-                    end
-                    if not unitKeystoneInfo then
-                        if PlayerInfo then
-                            local playerInfo = GetPlayerInfo(playerName)
-                            if playerInfo then
-                                unitKeystoneInfo = playerInfo.keystoneInfo
-                            end
-                        end
-                    end
-                    if (unitKeystoneInfo) then
-                        keystoneTexture:SetTexCoord(36/512, 375/512, 50/512, 290/512)
-                        keystoneTexture:SetAlpha(1)
-                        keystoneTexture:SetDesaturated(false)
-                        keystoneTexture:SetTexture(playerData.keystoneIcon)
-                        keystoneLevel:SetAlpha(1)
-                        keystoneLevelBackground:SetAlpha(1)
-                        keystoneLevel:SetText(playerData.keystoneLevel)
+                    local kInfo = private.GetKeystoneInfo(playerName)
+                    if kInfo.keystoneLevel > 0 then
+                        local unitKeystoneInfo = {
+                            keystoneLevel = kInfo.keystoneLevel,
+                            keystoneIcon = kInfo.keystoneIcon
+                        }
 
-                        --log (debug)
-                        if (not didPrintLog) then
-                            private.log("Keystone Update Okay, Name:", playerName or "ERROR", "keystoneLevel:", playerData.keystoneLevel or "ERROR", "keystoneIcon:", playerData.keystoneIcon or "ERROR")
-                            didPrintLog = true
+                        if (unitKeystoneInfo) then
+                            keystoneTexture:SetTexCoord(36/512, 375/512, 50/512, 290/512)
+                            keystoneTexture:SetAlpha(1)
+                            keystoneTexture:SetDesaturated(false)
+                            keystoneTexture:SetTexture(playerData.keystoneIcon)
+                            keystoneLevel:SetAlpha(1)
+                            keystoneLevelBackground:SetAlpha(1)
+                            keystoneLevel:SetText(playerData.keystoneLevel)
+
+                            --log (debug)
+                            if (not didPrintLog) then
+                                private.log("Keystone Update Okay, Name:", playerName or "ERROR", "keystoneLevel:", playerData.keystoneLevel or "ERROR", "keystoneIcon:", playerData.keystoneIcon or "ERROR")
+                                didPrintLog = true
+                            end
                         end
                     end
                 end

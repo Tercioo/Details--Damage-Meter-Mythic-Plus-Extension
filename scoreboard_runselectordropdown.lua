@@ -8,7 +8,6 @@ local addonName, private = ...
 local addon = private.addon
 local _ = nil
 local L = detailsFramework.Language.GetLanguageTable(addonName)
-local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0", true)
 
 function addon.CreateRunSelectorDropdown(readyFrame)
     local buildRunInfoListFromCompressed = function()
@@ -31,7 +30,7 @@ function addon.CreateRunSelectorDropdown(readyFrame)
             end
 
             local labelContent = table.concat(addon.Compress.GetDropdownRunDescription(thisHeader), "@")
-            local runId = thisHeader
+            local runId = thisHeader.runId
 
             ---@type dropdownoption
             local option = {

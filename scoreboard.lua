@@ -624,18 +624,10 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 thisPlayerData.role = "DAMAGER"
             end
 
-            local playerKeystoneInfo = openRaidLib and openRaidLib.GetKeystoneInfo(unitId)
-            if (playerKeystoneInfo) then
-                thisPlayerData.keystoneLevel = playerKeystoneInfo.level or thisPlayerData.keystoneLevel --default zero
-                thisPlayerData.keystoneMapId = playerKeystoneInfo.challengeMapID or thisPlayerData.keystoneMapId
-
-                ---@type details_instanceinfo
-                local instanceInfo = private.Details:GetInstanceInfo(playerKeystoneInfo.mapID)
-
-                if (instanceInfo) then
-                    thisPlayerData.keystoneIcon = instanceInfo.iconLore
-                end
-            end
+            local kInfo = private.GetKeystoneInfo(playerName)
+            thisPlayerData.keystoneLevel = kInfo.keystoneLevel
+            thisPlayerData.keystoneMapId = kInfo.keystoneMapId
+            thisPlayerData.keystoneIcon = kInfo.keystoneIcon
 
             --to render the event for deaths, it is required 'playerInfo' into the playerInfo.deathEvents[x].arguments.'playerData' field
             --as the scoreboard cannot change the database (in this case assigning thisPlayerData to playerInfo.deathEvents[x].arguments.'playerData')
