@@ -95,9 +95,9 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
     runInfo.dungeonTexture = texture
     runInfo.dungeonBackgroundTexture = backgroundTexture
 
-    local damageContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_DAMAGE)
-    local healingContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_HEAL)
-    local utilityContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_MISC)
+    local damageContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_DAMAGE or 1)
+    local healingContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_HEAL or 2)
+    local utilityContainer = mythicPlusOverallSegment:GetContainer(DETAILS_ATTRIBUTE_MISC or 4)
 
     for _, actorObject in damageContainer:ListActors() do
         ---@cast actorObject actordamage

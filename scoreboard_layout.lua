@@ -773,7 +773,7 @@ do -- Damage taken
                 end
             end, L["SCOREBOARD_TOOLTIP_DAMAGE_TAKEN_HEADER"])
         end
-        frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DAMAGETAKEN) end
+        frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_DAMAGE or 1, DETAILS_SUBATTRIBUTE_DAMAGETAKEN or 3) end --this will probably error
         frame:SetText(private.Details:Format(math.floor(playerData.damageTaken)))
 
         DetailsFramework:SetFontSize(frame.button.text, addon.profile.font.row_size)
@@ -833,7 +833,7 @@ do -- DPS
                 end
             end, L["SCOREBOARD_TOOLTIP_DAMAGE_DONE_HEADER"])
         end
-        frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_DAMAGE, DETAILS_SUBATTRIBUTE_DPS) end
+        frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_DAMAGE or 1, DETAILS_SUBATTRIBUTE_DPS or 2) end --this will probably error
         frame:SetText(private.Details:Format(math.floor(playerData.dps)))
 
         DetailsFramework:SetFontSize(frame.button.text, addon.profile.font.row_size)
@@ -893,7 +893,7 @@ do -- HPS
                 end
             end, L["SCOREBOARD_TOOLTIP_HEALING_DONE_HEADER"])
         end
-        frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_HEAL, DETAILS_SUBATTRIBUTE_HPS) end
+        frame.OnClick = function () OpenLineBreakdown(playerData, DETAILS_ATTRIBUTE_HEAL or 2, DETAILS_SUBATTRIBUTE_HPS or 2) end --this will probably error
         frame:SetText(private.Details:Format(math.floor(playerData.hps)))
 
         DetailsFramework:SetFontSize(frame.button.text, addon.profile.font.row_size)

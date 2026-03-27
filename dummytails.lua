@@ -6,6 +6,8 @@ local detailsFramework = DetailsFramework
 
 private.Details = Details
 
+--["5"] = "2026-03-27 15:00:23| Error on CreateRunInfo():  Interface/AddOns/Details_MythicPlus/rundata.lua:102: attempt to index local 'damageContainer' (a nil value) ",
+
 ---@class keystone_info : table
 ---@field keystoneLevel number
 ---@field keystoneMapId number
