@@ -11,6 +11,10 @@
 ## X-Wago-ID: 4N2m7QGL
 ## X-Curse-Project-ID: 1220909
 
+#@no-lib-strip@
+Libs\libs.xml
+#@end-no-lib-strip@
+
 locales\enUS.lua
 locales\deDE.lua
 locales\esES.lua

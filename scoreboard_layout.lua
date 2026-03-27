@@ -613,7 +613,18 @@ do -- keystone
             local looperCallback = function(thisPlayerData)
                 local playerName = thisPlayerData.name
                 if (UnitExists(playerName)) then
-                    local unitKeystoneInfo = openRaidLib.GetKeystoneInfo(playerName)
+                    local unitKeystoneInfo
+                    if openRaidLib then
+                        unitKeystoneInfo = openRaidLib.GetKeystoneInfo(playerName)
+                    end
+                    if not unitKeystoneInfo then
+                        if PlayerInfo then
+                            local playerInfo = GetPlayerInfo(playerName)
+                            if playerInfo then
+                                unitKeystoneInfo = playerInfo.keystoneInfo
+                            end
+                        end
+                    end
                     if (unitKeystoneInfo) then
                         keystoneTexture:SetTexCoord(36/512, 375/512, 50/512, 290/512)
                         keystoneTexture:SetAlpha(1)

@@ -510,6 +510,8 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
     return readyFrame
 end
 
+mythicPlusBreakdown.partyCache = {"player", "party1", "party2", "party3", "party4"}
+
 --this function get the overall mythic+ segment created after a mythic+ run has finished
 --then it fill the lines with data from the overall segment
 ---@param mainFrame scoreboard_mainframe
@@ -569,9 +571,9 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
     do --code for filling the 5 player lines
         for playerName, playerInfo in pairs(runPlayerData) do
             local unitId
-            for i = 1, #Details.PartyUnits do
-                if (Details:GetFullName(Details.PartyUnits[i]) == playerName) then
-                    unitId = Details.PartyUnits[i]
+            for i = 1, #mythicPlusBreakdown.partyCache do
+                if (private.Details:GetFullName(mythicPlusBreakdown.partyCache[i]) == playerName) then
+                    unitId = mythicPlusBreakdown.partyCache[i]
                 end
             end
             unitId = unitId or playerName
@@ -628,7 +630,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 thisPlayerData.keystoneMapId = playerKeystoneInfo.challengeMapID or thisPlayerData.keystoneMapId
 
                 ---@type details_instanceinfo
-                local instanceInfo = Details:GetInstanceInfo(playerKeystoneInfo.mapID)
+                local instanceInfo = private.Details:GetInstanceInfo(playerKeystoneInfo.mapID)
 
                 if (instanceInfo) then
                     thisPlayerData.keystoneIcon = instanceInfo.iconLore
@@ -760,7 +762,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
     end
 
     ---@type details_instanceinfo
-    local instanceInfo = runData and Details:GetInstanceInfo(runData.mapId)
+    local instanceInfo = runData and private.Details:GetInstanceInfo(runData.mapId)
     if (instanceInfo) then
         mainFrame.DungeonBackdropTexture:SetTexture(instanceInfo.iconLore)
     else

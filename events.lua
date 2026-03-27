@@ -42,30 +42,32 @@ function addon.InitializeEvents()
     --event listener:
     local detailsEventListener = addon.detailsEventListener
 
-    function detailsEventListener.OnDetailsEvent(contextObject, event, ...)
-        if detailsFramework.IsAddonApocalypseWow() then
-            return
-        end
-        if (event == "COMBAT_MYTHICDUNGEON_START") then
-            private.log(event)
-            addon.OnMythicDungeonStart(...)
-        elseif (event == "COMBAT_MYTHICDUNGEON_END") then
-            private.log(event)
-            addon.OnMythicDungeonEnd(...)
-        elseif (event == "COMBAT_MYTHICDUNGEON_CONTINUE") then
-            private.log(event)
-            addon.OnMythicDungeonContinue(...)
-        elseif (event == "COMBAT_MYTHICPLUS_OVERALL_READY") then
-            private.log(event)
-            addon.OnMythicPlusOverallReady(...) --Details! entry point
-        elseif (event == "COMBAT_ENCOUNTER_START") then
-            addon.OnEncounterStart(...)
-        elseif (event == "COMBAT_ENCOUNTER_END") then
-            addon.OnEncounterEnd(...)
-        elseif (event == "COMBAT_PLAYER_ENTER") then
-            addon.OnPlayerEnterCombat(...)
-        elseif (event == "COMBAT_PLAYER_LEAVE") then
-            addon.OnPlayerLeaveCombat(...)
+    if detailsEventListener then
+        function detailsEventListener.OnDetailsEvent(contextObject, event, ...)
+            if detailsFramework.IsAddonApocalypseWow() then
+                return
+            end
+            if (event == "COMBAT_MYTHICDUNGEON_START") then
+                private.log(event)
+                addon.OnMythicDungeonStart(...)
+            elseif (event == "COMBAT_MYTHICDUNGEON_END") then
+                private.log(event)
+                addon.OnMythicDungeonEnd(...)
+            elseif (event == "COMBAT_MYTHICDUNGEON_CONTINUE") then
+                private.log(event)
+                addon.OnMythicDungeonContinue(...)
+            elseif (event == "COMBAT_MYTHICPLUS_OVERALL_READY") then
+                private.log(event)
+                addon.OnMythicPlusOverallReady(...) --Details! entry point
+            elseif (event == "COMBAT_ENCOUNTER_START") then
+                addon.OnEncounterStart(...)
+            elseif (event == "COMBAT_ENCOUNTER_END") then
+                addon.OnEncounterEnd(...)
+            elseif (event == "COMBAT_PLAYER_ENTER") then
+                addon.OnPlayerEnterCombat(...)
+            elseif (event == "COMBAT_PLAYER_LEAVE") then
+                addon.OnPlayerLeaveCombat(...)
+            end
         end
     end
 

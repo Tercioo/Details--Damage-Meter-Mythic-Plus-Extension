@@ -253,6 +253,8 @@ private.Details = {
         return nil
     end,
 
+    class_coords = CLASS_ICON_TCOORDS,
+
     GetClassIcon = function(Details, class)
         if (not class) then
 			class = "UNKNOW"
@@ -268,13 +270,36 @@ private.Details = {
 			return [[Interface\AddOns\Details_MythicPlus\Assets\Textures\classes_small]], 0.25, 0.49609375, 0.75, 1
 
 		else
-			local classTCoords = Details.class_coords[class]
-			if (not classTCoords) then
-				classTCoords = CONST_UNKNOWN_CLASS_COORDS
-			end
+			local classTCoords = private.Details.class_coords[class]
             return [[Interface\AddOns\Details_MythicPlus\Assets\Textures\classes_small]], unpack(classTCoords)
 		end
         return nil, nil, nil, nil, nil
     end,
+
+	---@param unitId any
+	---@param ambiguateString any
+	GetFullName = function(Details, unitId, ambiguateString) --not in use, get replace by Details.GetCLName a few lines below
+		--UnitFullName is guarantee to return the realm name of the unit queried
+		local playerName, realmName = UnitFullName(unitId)
+		if (playerName) then
+			if (not realmName) then
+				realmName = GetRealmName()
+			end
+			realmName = realmName:gsub("[%s-]", "")
+
+			playerName = playerName .. "-" .. realmName
+
+			if (ambiguateString) then
+				playerName = Ambiguate(playerName, ambiguateString)
+			end
+
+			return playerName
+		end
+	end,
+
+    GetInstanceInfo = function(Details, mapID)
+        --to be implemented, require ejid cache
+    end,
+
 
 }
