@@ -989,27 +989,29 @@ do -- Dispels
 end
 
 do -- CC casts
-    local column = addon.ScoreboardColumn:Create("cc-casts", L["SCOREBOARD_TITLE_CC_CASTS"], 80, function (line)
-        ---@type scoreboard_button
-        local frame = DetailsFramework:CreateButton(line, function () end, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
+    if not DetailsFramework.IsAddonApocalypseWow() then
+        local column = addon.ScoreboardColumn:Create("cc-casts", L["SCOREBOARD_TITLE_CC_CASTS"], 80, function (line)
+            ---@type scoreboard_button
+            local frame = DetailsFramework:CreateButton(line, function () end, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
 
-        frame:SetHook("OnEnter", OnEnterLineBreakdownButton)
-        frame:SetHook("OnLeave", OnLeaveLineBreakdownButton)
-        frame.button.text:ClearAllPoints()
-        frame.button.text:SetPoint("left", frame.button, "left")
-        frame.button.text.originalColor = {frame.button.text:GetTextColor()}
+            frame:SetHook("OnEnter", OnEnterLineBreakdownButton)
+            frame:SetHook("OnLeave", OnLeaveLineBreakdownButton)
+            frame.button.text:ClearAllPoints()
+            frame.button.text:SetPoint("left", frame.button, "left")
+            frame.button.text.originalColor = {frame.button.text:GetTextColor()}
 
-        return frame
-    end)
+            return frame
+        end)
 
-    column:SetOnRender(function (frame, playerData, isBest)
-        frame.OnMouseEnter = function () showCrowdControlTooltip(frame, playerData) end
-        frame:SetText(math.floor(playerData.ccCasts))
-        DetailsFramework:SetFontSize(frame.button.text, addon.profile.font.row_size)
-        DetailsFramework:SetFontOutline(frame.button.text, addon.profile.font.regular_outline)
-        DetailsFramework:SetFontColor(frame.button.text, isBest and addon.profile.font.standout_color or addon.profile.font.regular_color)
-    end)
+        column:SetOnRender(function (frame, playerData, isBest)
+            frame.OnMouseEnter = function () showCrowdControlTooltip(frame, playerData) end
+            frame:SetText(math.floor(playerData.ccCasts))
+            DetailsFramework:SetFontSize(frame.button.text, addon.profile.font.row_size)
+            DetailsFramework:SetFontOutline(frame.button.text, addon.profile.font.regular_outline)
+            DetailsFramework:SetFontColor(frame.button.text, isBest and addon.profile.font.standout_color or addon.profile.font.regular_color)
+        end)
 
-    column:SetCalculateBestLine(calculateHighest("ccCasts", 0))
-    addon.RegisterScoreboardColumn(column)
+        column:SetCalculateBestLine(calculateHighest("ccCasts", 0))
+        addon.RegisterScoreboardColumn(column)
+    end
 end
