@@ -764,6 +764,9 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
     mainFrame.DungeonBackdropTexture:SetDesaturation(backdropDungeonTextureDesaturation)
     mainFrame.DungeonBackdropTexture:SetTexCoord(35/512, 291/512, 49/512, 289/512)
 
+
+    --mainFrame.DungeonBackdropTexture:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Backgrounds\WindrunnerSpire.png]])
+    --mainFrame.DungeonBackdropTexture:SetTexCoord(0, 1, .2, .8)
     return true
 end
 

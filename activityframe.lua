@@ -83,7 +83,7 @@ function activity.UpdateBossWidgets(activityFrame, runData, multiplier)
             bossWidget:SetFrameLevel(5000 + i)
 
             bossWidget.TimeText:SetText(detailsFramework:IntegerToTimer(killTimeRelativeToStart))
-            local encounterInfo = private.Details:GetEncounterInfo(encounter.dungeonEncounterId)
+            local encounterInfo = private.EncounterJournal.GetEncounterInfo(encounter.dungeonEncounterId)
             if (encounterInfo and encounterInfo.creatureIcon) then
                 bossWidget.EncounterInfo = encounterInfo
                 bossWidget.EncounterData = encounter

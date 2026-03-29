@@ -306,10 +306,6 @@ private.Details = {
 
     death_tooltip_texture = "Details Serenity",
 
-    GetEncounterInfo = function(Details, dungeonEncounterId)
-        return nil
-    end,
-
     Format = function(Details, totalDamage)
         return AbbreviateNumbers(totalDamage, Details.abbreviateOptionsDamage)
     end,

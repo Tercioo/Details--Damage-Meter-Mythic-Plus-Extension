@@ -30,6 +30,7 @@ locales\zhTW.lua
 start.lua
 templates.lua
 dummytails.lua
+encounterjournal.lua
 frames.lua
 parser.lua
 options.lua
