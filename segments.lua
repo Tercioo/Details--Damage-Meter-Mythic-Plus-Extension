@@ -13,10 +13,29 @@ private.Segments = {
     serverTicker = nil,
 
     IsServerInCombat = function()
-        local combat = C_DamageMeter.GetCombatSessionFromType(0, 0)
-        assert(combat, "Failed to get combat session for type 0, 0")
-        local maxValue = combat.maxValue
-        return issecretvalue(maxValue)
+        --test 1
+        local combat1 = C_DamageMeter.GetCombatSessionFromType(0, 0)
+        assert(combat1, "Failed to get combat session for type 0, 0")
+        local maxValue = combat1.maxValue
+        if issecretvalue(maxValue) then
+            return true
+        end
+        if (combat1.combatSources and combat1.combatSources[1] and issecretvalue(combat1.combatSources[1].totalAmount)) then
+            return true
+        end
+
+        --test 2
+        local combat2 = C_DamageMeter.GetCombatSessionFromType(1, 0)
+        assert(combat2, "Failed to get combat session for type 1, 0")
+        maxValue = combat2.maxValue
+        if issecretvalue(maxValue) then
+            return true
+        end
+        if (combat2.combatSources and combat2.combatSources[1] and issecretvalue(combat2.combatSources[1].totalAmount)) then
+            return true
+        end
+
+        return false
     end,
 
     WaitServerDropCombat = function()
