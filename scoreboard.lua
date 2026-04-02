@@ -767,8 +767,9 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
     --print("runData.mapId", runData.mapId)
 
     local wallpapaers = {
+        [161] = true, --skyreach
+        [239] = true, --seat of the triumvirate
         [402] = true, --algeth'ar academy
-        --[499] = true, --skyreach
         [556] = true, --pit of saron
         [557] = true, --windrunner spire
         [558] = true, --magister's terrace
