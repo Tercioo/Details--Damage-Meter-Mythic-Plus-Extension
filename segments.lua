@@ -125,7 +125,7 @@ private.Segments = {
 			["dead"] = true,
 			["last_cooldown"] = nil,
 			["dead_at"] = timeOfDeath,
-			["spec"] = detailsFramework:GetSpecInfoFromSpecIcon(specIcon).specId,
+			["spec"] = detailsFramework:GetSpecInfoFromSpecIcon(specIcon).specId, --specId is nil with DEMONHUNTER - specIcon 7455386
 		}
 
 		for i = 1, #deathRecap do

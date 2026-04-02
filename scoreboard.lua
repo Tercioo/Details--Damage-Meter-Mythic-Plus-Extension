@@ -764,9 +764,22 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
     mainFrame.DungeonBackdropTexture:SetDesaturation(backdropDungeonTextureDesaturation)
     mainFrame.DungeonBackdropTexture:SetTexCoord(35/512, 291/512, 49/512, 289/512)
 
+    --print("runData.mapId", runData.mapId)
 
-    --mainFrame.DungeonBackdropTexture:SetTexture([[Interface\AddOns\Details_MythicPlus\Assets\Backgrounds\WindrunnerSpire.png]])
-    --mainFrame.DungeonBackdropTexture:SetTexCoord(0, 1, .2, .8)
+    local wallpapaers = {
+        [402] = true, --algeth'ar academy
+        --[499] = true, --skyreach
+        [556] = true, --pit of saron
+        [557] = true, --windrunner spire
+        [558] = true, --magister's terrace
+        [559] = true, --nexus-point xenas
+        [560] = true, --maisara caverns
+    }
+
+    if wallpapaers[runData.mapId] then
+        mainFrame.DungeonBackdropTexture:SetTexture("Interface\\AddOns\\Details_MythicPlus\\Assets\\Backgrounds\\" .. runData.mapId .. ".jpg")
+        mainFrame.DungeonBackdropTexture:SetTexCoord(0, 1, 0, 1)
+    end
     return true
 end
 
