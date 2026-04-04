@@ -161,9 +161,13 @@ function addon.OnInit(self, profile) --PLAYER_LOGIN
     addon.Comm.Initialize()
     addon.Comm.Register("L", addon.ProcessLikePlayer)
     addon.RegisterAddonCompartment()
-    pcall(function()
-        addon.RegisterMinimap("Register Minimap Icon", addon)
+    local _, error = pcall(function()
+        addon.RegisterMinimap(addon)
     end)
+
+    if (error) then
+    	print("Details! M+ Extension error registering the minimap icon: ", error)
+    end
 
     -- always show the last run first
     addon.profile.saved_runs_selected_index = 1
