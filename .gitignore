@@ -8,3 +8,4 @@ detailsdef/plugins/Details_EncounterDetails/Definitions.lua
 detailsdef/Libs/DF/definitions.lua
 *.afphoto
 *.afphoto~lock~
+*.md
