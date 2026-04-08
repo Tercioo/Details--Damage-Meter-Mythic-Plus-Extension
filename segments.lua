@@ -494,6 +494,23 @@ private.Segments = {
         end
 
         do
+            local actorList = segments[9].combatSources --avaidable damage taken
+            for i = 1, #actorList do
+                local thisActor = actorList[i]
+                if thisActor.sourceGUID and thisActor.specIconID then
+                    local actor = damageContainer:GetOrCreateActor(thisActor.sourceGUID, thisActor.name, 0x512, true, tempo)
+                    actor.nome = thisActor.name
+                    actor.damage_taken_avoidable = thisActor.totalAmount
+                    actor.damage_taken_ps_avoidable = thisActor.amountPerSecond
+                    actor.classe = thisActor.classFilename
+                    actor.specIcon = thisActor.specIconID
+                    actor.serial = thisActor.sourceGUID
+                    actor.grupo = true
+                end
+            end
+        end
+
+        do
             local actorList = segments[3].combatSources
             for i = 1, #actorList do
                 local thisActor = actorList[i]
