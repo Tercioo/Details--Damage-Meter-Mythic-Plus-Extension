@@ -216,6 +216,17 @@ private.Segments = {
                     end,
                     _ActorTable = {},
                 }
+                actor.spells_damage_avoidable = {
+                    GetOrCreateSpell = function(spellContainer, spellId)
+                        local spell = {
+                            targets = {},
+                        }
+                        spell.id = spellId
+                        spellContainer._ActorTable[spellId] = spell
+                        return spell
+                    end,
+                    _ActorTable = {},
+                }
                 actor.interrupt_spells = {
                     GetOrCreateSpell = function(spellContainer, spellId)
                         local spell = {
@@ -506,6 +517,16 @@ private.Segments = {
                     actor.specIcon = thisActor.specIconID
                     actor.serial = thisActor.sourceGUID
                     actor.grupo = true
+
+                    --spells
+                    local spells = private.Segments.GetActorSpells(Enum.DamageMeterType.AvoidableDamageTaken, thisActor.sourceGUID)
+                    for j = 1, #spells.combatSpells do
+                        local thisSpell = spells.combatSpells[j]
+                        local spellTable = actor.spells_damage_avoidable:GetOrCreateSpell(thisSpell.spellID)
+                        spellTable.total = thisSpell.totalAmount
+                        spellTable.id = thisSpell.spellID
+                        spellTable.counter = 1
+                    end
                 end
             end
         end
