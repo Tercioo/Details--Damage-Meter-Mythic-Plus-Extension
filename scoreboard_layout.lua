@@ -721,6 +721,69 @@ do -- Deaths
     addon.RegisterScoreboardColumn(column)
 end
 
+do -- Avoidable damage taken
+    local column = addon.ScoreboardColumn:Create("avoidable-damage-taken",  L["SCOREBOARD_TITLE_AVOIDABLE_DAMAGE_TAKEN"], 80, function (line)
+        ---@type scoreboard_button
+        local frame = DetailsFramework:CreateButton(line, function (self)
+            if (self.MyObject.OnClick) then
+                self.MyObject:OnClick()
+            end
+        end, 80, 22, nil, nil, nil, nil, nil, nil, nil, nil, {font = "GameFontNormal", size = 12})
+
+        frame:SetHook("OnEnter", OnEnterLineBreakdownButton)
+        frame:SetHook("OnLeave", OnLeaveLineBreakdownButton)
+        frame.button.text:ClearAllPoints()
+        frame.button.text:SetPoint("left", frame.button, "left")
+        frame.button.text.originalColor = {frame.button.text:GetTextColor()}
+
+        return frame
+    end)
+
+    column:SetOnRender(function (frame, playerData, isBest)
+        frame.OnMouseEnter = function (self)
+            if (not playerData.avoidableDamageTakenFromSpells or #playerData.avoidableDamageTakenFromSpells == 0) then
+                return
+            end
+            DoPlayerTooltip(playerData, self, function ()
+                ---@class avoidable_spell_hit_player : table
+                ---@field id number
+                ---@field total number
+                ---@field counter number
+                ---
+                ---@type avoidable_spell_hit_player[]
+                local spellsThatHitThisPlayer = playerData.avoidableDamageTakenFromSpells
+
+                for _, spellData in pairs(spellsThatHitThisPlayer) do
+                    local spellId = spellData.id
+                    local amount = spellData.total
+
+                    local spellName, _, spellIcon = private.Details.GetSpellInfo(spellId)
+                    if (spellName and spellIcon) then
+                        local spellAmount = private.Details:Format(amount)
+                        GameCooltip:AddLine(spellName, spellAmount)
+                        GameCooltip:AddIcon(spellIcon, 1, 1, 18, 18, 0.1, 0.9, 0.1, 0.9)
+                        private.Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
+                    end
+                end
+
+                if (private.Details:GetCombatByUID(playerData.combatUid)) then
+                    GameCooltip:AddLine("")
+                    GameCooltip:AddLine(L["SCOREBOARD_TOOLTIP_OPEN_BREAKDOWN"], nil, nil, 1, 1, 1, 1, nil, nil, nil, nil)
+                end
+            end, L["SCOREBOARD_TOOLTIP_AVOIDABLE_DAMAGE_TAKEN_HEADER"])
+        end
+
+		frame:SetText(private.Details:Format(math.floor(playerData.avoidableDamageTaken)))
+
+        DetailsFramework:SetFontSize(frame.button.text, addon.profile.font.row_size)
+        DetailsFramework:SetFontOutline(frame.button.text, addon.profile.font.regular_outline)
+        DetailsFramework:SetFontColor(frame.button.text, isBest and addon.profile.font.standout_color or addon.profile.font.regular_color)
+    end)
+
+    column:SetCalculateBestLine(calculateLowest("avoidableDamageTaken"))
+    addon.RegisterScoreboardColumn(column)
+end
+
 do -- Damage taken
     local column = addon.ScoreboardColumn:Create("damage-taken",  L["SCOREBOARD_TITLE_DAMAGE_TAKEN"], 100, function (line)
         ---@type scoreboard_button

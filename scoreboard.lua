@@ -80,6 +80,7 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0", true)
 ---@field scoreColor table
 ---@field deaths number
 ---@field damageTaken number
+---@field avoidableDamageTaken number
 ---@field dps number
 ---@field hps number
 ---@field interrupts number
@@ -91,6 +92,7 @@ local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0", true)
 ---@field activityTimeDamage number
 ---@field activityTimeHeal number
 ---@field damageTakenFromSpells spell_hit_player[]
+---@field avoidableDamageTakenFromSpells avoidable_spell_hit_player[]
 ---@field loot string|nil
 ---@field keystoneLevel number
 ---@field keystoneIcon string|number
@@ -597,7 +599,9 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 previousScore = playerInfo.scorePrevious or score or 0,
                 scoreColor = ratingColor,
                 damageTaken = playerInfo.totalDamageTaken or 0,
+                avoidableDamageTaken = playerInfo.totalAvoidableDamageTaken or 0,
                 damageTakenFromSpells = playerInfo.damageTakenFromSpells,
+                avoidableDamageTakenFromSpells = playerInfo.avoidableDamageTakenFromSpells,
                 damageDoneBySpells = playerInfo.damageDoneBySpells,
                 healDoneBySpells = playerInfo.healDoneBySpells,
                 dps = playerInfo.totalDamage / combatTime,
