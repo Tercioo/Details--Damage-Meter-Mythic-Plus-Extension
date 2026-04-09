@@ -208,6 +208,7 @@
 ---@field totalDamage number total damage done
 ---@field totalHeal number total damage done
 ---@field totalDamageTaken number total damage taken
+---@field totalAvoidableDamageTaken number total avoidable damage taken
 ---@field totalHealTaken number total damage taken
 ---@field totalDispels number total dispels
 ---@field totalInterrupts number total of sucessful interrupts
@@ -216,6 +217,7 @@
 ---@field healDoneBySpells table<spellid, number>[] heal done by spells, a table with indexed subtables where the first index is the spellid and the second is the total heal done by that spell
 ---@field damageDoneBySpells table<spellid, number>[] damage done by spells, a table with indexed subtables where the first index is the spellid and the second is the total damage done by that spell
 ---@field damageTakenFromSpells spell_hit_player[] damage taken from spells
+---@field avoidableDamageTakenFromSpells avoidable_spell_hit_player[] avoidable damage taken from spells
 ---@field dispelWhat table<spellid, number> which debuffs the player dispelled
 ---@field interruptWhat table<spellid, number> which spells the player interrupted
 ---@field interruptCastOverlapDone number how many times the player attempted to interrupt a spell with another player

@@ -112,6 +112,11 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 table.insert(damageTakenFromSpells, damageTaken)
             end
 
+            local avoidableDamageTakenFromSpells = {}
+            for _, spellTable in pairs(actorObject.spells_damage_avoidable._ActorTable) do
+            	table.insert(avoidableDamageTakenFromSpells, spellTable)
+            end
+
             local guid = actorObject:GetGUID()
 
             ---@type playerinfo
@@ -131,6 +136,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 totalDamage = actorObject.total,
                 totalHeal = 0,
                 totalDamageTaken = actorObject.damage_taken,
+                totalAvoidableDamageTaken = actorObject.damage_taken_avoidable,
                 totalHealTaken = 0,
                 totalDispels = 0,
                 totalInterrupts = 0,
@@ -138,6 +144,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 totalCrowdControlCasts = 0,
                 healDoneBySpells = {}, --done
                 damageTakenFromSpells = damageTakenFromSpells,
+                avoidableDamageTakenFromSpells = avoidableDamageTakenFromSpells,
                 damageDoneBySpells = {}, --done
                 dispelWhat = {}, --done
                 interruptWhat = {}, --done
