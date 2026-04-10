@@ -210,8 +210,8 @@ private.Segments = {
                         local spell = {
                             targets = {},
                         }
-                        spell.id = spellId
-                        spellContainer._ActorTable[spellId] = spell
+                        spell.id = spellId or 1
+                        spellContainer._ActorTable[spellId or 1] = spell
                         return spell
                     end,
                     _ActorTable = {},
@@ -221,8 +221,8 @@ private.Segments = {
                         local spell = {
                             targets = {},
                         }
-                        spell.id = spellId
-                        spellContainer._ActorTable[spellId] = spell
+                        spell.id = spellId or 1
+                        spellContainer._ActorTable[spellId or 1] = spell
                         return spell
                     end,
                     _ActorTable = {},
@@ -232,8 +232,8 @@ private.Segments = {
                         local spell = {
                             targets = {},
                         }
-                        spell.id = spellId
-                        spellContainer._ActorTable[spellId] = spell
+                        spell.id = spellId or 1
+                        spellContainer._ActorTable[spellId or 1] = spell
                         return spell
                     end,
                     _ActorTable = {},
@@ -243,8 +243,8 @@ private.Segments = {
                         local spell = {
                             targets = {},
                         }
-                        spell.id = spellId
-                        spellContainer._ActorTable[spellId] = spell
+                        spell.id = spellId or 1
+                        spellContainer._ActorTable[spellId or 1] = spell
                         return spell
                     end,
                     _ActorTable = {},
