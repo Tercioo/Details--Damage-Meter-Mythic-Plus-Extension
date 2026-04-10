@@ -505,7 +505,7 @@ private.Segments = {
         end
 
         do
-            local actorList = segments[9].combatSources --avaidable damage taken
+            local actorList = segments[9].combatSources --avoidable damage taken
             for i = 1, #actorList do
                 local thisActor = actorList[i]
                 if thisActor.sourceGUID and thisActor.specIconID then
