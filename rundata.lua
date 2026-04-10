@@ -116,6 +116,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
             for _, spellTable in pairs(actorObject.spells_damage_avoidable._ActorTable) do
             	table.insert(avoidableDamageTakenFromSpells, spellTable)
             end
+            table.sort(avoidableDamageTakenFromSpells, function(a, b) return a.total > b.total end)
 
             local guid = actorObject:GetGUID()
 
