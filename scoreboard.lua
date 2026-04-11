@@ -859,6 +859,12 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
     activityFrame:SetPoint("topleft", mainFrame, "topleft", lineOffset * 2, activityFrameY)
     activityFrame:SetPoint("topright", mainFrame, "topright", -lineOffset * 2 - 1, activityFrameY)
 
+    local gradientAboveTheLine = detailsFramework:CreateTexture(activityFrame, {gradient = "vertical", fromColor = {0, 0, 0, 0.65}, toColor = "transparent"}, 1, 65, "artwork", {0, 1, 0, 1}, "gradient1")
+    gradientAboveTheLine:SetPoint("bottoms")
+
+    local gradientBelowTheLine = detailsFramework:CreateTexture(activityFrame, {gradient = "vertical", fromColor = "transparent", toColor = {0, 0, 0, 0.40}}, 1, 60, "artwork", {0, 1, 0, 1}, "gradient2")
+    gradientBelowTheLine:SetPoint("tops")
+
     local backgroundTexture = activityFrame:CreateTexture("$parentBackgroundTexture", "border")
     backgroundTexture:SetColorTexture(0, 0, 0, 0.834)
     backgroundTexture:SetAllPoints()
@@ -946,58 +952,65 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
         ---@field Portrait texture
         ---@field RoleIcon texture
 
-        local reservedUntil = -100
-        local up = true
+        local allEvents = {}
+        --arrange the events in the order they should be rendered
         for event, marker in addon.activityTimeline.PrepareEventFrames(self, events) do
-            local relativeTimestamp = event.timestamp - runData.startTime
-            local pointOnBar = relativeTimestamp * multiplier
+            local timestamp = event.timestamp
+            allEvents[#allEvents+1] = {eventInfo = event, markerFrame = marker, timestamp = timestamp}
+        end
+        table.sort(allEvents, function(t1, t2) return t1.timestamp < t2.timestamp end)
 
+        local lastTimestamp = 0
+        local markerYOffset = 0
+        for _, eventTable in ipairs(allEvents) do
+            local eventData = eventTable.eventInfo
+            local marker = eventTable.markerFrame
+            local timestamp = eventTable.timestamp
+            local originalTimestamp = timestamp
+
+            --calculate if this timestamp is too close from the previous one, if it is, we need to alternate the position of the marker to avoid overlapping
+            if detailsFramework.Math.IsNearlyEqual(timestamp, lastTimestamp, 15) then
+                timestamp = lastTimestamp + 7
+                if markerYOffset == 0 then
+                    markerYOffset = -17
+                else
+                    markerYOffset = 0
+                end
+            else
+                markerYOffset = 0
+            end
+            lastTimestamp = timestamp
+
+            local relativeTimestamp = timestamp - runData.startTime
+            local originalRelativeTimestamp = originalTimestamp - runData.startTime
+            local pointOnBar = relativeTimestamp * multiplier
+            local originalPointOnBar = originalRelativeTimestamp * multiplier
+
+            --timestamp label
             detailsFramework:SetFontColor(marker.TimestampLabel, 1, 1, 1)
             detailsFramework:SetFontSize(marker.TimestampLabel, 12)
-            marker.TimestampLabel:SetText(detailsFramework:IntegerToTimer(relativeTimestamp))
+            marker.TimestampLabel:SetText(detailsFramework:IntegerToTimer(originalRelativeTimestamp))
 
             ---@type activitytimeline_marker_data
-            local markerData = {}
-            if (event.type == addon.Enum.ScoreboardEventType.Death) then
-                markerData = addon.activityTimeline.RenderDeathMarker(self, event, marker, runData)
+            if (eventData.type == addon.Enum.ScoreboardEventType.Death) then
+                addon.activityTimeline.RenderDeathMarker(self, eventData, marker, runData)
 
-            elseif (event.type == addon.Enum.ScoreboardEventType.KeyFinished) then
-                markerData = addon.activityTimeline.RenderKeyFinishedMarker(self, event, marker, runData)
+            elseif (eventData.type == addon.Enum.ScoreboardEventType.KeyFinished) then
+                addon.activityTimeline.RenderKeyFinishedMarker(self, eventData, marker, runData)
             end
 
-            local offset = marker:GetWidth() * 0.4
-            local before = pointOnBar - offset
-            local after = pointOnBar + offset
-
-            if (markerData.forceDirection) then
-                up = markerData.forceDirection == "up" and true or false
-            elseif (before < reservedUntil) then
-                up = not up
-            else
-                up = markerData.preferUp and true or false
-            end
-
-            if (after > reservedUntil) then
-                reservedUntil = after
-            end
-
-            local CONST_ACTIVITYFRAME_LINE_HEIGHT = 15
+            local CONST_ACTIVITYFRAME_LINE_HEIGHT = 22
 
             marker:Show()
             marker:ClearAllPoints()
             marker.TimestampLabel:ClearAllPoints()
             marker.LineTexture:ClearAllPoints()
-            if (up) then
-                marker:SetPoint("bottom", activityFrame, "topleft", pointOnBar, CONST_ACTIVITYFRAME_LINE_HEIGHT)
-                marker.LineTexture:SetPoint("top", marker, "bottom", 0, 0)
-                marker.LineTexture:SetHeight(CONST_ACTIVITYFRAME_LINE_HEIGHT)
-                marker.TimestampLabel:SetPoint("bottom", marker, "top", 0, 5)
-            else
-                marker:SetPoint("top", activityFrame, "bottomleft", pointOnBar, -CONST_ACTIVITYFRAME_LINE_HEIGHT)
-                marker.LineTexture:SetPoint("bottom", marker, "top", 0, 0)
-                marker.LineTexture:SetHeight(CONST_ACTIVITYFRAME_LINE_HEIGHT)
-                marker.TimestampLabel:SetPoint("top", marker, "bottom", 0, -5)
-            end
+
+            marker:SetPoint("top", activityFrame, "bottomleft", pointOnBar, -CONST_ACTIVITYFRAME_LINE_HEIGHT + markerYOffset + 15)
+            marker.LineTexture:SetPoint("top", activityFrame, "bottomleft", originalPointOnBar, 15  -CONST_ACTIVITYFRAME_LINE_HEIGHT + markerYOffset)
+            marker.LineTexture:SetHeight(CONST_ACTIVITYFRAME_LINE_HEIGHT + (markerYOffset*-1))
+            marker.LineTexture:Hide()
+            marker.TimestampLabel:SetPoint("top", marker, "bottom", 0, -5)
         end
 
     end
