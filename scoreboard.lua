@@ -981,19 +981,21 @@ function mythicPlusBreakdown.CreateActivityPanel(mainFrame)
                 reservedUntil = after
             end
 
+            local CONST_ACTIVITYFRAME_LINE_HEIGHT = 15
+
             marker:Show()
             marker:ClearAllPoints()
             marker.TimestampLabel:ClearAllPoints()
             marker.LineTexture:ClearAllPoints()
             if (up) then
-                marker:SetPoint("bottom", activityFrame, "topleft", pointOnBar, 15)
+                marker:SetPoint("bottom", activityFrame, "topleft", pointOnBar, CONST_ACTIVITYFRAME_LINE_HEIGHT)
                 marker.LineTexture:SetPoint("top", marker, "bottom", 0, 0)
-                marker.LineTexture:SetPoint("bottom", activityFrame, "top", 0, 0)
+                marker.LineTexture:SetHeight(CONST_ACTIVITYFRAME_LINE_HEIGHT)
                 marker.TimestampLabel:SetPoint("bottom", marker, "top", 0, 5)
             else
-                marker:SetPoint("top", activityFrame, "bottomleft", pointOnBar, -15)
-                marker.LineTexture:SetPoint("top", marker, "top", 0, 0)
-                marker.LineTexture:SetPoint("bottom", activityFrame, "bottom", 0, 0)
+                marker:SetPoint("top", activityFrame, "bottomleft", pointOnBar, -CONST_ACTIVITYFRAME_LINE_HEIGHT)
+                marker.LineTexture:SetPoint("bottom", marker, "top", 0, 0)
+                marker.LineTexture:SetHeight(CONST_ACTIVITYFRAME_LINE_HEIGHT)
                 marker.TimestampLabel:SetPoint("top", marker, "bottom", 0, -5)
             end
         end
