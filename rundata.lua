@@ -155,21 +155,13 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 deathEvents = {}, --information about when the player died
                 deathLastHits = {}, --information for the tooltip when the player died
                 likedBy = {},
+                score = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(unitName).currentSeasonScore,
+                scorePrevious = private.PlayerRatings[unitName] or 0,
+                activityTimeDamage = actorObject:Tempo(),
+                totalDeaths = #mythicPlusOverallSegment:GetPlayerDeaths(unitName),
             }
 
             runInfo.combatData.groupMembers[unitName] = playerInfo
-
-            if (type(actorObject.mrating) == "table") then
-                actorObject.mrating = actorObject.mrating.currentSeasonScore
-            end
-            local score = actorObject.mrating or 0
-            playerInfo.score = score
-            playerInfo.scorePrevious = private.PlayerRatings[unitName] or score
-
-            playerInfo.activityTimeDamage = actorObject:Tempo()
-
-            local playerDeaths = mythicPlusOverallSegment:GetPlayerDeaths(unitName)
-            playerInfo.totalDeaths = #playerDeaths
 
             local deathTable = mythicPlusOverallSegment:GetDeaths()
             for i = 1, #deathTable do

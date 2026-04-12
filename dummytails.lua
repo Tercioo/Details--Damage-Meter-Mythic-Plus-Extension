@@ -38,28 +38,26 @@ function private.GetKeystoneInfo(playerName)
         end
     end
 
-    if PlayerInfo then
-        local playerInfo = GetPlayerInfo(playerName)
-        if playerInfo then
-            local keystoneInfo = playerInfo.keystoneInfo
-            if keystoneInfo then
-                returnTable.keystoneLevel = keystoneInfo.level
-                returnTable.keystoneMapId = keystoneInfo.mythicPlusMapID
-                returnTable.rating = keystoneInfo.rating
-                ---@type details_instanceinfo
-                local instanceInfo = private.Details:GetInstanceInfo(keystoneInfo.mapID)
-                if (instanceInfo) then
-                    returnTable.keystoneIcon = instanceInfo.iconLore
-                end
-
-                --keystoneInfo.level
-                --keystoneInfo.mapID
-                --keystoneInfo.challengeMapID
-                --keystoneInfo.classID
-                --keystoneInfo.rating
-                --keystoneInfo.mythicPlusMapID
-                --keystoneInfo.specID
+    local playerInfo = GetPlayerInfo(playerName)
+    if playerInfo then
+        local keystoneInfo = playerInfo.keystoneInfo
+        if keystoneInfo then
+            returnTable.keystoneLevel = keystoneInfo.level
+            returnTable.keystoneMapId = keystoneInfo.mythicPlusMapID
+            returnTable.rating = keystoneInfo.rating
+            ---@type details_instanceinfo
+            local instanceInfo = private.Details:GetInstanceInfo(keystoneInfo.mapID)
+            if (instanceInfo) then
+                returnTable.keystoneIcon = instanceInfo.iconLore
             end
+
+            --keystoneInfo.level
+            --keystoneInfo.mapID
+            --keystoneInfo.challengeMapID
+            --keystoneInfo.classID
+            --keystoneInfo.rating
+            --keystoneInfo.mythicPlusMapID
+            --keystoneInfo.specID
         end
     end
 
