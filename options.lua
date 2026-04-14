@@ -107,6 +107,38 @@ local function GetOptionsTable()
         },
 
         ---
+        --- Tooltips
+        ---
+        {
+        	type = "label",
+        	get = function() return L["OPTIONS_TOOLTIPS"] end,
+        	text_template = orange_font_template,
+        	hidden = DetailsFramework.IsAddonApocalypseWow(),
+        },
+        {
+            type = "toggle",
+            get = function () return addon.profile.show_interrupt_tooltip_percentage end,
+            set = function (_, _, value)
+                addon.profile.show_interrupt_tooltip_percentage = value
+                addon.RefreshOpenScoreBoard()
+            end,
+            name = L["OPTIONS_SHOW_INTERRUPT_TOOLTIP_PERCENTAGE_LABEL"],
+            desc = L["OPTIONS_SHOW_INTERRUPT_TOOLTIP_PERCENTAGE_DESC"],
+        	hidden = DetailsFramework.IsAddonApocalypseWow(),
+        },
+        {
+            type = "toggle",
+            get = function () return addon.profile.show_cc_cast_tooltip_percentage end,
+            set = function (_, _, value)
+                addon.profile.show_cc_cast_tooltip_percentage = value
+                addon.RefreshOpenScoreBoard()
+            end,
+            name = L["OPTIONS_SHOW_CC_CAST_TOOLTIP_PERCENTAGE_LABEL"],
+            desc = L["OPTIONS_SHOW_CC_CAST_TOOLTIP_PERCENTAGE_DESC"],
+        	hidden = DetailsFramework.IsAddonApocalypseWow(),
+        },
+
+        ---
         --- Saving options
         ---
         {type = "label", get = function() return L["OPTIONS_SAVING"] end, text_template = orange_font_template},
