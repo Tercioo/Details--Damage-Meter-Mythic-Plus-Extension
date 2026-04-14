@@ -109,7 +109,12 @@ local function GetOptionsTable()
         ---
         --- Tooltips
         ---
-        {type = "label", get = function() return L["OPTIONS_TOOLTIPS"] end, text_template = orange_font_template},
+        {
+        	type = "label",
+        	get = function() return L["OPTIONS_TOOLTIPS"] end,
+        	text_template = orange_font_template,
+        	hidden = DetailsFramework.IsAddonApocalypseWow(),
+        },
         {
             type = "toggle",
             get = function () return addon.profile.show_interrupt_tooltip_percentage end,
@@ -119,6 +124,7 @@ local function GetOptionsTable()
             end,
             name = L["OPTIONS_SHOW_INTERRUPT_TOOLTIP_PERCENTAGE_LABEL"],
             desc = L["OPTIONS_SHOW_INTERRUPT_TOOLTIP_PERCENTAGE_DESC"],
+        	hidden = DetailsFramework.IsAddonApocalypseWow(),
         },
         {
             type = "toggle",
@@ -129,6 +135,7 @@ local function GetOptionsTable()
             end,
             name = L["OPTIONS_SHOW_CC_CAST_TOOLTIP_PERCENTAGE_LABEL"],
             desc = L["OPTIONS_SHOW_CC_CAST_TOOLTIP_PERCENTAGE_DESC"],
+        	hidden = DetailsFramework.IsAddonApocalypseWow(),
         },
 
         ---

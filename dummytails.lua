@@ -61,6 +61,11 @@ function private.GetKeystoneInfo(playerName)
         end
     end
 
+    if (not returnTable.rating) then
+    	local keystoneSummary = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(playerName)
+        returnTable.rating = keystoneSummary and keystoneSummary.currentSeasonScore
+    end
+
     return returnTable
 end
 

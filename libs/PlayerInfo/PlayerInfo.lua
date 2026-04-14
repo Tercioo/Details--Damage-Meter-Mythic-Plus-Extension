@@ -139,7 +139,7 @@ end
 ---@diagnostic disable-next-line: undefined-global
 local Enum = Enum
 
-local thisVersion = 1
+local thisVersion = 2
 
 PLAYER_INFO_VERSION = PLAYER_INFO_VERSION or 0
 
@@ -835,10 +835,6 @@ local getPlayerInfo = function(playerName)
 
         if (gameVersionHasMythicPlus()) then
             thisPlayerInfo.keystoneInfo = CopyTable(keystoneTablePrototype)
-            local summary = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(playerName)
-            if (summary and summary.currentSeasonScore) then
-            	thisPlayerInfo.keystoneInfo.rating = summary.currentSeasonScore
-            end
         end
 
         playerInfoDatabase[playerName] = thisPlayerInfo

@@ -983,48 +983,54 @@ do -- Interrupts
     end)
 
     column:SetOnRender(function (frame, playerData, isBest)
-        frame.OnMouseEnter = function (self)
-            local interrupts = math.floor(playerData.interrupts)
-            local overlaps = playerData.interruptCastOverlapDone or 0
-            local casts = math.floor(playerData.interruptCasts)
-            if (casts == 0) then
-                return
-            end
+    	if (not DetailsFramework.IsAddonApocalypseWow()) then
+	        frame.OnMouseEnter = function (self)
+	            local interrupts = math.floor(playerData.interrupts)
+	            local overlaps = playerData.interruptCastOverlapDone or 0
+	            local casts = math.floor(playerData.interruptCasts)
+	            if (casts == 0) then
+	                return
+	            end
 
-            local missed = casts - overlaps - interrupts
-            local interruptText = interrupts
-            local overlapText = overlaps
-            local missedText = missed
-            if (addon.profile.show_interrupt_tooltip_percentage) then
-                if (interrupts > 0) then
-                    interruptText = interruptText .. " (" .. (math.floor((interrupts / casts) * 100)) .. "%)"
-                end
-                if (overlaps > 0) then
-                    overlapText = overlapText .. " (" .. (math.floor((overlaps / casts) * 100)) .. "%)"
-                end
-                if (missed > 0) then
-                    missedText = missedText .. " (" .. (math.floor((missed / casts) * 100)) .. "%)"
-                end
-            end
+	            local missed = casts - overlaps - interrupts
+	            local interruptText = interrupts
+	            local overlapText = overlaps
+	            local missedText = missed
+	            if (addon.profile.show_interrupt_tooltip_percentage) then
+	                if (interrupts > 0) then
+	                    interruptText = interruptText .. " (" .. (math.floor((interrupts / casts) * 100)) .. "%)"
+	                end
+	                if (overlaps > 0) then
+	                    overlapText = overlapText .. " (" .. (math.floor((overlaps / casts) * 100)) .. "%)"
+	                end
+	                if (missed > 0) then
+	                    missedText = missedText .. " (" .. (math.floor((missed / casts) * 100)) .. "%)"
+	                end
+	            end
 
-            local ttLines = {
-                {L["SCOREBOARD_TOOLTIP_INTERRUPT_SUCCESS_LABEL"], interruptText},
-                {L["SCOREBOARD_TOOLTIP_INTERRUPT_OVERLAP_LABEL"], overlapText},
-                {L["SCOREBOARD_TOOLTIP_INTERRUPT_MISSED_LABEL"], missedText},
-            }
+	            local ttLines = {
+	                {L["SCOREBOARD_TOOLTIP_INTERRUPT_SUCCESS_LABEL"], interruptText},
+	                {L["SCOREBOARD_TOOLTIP_INTERRUPT_OVERLAP_LABEL"], overlapText},
+	                {L["SCOREBOARD_TOOLTIP_INTERRUPT_MISSED_LABEL"], missedText},
+	            }
 
-            DoPlayerTooltip(playerData, self, function ()
-                for _, ttLine in pairs(ttLines) do
-                    GameCooltip:AddLine(ttLine[1], ttLine[2])
-                    -- set icon width to 0.00001 as workaround to ensure row height is consistent
-                    GameCooltip:AddIcon(134400, 1, 1, 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
-                    private.Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
-                end
-            end, L["SCOREBOARD_TOOLTIP_INTERRUPTS_HEADER"])
-        end
+	            DoPlayerTooltip(playerData, self, function ()
+	                for _, ttLine in pairs(ttLines) do
+	                    GameCooltip:AddLine(ttLine[1], ttLine[2])
+	                    -- set icon width to 0.00001 as workaround to ensure row height is consistent
+	                    GameCooltip:AddIcon(134400, 1, 1, 0.00001, 18, 0.1, 0.9, 0.1, 0.9)
+	                    private.Details:AddTooltipBackgroundStatusbar(nil, 100, false, {0.1, 0.1, 0.1, 0.2})
+	                end
+	            end, L["SCOREBOARD_TOOLTIP_INTERRUPTS_HEADER"])
+	        end
+	    end
 
         ---@cast playerData scoreboard_playerdata
-        frame:SetText(math.floor(playerData.interrupts) .. " / " .. math.floor(playerData.interruptCasts))
+    	if (DetailsFramework.IsAddonApocalypseWow()) then
+            frame:SetText(math.floor(playerData.interrupts))
+        else
+        	frame:SetText(math.floor(playerData.interrupts) .. " / " .. math.floor(playerData.interruptCasts))
+        end
 
         DetailsFramework:SetFontSize(frame.button.text, addon.profile.font.row_size)
         DetailsFramework:SetFontOutline(frame.button.text, addon.profile.font.regular_outline)
