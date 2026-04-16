@@ -120,6 +120,16 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
 
             local guid = actorObject:GetGUID()
 
+			local summary = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(unitName)
+			local currentScore = summary and summary.currentSeasonScore
+			local previousScore = addon.profile.last_run_data.player_ratings[unitName] or 0
+
+			if (previousScore == 0 and currentScore > 450) then
+				-- in case there's an issue and the actual score is incorrectly set to 0
+				-- it'll show "1530" instead of "1530 (+1530)"
+				previousScore = currentScore
+			end
+
             ---@type playerinfo
             local playerInfo = {
                 name = unitName,
@@ -155,8 +165,8 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 deathEvents = {}, --information about when the player died
                 deathLastHits = {}, --information for the tooltip when the player died
                 likedBy = {},
-                score = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(unitName).currentSeasonScore,
-                scorePrevious = private.PlayerRatings[unitName] or 0,
+                score = currentScore,
+                scorePrevious = previousScore,
                 activityTimeDamage = actorObject:Tempo(),
                 totalDeaths = #mythicPlusOverallSegment:GetPlayerDeaths(unitName),
             }
