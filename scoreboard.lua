@@ -586,6 +586,12 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
                 ratingColor = _G["HIGHLIGHT_FONT_COLOR"]
             end
 
+			if (playerInfo.scorePrevious == 0 and score > 450) then
+				-- in case there's an issue and the actual score is incorrectly set to 0
+				-- it'll show "1530" instead of "1530 (+1530)"
+				playerInfo.scorePrevious = score
+			end
+
             ---@type scoreboard_playerdata
             local thisPlayerData = {
                 runId = runData.runId,

@@ -127,6 +127,7 @@ function addon.InitializeEvents()
         addon.profile.last_run_data.encounter_timeline = {}
         addon.profile.last_run_data.interrupt_spells_cast = {}
         addon.profile.last_run_data.interrupt_cast_overlap_done = {}
+        addon.profile.last_run_data.player_ratings = CopyTable(private.PlayerRatings)
 
         addon.StartParser()
 
