@@ -1,8 +1,8 @@
 ## Interface: 120001
 ## Title: Details! Mythic+ Scoreboard
-## Title-ruRU: Details! Mythic+ Scoreboard
+## Title-ruRU: Details! Таблица результатов M+
 ## Notes: A Details! team addon that shows a scoreboard at the end of Mythic+, and lets you keep track of your runs
-## Notes-ruRU: A Details! team addon that shows a scoreboard at the end of Mythic+, and lets you keep track of your runs
+## Notes-ruRU: Дополнение для Details!, которое показывает таблицу результатов в конце подземелья M+ и позволяет отслеживать Ваши прохождения
 ## SavedVariables: Details_MythicPlusDB
 ## SavedVariablesPerCharacter: Details_MythicPlus_CharacterDB
 ## Version: #@project-version@
