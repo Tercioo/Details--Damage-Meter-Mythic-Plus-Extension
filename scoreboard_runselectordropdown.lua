@@ -22,27 +22,10 @@ function addon.CreateRunSelectorDropdown(readyFrame)
         local selectedRunIndex = addon.GetSelectedRunIndex()
         local playerName = UnitName("player")
 
-		local currentSeasonId = addon.GetCurrentSeasonId()
-		local guessedPreviousSeason = nil
-		local previousSeasonCutOffTime = time() - 1814400 -- 21 days, or 3 weeks max
-
 		local optionIndex = 0
         for runIndex = 1, #headers do
             local thisHeader = headers[runIndex]
-            if (thisHeader.seasonId == nil) then --
-				thisHeader.seasonId = thisHeader.startTime > 1774224000 and 17 or 1 -- roughly the start of midnight season 1
-            end
-
-            if (currentSeasonId == 0 and guessedPreviousSeason == nil and thisHeader.seasonId ~= 0 and thisHeader.startTime > previousSeasonCutOffTime) then
-				guessedPreviousSeason = thisHeader.seasonId
-			end
-
-			if (not addon.profile.only_show_current_season
-				or (addon.profile.only_show_current_season and (
-					thisHeader.seasonId == currentSeasonId
-					or currentSeasonId == 0 and thisHeader.seasonId == guessedPreviousSeason
-				))
-			) then
+			if (addon.IsRunVisible(thisHeader)) then
 				optionIndex = optionIndex + 1
 	            local isPlayerCharacterInThisRun = true
 	            local playersInThisRun = thisHeader.groupMembers
