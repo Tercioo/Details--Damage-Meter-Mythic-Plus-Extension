@@ -470,7 +470,7 @@ function mythicPlusBreakdown.CreateScoreboardFrame()
         local itemLevelText = readyFrame:CreateFontString("$parentItemLevelText", "artwork", "GameFontNormal")
         detailsFramework:SetFontSize(itemLevelText, 11)
         detailsFramework:SetFontColor(itemLevelText, "silver")
-        itemLevelText:SetText("0.0")
+        itemLevelText:SetText("0")
         itemLevelText:SetPoint("left", itemLevelIcon, "right", 6, -3)
         readyFrame.ItemLevelText = itemLevelText
 
@@ -728,20 +728,7 @@ function mythicPlusBreakdown.RefreshScoreboardFrame(mainFrame, runData)
         local timeLimitToCompletion = runData.timeLimit
 
         --mainFrame.ItemLevelText:SetText(runData.completionInfo.itemLevel or 0.0)
-        --get the item level of all player in the run and sum all of them, and then divide by the total of players found, item level is stored here: runInfo.combatData.groupMembers[unitName].ilevel
-        local totalItemLevel = 0
-        local totalPlayers = 0
-        for playerName, playerInfo in pairs(runData.combatData.groupMembers) do
-            if (playerInfo.ilevel) then
-                totalItemLevel = totalItemLevel + playerInfo.ilevel
-                totalPlayers = totalPlayers + 1
-            end
-        end
-        if (totalPlayers > 0) then
-            mainFrame.ItemLevelText:SetText(math.floor(totalItemLevel / totalPlayers))
-        else
-            mainFrame.ItemLevelText:SetText("0.0")
-        end
+        mainFrame.ItemLevelText:SetText(math.floor(addon.GetRunAverageItemLevel(runData)))
 
         if (detailsFramework.Math.IsNearlyEqual(timeLimitToCompletion, flooredRunTime, 2)) then
             mainFrame.ElapsedTimeText:SetText(detailsFramework:IntegerToTimer(flooredRunTime) .. WrapTextInColorCode("." .. math.floor((runTime - flooredRunTime) * 1000), "FFBA8E23"))

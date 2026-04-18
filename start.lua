@@ -29,6 +29,7 @@ local defaultSettings = {
     saved_runs_compressed = {},
     saved_runs_compressed_headers = {},
     saved_runs_limit = 500,
+    only_show_current_season = true,
     saved_runs_selected_index = 1,
     scoreboard_scale = 1.0,
     translit = GetLocale() ~= "ruRU",

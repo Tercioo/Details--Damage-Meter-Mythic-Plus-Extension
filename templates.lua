@@ -41,7 +41,7 @@ addon.templates.activityTimeline = activityTimelineTemplate
 ---@field dropdownHeight number height of the dropdown when opened
 
 local dropdownRunSelector = {
-    width = 250,
+    width = 260,
     height = 20,
     dropdownHeight = 400,
 }

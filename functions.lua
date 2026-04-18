@@ -13,9 +13,40 @@ local addon = private.addon
 local L = detailsFramework.Language.GetLanguageTable(tocFileName)
 local Translit = LibStub("LibTranslit-1.0")
 
+-- required to be called at least once to ensure GetCurrentSeason has a value
+C_MythicPlus.RequestMapInfo()
+local seasonId = C_MythicPlus.GetCurrentSeason()
+
 function addon.PreparePlayerName(name)
     name = detailsFramework:RemoveRealmName(name)
     return addon.profile.translit and Translit:Transliterate(name, "!") or name
+end
+
+function addon.GetCurrentSeasonId()
+	return seasonId
+end
+
+function addon.ToTimeAgo(header)
+	local secondsAgo = time() - header.endTime
+
+    --if the run time is less than 1 hour, show the time in minutes
+    --if the run is less than 24 hours, show the time in hours
+    --if the run is more than 24 hours, show the time in days
+    --if the run is more than 7 days, show the data using addon.GetRunDate(runInfo)
+
+    if (secondsAgo < 3600) then
+        return string.format(L["MINUTES_AGO"], math.floor(secondsAgo / 60))
+    end
+
+    if (secondsAgo < 86400) then
+        return string.format(L["HOURS_AGO"], math.floor(secondsAgo / 3600))
+    end
+
+    if (secondsAgo < 604800) then
+        return string.format(L["DAYS_AGO"], math.floor(secondsAgo / 86400))
+    end
+
+    return addon.GetRunDate(header)
 end
 
 local LikePlayer = function (whoLiked, playerLiked)
