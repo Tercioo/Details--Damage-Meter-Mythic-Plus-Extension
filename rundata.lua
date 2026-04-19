@@ -52,6 +52,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
     ---@type runinfo
     local runInfo = {
         runId = addon.profile.last_run_id,
+        seasonId = addon.GetCurrentSeasonId(),
         combatId = mythicPlusOverallSegment:GetCombatUID(),
         combatData = {
             groupMembers = {} --done
@@ -335,57 +336,6 @@ function addon.GetRunDate(runInfo)
     return date("%d/%b/%Y", runInfo.endTime)
 end
 
----return a table with data to be used in the dropdown menu to select which run to show in the scoreboard
----@param runInfo runinfo
----@return table dropdownData dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId
-function addon.GetDropdownRunDescription(runInfo)
-    --Operation: Mechagon - Workshop (2) | 20:10 (+3) | 4 hours ago
-    local dungeonName = runInfo.dungeonName
-    local runTime = runInfo.endTime - runInfo.startTime
-    local secondsAgo = time() - runInfo.endTime
-
-    --if the run time is less than 1 hour, show the time in minutes
-    --if the run is less than 24 hours, show the time in hours
-    --if the run is more than 24 hours, show the time in days
-    --if the run is more than 7 days, show the data using addon.GetRunDate(runInfo)
-
-    local timeString = ""
-    if (secondsAgo < 3600) then
-        timeString = string.format("%d minutes ago", math.floor(secondsAgo / 60))
-    elseif (secondsAgo < 86400) then
-        timeString = string.format("%d hours ago", math.floor(secondsAgo / 3600))
-    elseif (secondsAgo < 604800) then
-        timeString = string.format("%d days ago", math.floor(secondsAgo / 86400))
-    else
-        timeString = addon.GetRunDate(runInfo)
-    end
-
-    local keyLevel = runInfo.completionInfo.level or 0
-    local keyUpgradeLevels = runInfo.completionInfo.keystoneUpgradeLevels or 0
-    local mapId = runInfo.mapId or 0
-    local dungeonId = runInfo.dungeonId or 0
-    local onTime = runInfo.completionInfo.onTime or false
-
-    --get the alt name, playerOwns is true when the player itself played the character when doing the run
-    local altName = "0" --can't be an empty string due to string.match pattern
-    local playerName = UnitName("player")
-
-    for unitName, playerInfo in pairs(runInfo.combatData.groupMembers) do
-        ---@cast playerInfo playerinfo
-        if (playerInfo.playerOwns and playerInfo.name ~= playerName) then
-            altName = playerInfo.name
-            altName = detailsFramework:AddClassColorToText(altName, playerInfo.class)
-            break
-        end
-    end
-
-    return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime and 1 or 0, altName}
-end
-
-function addon.FormatRunDescription(runInfo)
-    return string.format("%s (%d) - %s", runInfo.dungeonName, runInfo.completionInfo.level, addon.GetRunDate(runInfo))
-end
-
 ---return a table with subtables of type death_last_hits which tells the last hits that killed the player
 ---@param runInfo runinfo
 ---@param unitName playername
@@ -470,7 +420,6 @@ end
 ---@field GetRunHeader fun(headerIndex:number) : runinfocompressed_header? return the compressed header from the saved run
 ---@field GetRunHeaderById fun(runId:number) : runinfocompressed_header? return the header from the saved runId
 ---@field UncompressedRun fun(headerIndex:number) : runinfo? return the uncompressed run data from the compressed run data
----@field GetDropdownRunDescription fun(header:runinfocompressed_header) : table
 ---@field GetSelectedRun fun() : runinfo return the uncompressed run data from the compressed run data
 ---@field SetValue fun(headerIndex:number, path:string, value:any) : boolean
 ---@field CompressRun fun(runInfo:runinfo) : string? compresses the run info and returns the compressed data
@@ -651,6 +600,7 @@ function addon.Compress.CompressAndSaveRun(runInfo, atIndex)
         playerName = UnitName("player"),
         playerClass = select(2, UnitClass("player")),
         runId = runInfo.runId,
+        seasonId = runInfo.seasonId,
         instanceId = runInfo.instanceId,
         groupMembers = {},
         likesGiven = {}, --table<playername, true>
@@ -677,54 +627,6 @@ function addon.Compress.YeetRunsOverStorageLimit()
     end
 
     --TODO: erase the runId from the likes given to players in the addon.profile.likes_given
-end
-
----return a table with data to be used in the dropdown menu to select which run to show in the scoreboard
----@param header runinfocompressed_header
----@return table dropdownData dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId
-function addon.Compress.GetDropdownRunDescription(header)
-    --Operation: Mechagon - Workshop (2) | 20:10 (+3) | 4 hours ago
-    local dungeonName = header.dungeonName
-    local runTime = header.endTime - header.startTime
-    local secondsAgo = time() - header.endTime
-
-    --if the run time is less than 1 hour, show the time in minutes
-    --if the run is less than 24 hours, show the time in hours
-    --if the run is more than 24 hours, show the time in days
-    --if the run is more than 7 days, show the data using addon.GetRunDate(runInfo)
-
-    local timeString = ""
-    if (secondsAgo < 3600) then
-        timeString = string.format("%d minutes ago", math.floor(secondsAgo / 60))
-    elseif (secondsAgo < 86400) then
-        timeString = string.format("%d hours ago", math.floor(secondsAgo / 3600))
-    elseif (secondsAgo < 604800) then
-        timeString = string.format("%d days ago", math.floor(secondsAgo / 86400))
-    else
-        timeString = addon.GetRunDate(header)
-    end
-
-    local keyLevel = header.keyLevel or 0
-    local keyUpgradeLevels = header.keyUpgradeLevels or 0
-    local mapId = header.mapId or 0
-    local dungeonId = header.dungeonId or 0
-    local onTime = header.onTime or false
-
-    --get the alt name, playerOwns is true when the player itself played the character when doing the run
-    local altName = "0" --can't be an empty string due to string.match pattern
-    local playerName = UnitName("player")
-
-    if (header.groupMembers) then
-        for unitName, class in pairs(header.groupMembers) do
-            if (header.playerName == unitName and unitName ~= playerName) then
-                altName = unitName
-                altName = detailsFramework:AddClassColorToText(altName, class)
-                break
-            end
-        end
-    end
-
-    return {dungeonName, keyLevel, runTime, keyUpgradeLevels, timeString, mapId, dungeonId, onTime and 1 or 0, altName}
 end
 
 ---uncompress the runInfo and return it
@@ -755,8 +657,8 @@ local stringuifyTableKeys = function(T)
     return newTable
 end
 
-function addon.ExportToJson(runId)
-    local runInfo = addon.Compress.UncompressedRun(runId)
+function addon.ExportToJson(headerIndex)
+    local runInfo = addon.Compress.UncompressedRun(headerIndex)
     if (not runInfo) then
         return
     end

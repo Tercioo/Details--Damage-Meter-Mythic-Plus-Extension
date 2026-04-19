@@ -339,16 +339,11 @@ do -- player portrait
             end
         end
 
-        if (playerData.ilevel) then
-            local classColor = RAID_CLASS_COLORS[playerData.class] or {r = 1, g = 1, b = 1, a = 1}
-            frame.ItemLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
-            frame.ItemLevelText:SetText(DetailsFramework.Math.Round(playerData.ilevel))
-            frame.ItemLevelText:Show()
-            frame.ItemLevelBg:Show()
-        else
-            frame.ItemLevelText:Hide()
-            frame.ItemLevelBg:Hide()
-        end
+        local classColor = RAID_CLASS_COLORS[playerData.class] or {r = 1, g = 1, b = 1, a = 1}
+        frame.ItemLevelText:SetTextColor(classColor.r, classColor.g, classColor.b)
+        frame.ItemLevelText:SetText(playerData.ilevel and playerData.ilevel > 0 and DetailsFramework.Math.Round(playerData.ilevel) or "-")
+        frame.ItemLevelText:Show()
+        frame.ItemLevelBg:Show()
 
         local role = playerData.role
         if (role == "TANK" or role == "HEALER" or role == "DAMAGER") then

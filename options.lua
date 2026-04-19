@@ -105,6 +105,16 @@ local function GetOptionsTable()
             name = L["OPTIONS_TRANSLIT_LABEL"],
             desc = L["OPTIONS_TRANSLIT_DESC"],
         },
+        {
+            type = "toggle",
+            get = function () return addon.profile.only_show_current_season end,
+            set = function (_, _, value)
+                addon.profile.only_show_current_season = value
+                addon.RefreshOpenScoreBoard()
+            end,
+            name = L["OPTIONS_ONLY_SHOW_CURRENT_SEASON_LABEL"],
+            desc = L["OPTIONS_ONLY_SHOW_CURRENT_SEASON_DESC"],
+        },
 
         ---
         --- Tooltips

@@ -51,6 +51,7 @@
 ---@field saved_runs_compressed string[] store the compressed saved runs, this is used to save memory and speed up the loading time of the addon
 ---@field saved_runs_compressed_headers table[] store the headers of the saved runs, this is used to show the run history in the dropdown menu
 ---@field saved_runs_limit number limit of saved runs
+---@field only_show_current_season boolean Only show runs for the current season
 ---@field saved_runs_selected_index number index of the selected run
 ---@field when_to_automatically_open_scoreboard string which method to use to automatically open? can be LOOT_CLOSED or COMBAT_MYTHICPLUS_OVERALL_READY
 ---@field delay_to_open_mythic_plus_breakdown_big_frame number seconds to wait to open the big frame panel
@@ -127,7 +128,6 @@
 ---@field SetSelectedRunIndex fun(index:number) set the selected run index
 ---@field GetSelectedRunIndex fun() : number get the selected run index
 ---@field GetRunIndexById fun(runId:number) : number|nil get the index of the run by its ID
----@field GetDropdownRunDescription fun(runInfo:runinfo) : table indexed table containing: [1] dungeonName, [2] keyLevel, [3] runTime, [4] keyUpgradeLevels, [5] timeString, [6] onTime [7] mapId [8] dungeonId
 ---@field GetPlayerDeathReason fun(runInfo:runinfo, unitName:playername, deathIndex:number) : death_last_hits[]|nil return a table with subtables of type death_last_hits which tells the last hits that killed the player
 ---@field GetRegisteredColumns fun() : scoreboard_column[] return a table with all registered columns
 ---@field SignalHeadersChanged fun() signal that the headers have changed and the scoreboard should be updated
@@ -153,6 +153,7 @@
 
 ---@class runinfo : table
 ---@field runId number a number that can be used to identify a run, can be used to map external data to (e.g. by other addons)
+---@field seasonId ?number nil for older runs that did not record this yet see https://warcraft.wiki.gg/wiki/API_C_MythicPlus.GetCurrentSeason
 ---@field combatId number the dungeon overall data unique combat id from details!
 ---@field combatData combatdata stores the required combat data for the score board, hence the scoreboard can function even if the combat isn't available in details!
 ---@field encounters detailsmythicplus_encounterinfo[] the encounters timeline
@@ -305,6 +306,7 @@
 ---@field playerName string
 ---@field playerClass string
 ---@field runId number
+---@field seasonId ?number nil for older runs that did not record this yet see https://warcraft.wiki.gg/wiki/API_C_MythicPlus.GetCurrentSeason
 ---@field instanceId number
 ---@field groupMembers table<playername, class>
 ---@field likesGiven table<playername, table<playername, boolean>>
