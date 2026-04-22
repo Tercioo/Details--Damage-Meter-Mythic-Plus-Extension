@@ -115,6 +115,16 @@ private.Segments = {
 		local minutes, seconds = floor(timeOfDeath/60), floor(timeOfDeath%60)
 		local deathTimeString = minutes .. "m " .. seconds .. "s"
 		local deathEvents = {}
+
+        local specInfo = detailsFramework:GetSpecInfoFromSpecIcon(specIcon)
+        if not specInfo then
+            if specIcon == 7455386 then
+                specInfo = detailsFramework:GetSpecInfoFromSpecIcon(7455385)
+            elseif specIcon == 7455385 then
+                specInfo = detailsFramework:GetSpecInfoFromSpecIcon(7455386)
+            end
+        end
+
 		local deathLog = {
 			deathEvents, --1
 			firstEvent.timestamp, --2
@@ -125,7 +135,7 @@ private.Segments = {
 			["dead"] = true,
 			["last_cooldown"] = nil,
 			["dead_at"] = timeOfDeath,
-			["spec"] = detailsFramework:GetSpecInfoFromSpecIcon(specIcon).specId, --specId is nil with DEMONHUNTER - specIcon 7455386
+			["spec"] = specInfo and specInfo.specId or nil,
 		}
 
 		for i = 1, #deathRecap do
