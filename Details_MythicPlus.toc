@@ -1,4 +1,4 @@
-## Interface: 120001
+## Interface: 120005
 ## Title: Details! Mythic+ Scoreboard
 ## Title-ruRU: Details! Таблица результатов M+
 ## Notes: A Details! team addon that shows a scoreboard at the end of Mythic+, and lets you keep track of your runs
