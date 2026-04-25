@@ -23,6 +23,11 @@ function addon.PreparePlayerName(name)
 end
 
 function addon.GetCurrentSeasonId()
+	if (seasonId == -1) then
+		C_MythicPlus.RequestMapInfo()
+		seasonId = C_MythicPlus.GetCurrentSeason()
+	end
+
 	return seasonId
 end
 
@@ -30,7 +35,11 @@ local guessedPreviousSeason = nil
 local previousSeasonCutOffTime = time() - 1814400 -- 21 days, or 3 weeks max
 
 function addon.IsRunVisible(header)
-    if (header.seasonId == nil) then --
+	if (header.seasonId == -1) then
+		header.seasonId = addon.GetCurrentSeasonId()
+	end
+
+    if (header.seasonId == nil or (header.seasonId > 0 and header.seasonId < 10)) then
         header.seasonId = header.startTime > 1774224000 and 17 or 1 -- roughly the start of midnight season 1
     end
 
@@ -41,7 +50,7 @@ function addon.IsRunVisible(header)
     if (not addon.profile.only_show_current_season
         or (addon.profile.only_show_current_season and (
             header.seasonId == seasonId
-            or seasonId == 0 and header.seasonId == guessedPreviousSeason
+            or (seasonId == 0 and header.seasonId == guessedPreviousSeason)
         ))
     ) then
     	return true
