@@ -139,7 +139,11 @@ function addon.CreateRunSelectorDropdown(readyFrame)
 
         optionFrame.label:SetText("")
         optionFrame.label1:SetText(index .. ".")
-        optionFrame.label2:SetText(header.dungeonName)
+        if (addon.profile.developer_mode) then
+            optionFrame.label2:SetText(string.format("%s (%d)", header.dungeonName, header.runId))
+        else
+            optionFrame.label2:SetText(header.dungeonName)
+        end
         optionFrame.label3:SetText(header.keyLevel)
         optionFrame.label4:SetText(detailsFramework:IntegerToTimer(header.endTime - header.startTime))
 
