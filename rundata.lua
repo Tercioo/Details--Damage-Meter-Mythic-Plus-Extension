@@ -143,7 +143,6 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 playerOwns = UnitIsUnit(unitName, "player"),
                 activityTimeDamage = 0,
                 activityTimeHeal = 0,
-                scorePrevious = 0,
                 totalDeaths = 0,
                 totalDamage = actorObject.total,
                 totalHeal = 0,
