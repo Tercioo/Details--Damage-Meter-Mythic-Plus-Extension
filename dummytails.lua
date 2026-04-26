@@ -30,7 +30,6 @@ function private.GetKeystoneInfo(playerName)
     if (playerKeystoneInfo) then
         returnTable.keystoneLevel = playerKeystoneInfo.level
         returnTable.keystoneMapId = playerKeystoneInfo.challengeMapID
-        returnTable.rating = playerKeystoneInfo.rating
         ---@type details_instanceinfo
         local instanceInfo = private.Details:GetInstanceInfo(playerKeystoneInfo.mapID)
         if (instanceInfo) then
@@ -44,7 +43,6 @@ function private.GetKeystoneInfo(playerName)
         if keystoneInfo then
             returnTable.keystoneLevel = keystoneInfo.level
             returnTable.keystoneMapId = keystoneInfo.mythicPlusMapID
-            returnTable.rating = keystoneInfo.rating
             ---@type details_instanceinfo
             local instanceInfo = private.Details:GetInstanceInfo(keystoneInfo.mapID)
             if (instanceInfo) then
@@ -59,11 +57,6 @@ function private.GetKeystoneInfo(playerName)
             --keystoneInfo.mythicPlusMapID
             --keystoneInfo.specID
         end
-    end
-
-    if (not returnTable.rating or returnTable.rating == 0) then
-    	local keystoneSummary = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(playerName)
-        returnTable.rating = keystoneSummary and keystoneSummary.currentSeasonScore
     end
 
     return returnTable
@@ -85,8 +78,12 @@ private.SaveGroupMembersKeystoneAndRatingLevel = function()
             local unitKeystoneInfo = private.GetKeystoneInfo(unitName)
             if (unitKeystoneInfo) then
                 private.KeystoneLevels[unitName] = unitKeystoneInfo.level
-                private.PlayerRatings[unitName] = unitKeystoneInfo.rating
             end
+
+			local summary = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(unitName)
+			if (summary) then
+				private.PlayerRatings[unitName] = summary.currentSeasonScore
+			end
         end
     end
 
@@ -96,8 +93,12 @@ private.SaveGroupMembersKeystoneAndRatingLevel = function()
         local unitKeystoneInfo = private.GetKeystoneInfo(unitName)
         if (unitKeystoneInfo) then
             private.KeystoneLevels[unitName] = unitKeystoneInfo.level
-            private.PlayerRatings[unitName] = unitKeystoneInfo.rating
         end
+
+		local summary = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(unitName)
+		if (summary) then
+			private.PlayerRatings[unitName] = summary.currentSeasonScore
+		end
     end
 end
 
@@ -366,26 +367,39 @@ private.Details = {
         return nil, nil, nil, nil, nil
     end,
 
-	---@param unitId any
-	---@param ambiguateString any
-	GetFullName = function(Details, unitId, ambiguateString) --not in use, get replace by Details.GetCLName a few lines below
-		--UnitFullName is guarantee to return the realm name of the unit queried
-		local playerName, realmName = UnitFullName(unitId)
-		if (playerName) then
-			if (not realmName) then
-				realmName = GetRealmName()
-			end
-			realmName = realmName:gsub("[%s-]", "")
+    GetFullName = function(Details, id) -- copied over from Details, which does Details.GetFullName = Details.GetCLName
+        local name, realm = UnitName(id)
+        if (name) then
+            if issecretvalue and issecretvalue(realm) then
+                --return GetUnitName(id, true)
+            end
+            if (realm and realm ~= "") then
+                name = name .. "-" .. realm
+            end
+            return name
+        end
+    end,
 
-			playerName = playerName .. "-" .. realmName
-
-			if (ambiguateString) then
-				playerName = Ambiguate(playerName, ambiguateString)
-			end
-
-			return playerName
-		end
-	end,
+	-----@param unitId any
+	-----@param ambiguateString any
+	--GetFullName = function(Details, unitId, ambiguateString) --not in use, get replace by Details.GetCLName a few lines below
+	--	--UnitFullName is guarantee to return the realm name of the unit queried
+	--	local playerName, realmName = UnitFullName(unitId)
+	--	if (playerName) then
+	--		if (not realmName) then
+	--			realmName = GetRealmName()
+	--		end
+	--		realmName = realmName:gsub("[%s-]", "")
+	--
+	--		playerName = playerName .. "-" .. realmName
+	--
+	--		if (ambiguateString) then
+	--			playerName = Ambiguate(playerName, ambiguateString)
+	--		end
+	--
+	--		return playerName
+	--	end
+	--end,
 
     GetInstanceInfo = function(Details, mapID)
         --to be implemented, require ejid cache
