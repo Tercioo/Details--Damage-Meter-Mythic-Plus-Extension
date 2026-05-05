@@ -67,7 +67,7 @@ private.KeystoneLevels = {}
 ---@type table<string, number>
 private.PlayerRatings = {}
 
-private.SaveGroupMembersKeystoneAndRatingLevel = function()
+private.SaveGroupMembersKeystoneAndRatingLevel = function(setItemLevelCallback)
     wipe(private.KeystoneLevels)
     wipe(private.PlayerRatings)
 
@@ -84,6 +84,8 @@ private.SaveGroupMembersKeystoneAndRatingLevel = function()
 			if (summary) then
 				private.PlayerRatings[unitName] = summary.currentSeasonScore
 			end
+
+        	addon.RequestUnitInspect(unitName, setItemLevelCallback)
         end
     end
 
@@ -99,9 +101,10 @@ private.SaveGroupMembersKeystoneAndRatingLevel = function()
 		if (summary) then
 			private.PlayerRatings[unitName] = summary.currentSeasonScore
 		end
+
+        addon.RequestUnitInspect(unitName, setItemLevelCallback)
     end
 end
-
 
 local abbreviateOptionsDamage =
 {
