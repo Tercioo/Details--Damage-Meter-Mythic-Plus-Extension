@@ -115,7 +115,10 @@ function addon.InitializeEvents()
             addon.StopParser()
         end
 
-        private.SaveGroupMembersKeystoneAndRatingLevel()
+		addon.profile.last_run_data.player_item_levels = {}
+        private.SaveGroupMembersKeystoneAndRatingLevel(function (unitName, itemLevel)
+			addon.profile.last_run_data.player_item_levels[unitName] = itemLevel
+        end)
 
         addon.profile.has_last_run = false
         addon.profile.is_run_ongoing = true

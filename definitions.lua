@@ -254,6 +254,7 @@
 ---@field interrupt_spells_cast table<string, table>
 ---@field interrupt_cast_overlap_done table<string, number> interrupts per player
 ---@field player_ratings table<string, number> ratings per player
+---@field player_item_levels table<string, number> item levels per player
 ---@field reloaded boolean whether or not the run had a reload in-between
 
 ---@class detailsmythicplus_encounterinfo : table

@@ -34,6 +34,7 @@ encounterjournal.lua
 frames.lua
 parser.lua
 options.lua
+inspect.lua
 scoreboard_column.lua
 scoreboard.lua
 scoreboard_layout.lua

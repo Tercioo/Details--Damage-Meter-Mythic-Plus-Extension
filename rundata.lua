@@ -161,7 +161,7 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
                 interruptWhat = {}, --done
                 interruptCastOverlapDone = addon.profile.last_run_data.interrupt_cast_overlap_done[unitName] or 0,
                 crowdControlSpells = {}, --done
-                ilevel = private.Details:GetItemLevelFromGuid(guid),
+                ilevel = addon.profile.last_run_data.player_item_levels[unitName] or private.Details:GetItemLevelFromGuid(guid) or 0,
                 deathEvents = {}, --information about when the player died
                 deathLastHits = {}, --information for the tooltip when the player died
                 likedBy = {},
