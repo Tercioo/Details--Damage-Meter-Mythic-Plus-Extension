@@ -921,6 +921,184 @@ function detailsFramework:CreateAuraScrollBox(parent, name, data, onAuraRemoveCa
 end
 
 
+---@class df_canvasscrollboxmixin
+---@field scrollStep number
+---@field minValue number
+---@field smoothScrolling boolean
+---@field smoothScrollSpeed number
+---@field smoothScrollingAcceleration boolean
+---@field smoothScrollingAccelerationFactor number
+---@field useMomentum boolean
+---@field momentumFriction number
+---@field useDragScroll boolean
+---@field isDragging boolean?
+---@field dragLastY number?
+---@field dragSamples table?
+---@field scrollVelocity number?
+---@field targetScroll number?
+---@field lastWheelTime number?
+---@field SetScrollSpeed fun(self:df_canvasscrollbox, speed:number)
+---@field GetScrollSpeed fun(self:df_canvasscrollbox): number
+---@field SetSmoothScrolling fun(self:df_canvasscrollbox, enabled:boolean)
+---@field GetSmoothScrolling fun(self:df_canvasscrollbox): boolean
+---@field SetSmoothScrollSpeed fun(self:df_canvasscrollbox, speed:number)
+---@field SetSmoothScrollingAcceleration fun(self:df_canvasscrollbox, enabled:boolean)
+---@field GetSmoothScrollingAcceleration fun(self:df_canvasscrollbox): boolean
+---@field SetSmoothScrollingAccelerationFactor fun(self:df_canvasscrollbox, factor:number)
+---@field SetUseMomentum fun(self:df_canvasscrollbox, enabled:boolean)
+---@field GetUseMomentum fun(self:df_canvasscrollbox): boolean
+---@field SetMomentumFriction fun(self:df_canvasscrollbox, friction:number)
+---@field SetUseDragScroll fun(self:df_canvasscrollbox, enabled:boolean)
+---@field GetUseDragScroll fun(self:df_canvasscrollbox): boolean
+---@field OnVerticalScroll fun(self:df_canvasscrollbox, delta:number)
+
+--seconds between wheel ticks at or above which the boost factor is 1 (no acceleration)
+local WHEEL_ACCEL_THRESHOLD = 0.15
+--velocity below this magnitude (px/sec) is considered stopped
+local MOMENTUM_STOP_THRESHOLD = 1
+--how far back to look (seconds) when computing release velocity from drag samples
+local DRAG_VELOCITY_WINDOW = 0.1
+
+local endDrag = function(self)
+	self.isDragging = false
+
+	--seed momentum from the last DRAG_VELOCITY_WINDOW of cursor samples so released drags glide
+	if (self.useMomentum and self.dragSamples and #self.dragSamples >= 2) then
+		local samples = self.dragSamples
+		local first = samples[1]
+		local last = samples[#samples]
+		local dt = last[1] - first[1]
+		if (dt > 0) then
+			--drag formula is scrollDelta = cursorDeltaY (WoW Y-up), so v_scroll == v_cursor
+			self.scrollVelocity = (last[2] - first[2]) / dt
+		end
+	end
+
+	self.dragSamples = nil
+	self.dragLastY = nil
+end
+
+local canvasScrollOnUpdate = function(self, elapsed)
+	if (self.isDragging) then
+		--catch a release that happened off-frame (OnMouseUp won't fire if cursor left the frame)
+		if (not IsMouseButtonDown("LeftButton")) then
+			endDrag(self)
+			--fall through into momentum below if endDrag seeded a velocity
+			if (not self.scrollVelocity or self.scrollVelocity == 0) then
+				self:SetScript("OnUpdate", nil)
+				return
+			end
+		else
+			local _, cursorY = GetCursorPosition()
+			cursorY = cursorY / self:GetEffectiveScale()
+
+			local lastY = self.dragLastY or cursorY
+			local newScroll = self:GetVerticalScroll() + (cursorY - lastY)
+			local maxScroll = self:GetVerticalScrollRange()
+			if (newScroll < 0) then
+				newScroll = 0
+			elseif (newScroll > maxScroll) then
+				newScroll = maxScroll
+			end
+			self:SetVerticalScroll(newScroll)
+
+			local now = GetTime()
+			local samples = self.dragSamples
+			samples[#samples+1] = {now, cursorY}
+			--drop samples older than the velocity window so release velocity reflects the recent flick
+			while (samples[1] and (now - samples[1][1]) > DRAG_VELOCITY_WINDOW) do
+				table.remove(samples, 1)
+			end
+
+			self.dragLastY = cursorY
+			return
+		end
+	end
+
+	if (self.useMomentum) then
+		local velocity = self.scrollVelocity or 0
+		if (velocity == 0) then
+			self:SetScript("OnUpdate", nil)
+			return
+		end
+
+		local current = self:GetVerticalScroll()
+		local newPos = current + velocity * elapsed
+		local maxPos = self:GetVerticalScrollRange()
+
+		--exponential decay: v(t) = v0 * e^(-friction * t)
+		velocity = velocity * math.exp(-self.momentumFriction * elapsed)
+
+		--clamp position; kill velocity at boundaries
+		if (newPos <= 0) then
+			newPos = 0
+			velocity = 0
+		elseif (newPos >= maxPos) then
+			newPos = maxPos
+			velocity = 0
+		end
+
+		self:SetVerticalScroll(newPos)
+
+		if (math.abs(velocity) < MOMENTUM_STOP_THRESHOLD) then
+			self.scrollVelocity = 0
+			self:SetScript("OnUpdate", nil)
+		else
+			self.scrollVelocity = velocity
+		end
+		return
+	end
+
+	local target = self.targetScroll
+	if (not target) then
+		self:SetScript("OnUpdate", nil)
+		return
+	end
+
+	local current = self:GetVerticalScroll()
+	local diff = target - current
+
+	if (math.abs(diff) < 0.5) then
+		self:SetVerticalScroll(target)
+		self.targetScroll = nil
+		self:SetScript("OnUpdate", nil)
+		return
+	end
+
+	local step = math.min(elapsed * self.smoothScrollSpeed, 1)
+	self:SetVerticalScroll(current + diff * step)
+end
+
+local canvasScrollOnMouseDown = function(self, button)
+	if (button ~= "LeftButton") then return end
+	if (not self.useDragScroll) then return end
+
+	local _, cursorY = GetCursorPosition()
+	cursorY = cursorY / self:GetEffectiveScale()
+
+	self.isDragging = true
+	self.dragLastY = cursorY
+	self.dragSamples = {{GetTime(), cursorY}}
+
+	--cancel any in-flight motion so the drag starts from a stationary state
+	self.scrollVelocity = nil
+	self.targetScroll = nil
+
+	self:SetScript("OnUpdate", canvasScrollOnUpdate)
+end
+
+local canvasScrollOnMouseUp = function(self, button)
+	if (button ~= "LeftButton") then return end
+	if (not self.isDragging) then return end
+
+	endDrag(self)
+
+	--if no momentum was seeded, unhook OnUpdate; otherwise let the momentum branch run
+	if (not self.scrollVelocity or self.scrollVelocity == 0) then
+		self:SetScript("OnUpdate", nil)
+	end
+end
+
 detailsFramework.CanvasScrollBoxMixin = {
 	SetScrollSpeed = function(self, speed)
 		assert(type(speed) == "number", "CanvasScrollBox:SetScrollSpeed(speed): speed must be a number.")
@@ -931,12 +1109,135 @@ detailsFramework.CanvasScrollBoxMixin = {
 		return self.scrollStep
 	end,
 
+	SetSmoothScrolling = function(self, enabled)
+		assert(type(enabled) == "boolean", "CanvasScrollBox:SetSmoothScrolling(enabled): enabled must be a boolean.")
+		self.smoothScrolling = enabled
+		if (not enabled) then
+			self.targetScroll = nil
+			self.lastWheelTime = nil
+			self:SetScript("OnUpdate", nil)
+		end
+	end,
+
+	GetSmoothScrolling = function(self)
+		return self.smoothScrolling
+	end,
+
+	SetSmoothScrollSpeed = function(self, speed)
+		assert(type(speed) == "number", "CanvasScrollBox:SetSmoothScrollSpeed(speed): speed must be a number.")
+		self.smoothScrollSpeed = speed
+	end,
+
+	SetSmoothScrollingAcceleration = function(self, enabled)
+		assert(type(enabled) == "boolean", "CanvasScrollBox:SetSmoothScrollingAcceleration(enabled): enabled must be a boolean.")
+		self.smoothScrollingAcceleration = enabled
+		if (not enabled) then
+			self.lastWheelTime = nil
+		end
+	end,
+
+	GetSmoothScrollingAcceleration = function(self)
+		return self.smoothScrollingAcceleration
+	end,
+
+	SetSmoothScrollingAccelerationFactor = function(self, factor)
+		assert(type(factor) == "number", "CanvasScrollBox:SetSmoothScrollingAccelerationFactor(factor): factor must be a number.")
+		self.smoothScrollingAccelerationFactor = factor
+	end,
+
+	SetUseMomentum = function(self, enabled)
+		assert(type(enabled) == "boolean", "CanvasScrollBox:SetUseMomentum(enabled): enabled must be a boolean.")
+		self.useMomentum = enabled
+		--clear in-flight motion from either algorithm so the toggle lands cleanly
+		self.scrollVelocity = nil
+		self.targetScroll = nil
+		self.lastWheelTime = nil
+		self:SetScript("OnUpdate", nil)
+	end,
+
+	GetUseMomentum = function(self)
+		return self.useMomentum
+	end,
+
+	SetMomentumFriction = function(self, friction)
+		assert(type(friction) == "number", "CanvasScrollBox:SetMomentumFriction(friction): friction must be a number.")
+		self.momentumFriction = friction
+	end,
+
+	SetUseDragScroll = function(self, enabled)
+		assert(type(enabled) == "boolean", "CanvasScrollBox:SetUseDragScroll(enabled): enabled must be a boolean.")
+		self.useDragScroll = enabled
+		--EnableMouse is required for OnMouseDown/OnMouseUp to fire on the scrollframe
+		self:EnableMouse(enabled)
+		if (not enabled and self.isDragging) then
+			self.isDragging = false
+			self.dragSamples = nil
+			self.dragLastY = nil
+			self:SetScript("OnUpdate", nil)
+		end
+	end,
+
+	GetUseDragScroll = function(self)
+		return self.useDragScroll
+	end,
+
 	OnVerticalScroll = function(self, delta)
 		local scrollStep = self:GetScrollSpeed()
-		if (delta > 0) then
-			self:SetVerticalScroll(math.max(self:GetVerticalScroll() - scrollStep, 0))
+
+		if (self.useMomentum or self.smoothScrolling) then
+			--rapid wheel ticks: scale the step up toward smoothScrollingAccelerationFactor
+			if (self.smoothScrollingAcceleration) then
+				local now = GetTime()
+				local lastTime = self.lastWheelTime
+				if (lastTime) then
+					local deltaTime = now - lastTime
+					if (deltaTime > 0) then
+						local boost = math.min(WHEEL_ACCEL_THRESHOLD / deltaTime, self.smoothScrollingAccelerationFactor)
+						if (boost > 1) then
+							scrollStep = scrollStep * boost
+						end
+					end
+				end
+				self.lastWheelTime = now
+			end
+
+			if (self.useMomentum) then
+				--integral of v0 * e^(-friction * t) dt from 0..inf is v0 / friction.
+				--so v0 = scrollStep * friction makes one tick travel ~scrollStep total px under no further input.
+				local kick = scrollStep * self.momentumFriction
+				local currentVelocity = self.scrollVelocity or 0
+
+				--reversing direction mid-glide: drop the existing velocity instead of fighting it
+				if (delta > 0) then
+					if (currentVelocity > 0) then
+						currentVelocity = 0
+					end
+					self.scrollVelocity = currentVelocity - kick
+				else
+					if (currentVelocity < 0) then
+						currentVelocity = 0
+					end
+					self.scrollVelocity = currentVelocity + kick
+				end
+
+				self:SetScript("OnUpdate", canvasScrollOnUpdate)
+			else
+				local origin = self.targetScroll or self:GetVerticalScroll()
+				local target
+				if (delta > 0) then
+					target = math.max(origin - scrollStep, 0)
+				else
+					target = math.min(origin + scrollStep, self:GetVerticalScrollRange())
+				end
+				self.targetScroll = target
+				self:SetScript("OnUpdate", canvasScrollOnUpdate)
+			end
 		else
-			self:SetVerticalScroll(math.min(self:GetVerticalScroll() + scrollStep, self:GetVerticalScrollRange()))
+			if (delta > 0) then
+				self:SetVerticalScroll(math.max(self:GetVerticalScroll() - scrollStep, 0))
+			else
+				self:SetVerticalScroll(math.min(self:GetVerticalScroll() + scrollStep, self:GetVerticalScrollRange()))
+			end
 		end
 	end,
 }
@@ -945,9 +1246,16 @@ local canvasScrollBoxDefaultOptions = {
 	width = 600,
 	height = 400,
 	reskin_slider = true,
+	smooth_scrolling = false,
+	smooth_scrolling_speed = 12,
+	smooth_scrolling_acceleration = false,
+	smooth_scrolling_acceleration_factor = 4,
+	use_momentum = false,
+	momentum_friction = 4,
+	use_drag_scroll = false,
 }
 
----@class df_canvasscrollbox : scrollframe, df_optionsmixin
+---@class df_canvasscrollbox : scrollframe, df_optionsmixin, df_canvasscrollboxmixin
 ---@field child frame
 
 ---@param parent frame
@@ -958,16 +1266,26 @@ local canvasScrollBoxDefaultOptions = {
 function detailsFramework:CreateCanvasScrollBox(parent, child, name, options)
 	---@type df_canvasscrollbox
 	local canvasScrollBox = CreateFrame("scrollframe", name or ("DetailsFrameworkCanvasScroll" .. math.random(50000, 10000000)), parent, "BackdropTemplate, UIPanelScrollFrameTemplate")
-	canvasScrollBox.scrollStep = 20
 	canvasScrollBox.minValue = 0
-
-	canvasScrollBox:SetScript("OnMouseWheel", detailsFramework.CanvasScrollBoxMixin.OnVerticalScroll)
 
 	detailsFramework:Mixin(canvasScrollBox, detailsFramework.CanvasScrollBoxMixin)
 	detailsFramework:Mixin(canvasScrollBox, detailsFramework.OptionsFunctions)
 
+	canvasScrollBox:SetScrollSpeed(20)
+	canvasScrollBox:SetScript("OnMouseWheel", detailsFramework.CanvasScrollBoxMixin.OnVerticalScroll)
+	canvasScrollBox:SetScript("OnMouseDown", canvasScrollOnMouseDown)
+	canvasScrollBox:SetScript("OnMouseUp", canvasScrollOnMouseUp)
+
     options = options or {}
     canvasScrollBox:BuildOptionsTable(canvasScrollBoxDefaultOptions, options)
+
+	canvasScrollBox:SetSmoothScrollSpeed(canvasScrollBox.options.smooth_scrolling_speed)
+	canvasScrollBox:SetSmoothScrollingAccelerationFactor(canvasScrollBox.options.smooth_scrolling_acceleration_factor)
+	canvasScrollBox:SetSmoothScrollingAcceleration(canvasScrollBox.options.smooth_scrolling_acceleration)
+	canvasScrollBox:SetMomentumFriction(canvasScrollBox.options.momentum_friction)
+	canvasScrollBox:SetUseMomentum(canvasScrollBox.options.use_momentum)
+	canvasScrollBox:SetSmoothScrolling(canvasScrollBox.options.smooth_scrolling)
+	canvasScrollBox:SetUseDragScroll(canvasScrollBox.options.use_drag_scroll)
 
 	canvasScrollBox:SetSize(canvasScrollBox.options.width, canvasScrollBox.options.height)
 
