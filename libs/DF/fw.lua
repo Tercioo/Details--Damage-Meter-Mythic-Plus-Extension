@@ -1,5 +1,5 @@
 
-local dversion = 718
+local dversion = 728
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -1105,9 +1105,15 @@ local function tableToString(t, resultString, deep, seenTables)
             resultString = resultString .. space .. "|cFFa9ffa9},|r\n"
 
 		elseif (valueType == "string") then
+			if issecretvalue(value) then
+				value = "#secret-string#"
+			end
 			resultString = resultString .. space .. "[\"" .. key .. "\"] = \"|cFFfff1c1" .. value .. "|r\",\n"
 
 		elseif (valueType == "number") then
+			if issecretvalue(value) then
+				value = "#secret-number#"
+			end
 			if (type(key) == "number") then
 				resultString = resultString .. space .. "[" .. key .. "] = |cFFffc1f4" .. value .. "|r,\n"
 			else
@@ -1118,7 +1124,12 @@ local function tableToString(t, resultString, deep, seenTables)
 			resultString = resultString .. space .. "[\"" .. key .. "\"] = |cFFC586C0function|r,\n"
 
 		elseif (valueType == "boolean") then
-			resultString = resultString .. space .. "[\"" .. key .. "\"] = |cFF99d0ff" .. (value and "true" or "false") .. "|r,\n"
+			if issecretvalue(value) then
+				value = "#secret-boolean#"
+				resultString = resultString .. space .. "[\"" .. key .. "\"] = |cFF99d0ff" .. value .. "|r,\n"
+			else
+				resultString = resultString .. space .. "[\"" .. key .. "\"] = |cFF99d0ff" .. (value and "true" or "false") .. "|r,\n"
+			end
 		end
     end
 
@@ -1789,17 +1800,26 @@ end
 
 local ValidOutlines = {
 	[""] = true,
+	["SLUG"] = true,
+	["OUTLINE, SLUG"] = true, -- compatibility for existing slug values
+	["SLUG,OUTLINE"] = true, -- order does not matter here
+	["OUTLINE,SLUG"] = true,
 	["MONOCHROME"] = true,
 	["OUTLINE"] = true,
 	["THICKOUTLINE"] = true,
 	["OUTLINEMONOCHROME"] = true,
 	["THICKOUTLINEMONOCHROME"] = true,
+	["MONOCHROME, OUTLINE"] = true, -- backwards compatibility
+	["MONOCHROME, THICKOUTLINE"] = true
 }
 
 --outline flags are used with the function SetFont on fontstrings, signiture: fontString:SetFont(fontFile, size, outlineFlags) -> outlineFlags are usually just called 'flags', 'size' can also be found named as 'height'.
 --in the first index of the sub table there is the value to be used on SetFont, in the second index there is a user friendly name
 DF.FontOutlineFlags = {
 	{"", "None"},
+	{"NONE", "None"}, -- backwards compatibility
+	{"SLUG", "Slug"},
+	{"SLUG,OUTLINE", "Outline Slug"},
 	{"MONOCHROME", "Monochrome"},
 	{"OUTLINE", "Outline"},
 	{"THICKOUTLINE", "Thick Outline"},
@@ -5077,7 +5097,7 @@ function DF:GetCurrentSpecId()
 end
 
 local specs_per_class = {
-	["DEMONHUNTER"] = {577, 581, 1480}, --havoc, vengence
+	["DEMONHUNTER"] = {577, 581}, --havoc, vengence
 	["DEATHKNIGHT"] = {250, 251, 252},
 	["WARRIOR"] = {71, 72, 73},
 	["MAGE"] = {62, 63, 64},
@@ -5706,7 +5726,7 @@ local specInformation = {
 	[64] = {specId = 64, name = "Frost", specIcon = 135846, role = "DAMAGER", classId = 8, className = "MAGE", specIndex = 2, flags = 0x3, primaryStatPriority = 0},
 	[65] = {specId = 65, name = "Holy", specIcon = 135920, role = "HEALER", classId = 2, className = "PALADIN", specIndex = 0, flags = 0x5, primaryStatPriority = 1},
 	[66] = {specId = 66, name = "Protection", specIcon = 236264, role = "TANK", classId = 2, className = "PALADIN", specIndex = 1, flags = 0x4, primaryStatPriority = 0},
-	[68] = {specId = 70, name = "Retribution", specIcon = 135873, role = "DAMAGER", classId = 2, className = "PALADIN", specIndex = 2, flags = 0x4, primaryStatPriority = 0},
+	[70] = {specId = 70, name = "Retribution", specIcon = 135873, role = "DAMAGER", classId = 2, className = "PALADIN", specIndex = 2, flags = 0x4, primaryStatPriority = 0},
 	[71] = {specId = 71, name = "Arms", specIcon = 132355, role = "DAMAGER", classId = 1, className = "WARRIOR", specIndex = 0, flags = 0x4, primaryStatPriority = 0},
 	[72] = {specId = 72, name = "Fury", specIcon = 132347, role = "DAMAGER", classId = 1, className = "WARRIOR", specIndex = 1, flags = 0x4, primaryStatPriority = 0},
 	[73] = {specId = 73, name = "Protection", specIcon = 132341, role = "TANK", classId = 1, className = "WARRIOR", specIndex = 2, flags = 0x4, primaryStatPriority = 0},
@@ -5740,8 +5760,8 @@ local specInformation = {
 	[537] = {specId = 537, name = "Tenacity", specIcon = 132121, role = "TANK", classId = 0, className = "WARRIOR", specIndex = 1, flags = 0x20, primaryStatPriority = 0},
 	[577] = {specId = 577, name = "Havoc", specIcon = 1247264, role = "DAMAGER", classId = 12, className = "DEMONHUNTER", specIndex = 0, flags = 0x44, primaryStatPriority = 3},
 	[581] = {specId = 581, name = "Vengeance", specIcon = 1247265, role = "TANK", classId = 12, className = "DEMONHUNTER", specIndex = 1, flags = 0x4, primaryStatPriority = 3},
-	--[1480] = {specId = 1480, name = "Devourer", specIcon = 7455386, role = "TANK", classId = 12, className = "DEMONHUNTER", specIndex = 1, flags = 0x4, primaryStatPriority = 3},
-	[1480] = {specId = 1480, name = "Devourer", specIcon = 7455385, role = "DAMAGER", classId = 12, className = "DEMONHUNTER", specIndex = 2, flags = 0x3, primaryStatPriority = 3},
+	[1480] = {specId = 1480, name = "Devourer", specIcon = 7455386, role = "TANK", classId = 12, className = "DEMONHUNTER", specIndex = 1, flags = 0x4, primaryStatPriority = 3},
+	--[1480] = {specId = 1480, name = "Devourer", specIcon = 7455385, role = "DAMAGER", classId = 12, className = "DEMONHUNTER", specIndex = 2, flags = 0x3, primaryStatPriority = 3},
 	[1444] = {specId = 1444, name = "Initial", specIcon = 136048, role = "DAMAGER", classId = 7, className = "SHAMAN", specIndex = 4, flags = 0x3, primaryStatPriority = 0},
 	[1446] = {specId = 1446, name = "Initial", specIcon = 132355, role = "DAMAGER", classId = 1, className = "WARRIOR", specIndex = 4, flags = 0x44, primaryStatPriority = 5},
 	[1447] = {specId = 1447, name = "Initial", specIcon = 136096, role = "DAMAGER", classId = 11, className = "DRUID", specIndex = 4, flags = 0x14b, primaryStatPriority = 0},
@@ -5759,6 +5779,11 @@ local specInformation = {
 	[1468] = {specId = 1468, name = "Preservation", specIcon = 4511812, role = "HEALER", classId = 13, className = "EVOKER", specIndex = 1, flags = 0x3, primaryStatPriority = 0},
 	[1473] = {specId = 1473, name = "Augmentation", specIcon = 5198700, role = "DAMAGER", classId = 13, className = "EVOKER", specIndex = 2, flags = 0x3, primaryStatPriority = 0},
 	[1478] = {specId = 1478, name = "Adventurer", specIcon = 2055034, role = "DAMAGER", classId = 14, className = "ROGUE", specIndex = 4, flags = 0x2, primaryStatPriority = 4},
+}
+
+local specIconToSpecInformation = {
+	[7455385] = specInformation[1480], --Devourer
+	[7455386] = specInformation[1480], --Devourer
 }
 
 --make a table where the key is the specIcon and the value is the table from specInformation
@@ -5781,8 +5806,16 @@ end
 function DF:GetSpecInfoFromSpecId(specId)
 	return specInformation[specId]
 end
+
 --~spec
 function DF:GetSpecInfoFromSpecIcon(specIcon)
+	local specInfo = specIconToInfo[specIcon]
+	if (not specInfo) then
+		specInfo = specIconToSpecInformation[specIcon]
+		if specInfo then
+			return specInfo
+		end
+	end
 	return specIconToInfo[specIcon]
 end
 
