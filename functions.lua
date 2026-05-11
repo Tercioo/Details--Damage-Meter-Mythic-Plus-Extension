@@ -35,22 +35,23 @@ local guessedPreviousSeason = nil
 local previousSeasonCutOffTime = time() - 1814400 -- 21 days, or 3 weeks max
 
 function addon.IsRunVisible(header)
+	local season = addon.GetCurrentSeasonId()
 	if (header.seasonId == -1) then
-		header.seasonId = addon.GetCurrentSeasonId()
+		header.seasonId = season
 	end
 
     if (header.seasonId == nil or (header.seasonId > 0 and header.seasonId < 10)) then
         header.seasonId = header.startTime > 1774224000 and 17 or 1 -- roughly the start of midnight season 1
     end
 
-    if (seasonId == 0 and guessedPreviousSeason == nil and header.seasonId ~= 0 and header.startTime > previousSeasonCutOffTime) then
+    if (season == 0 and guessedPreviousSeason == nil and header.seasonId ~= 0 and header.startTime > previousSeasonCutOffTime) then
         guessedPreviousSeason = header.seasonId
     end
 
     if (not addon.profile.only_show_current_season
         or (addon.profile.only_show_current_season and (
-            header.seasonId == seasonId
-            or (seasonId == 0 and header.seasonId == guessedPreviousSeason)
+            header.seasonId == season
+            or (season == 0 and header.seasonId == guessedPreviousSeason)
         ))
     ) then
     	return true
