@@ -9,3 +9,5 @@ detailsdef/Libs/DF/definitions.lua
 *.afphoto
 *.afphoto~lock~
 *.md
+libs/DF/_lua_fns.txt
+*.bak

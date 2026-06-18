@@ -1,5 +1,7 @@
+-- SPDX-License-Identifier: LGPL-2.1-or-later
+-- Details Framework (DetailsFramework-1.0) -- see Libs/DF/LICENSE
 
-local dversion = 728
+local dversion = 739
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -257,6 +259,11 @@ function DF.IsAddonApocalypseWow()
 	return buildInfo >= 120000
 end
 
+function DF.IsMidnightWowAPI()
+	if (buildInfo < 130000 and buildInfo >= 120000) then		return true	end
+	if (buildInfo < 60000 and buildInfo >= 50504) then        return true    end
+	return false
+end
 
 ---return true if the player is playing in the WotLK version of wow with the retail api
 ---@return boolean
@@ -616,7 +623,6 @@ local embedFunctions = {
 	"ColorPick",
 	"IconPick",
 	"CreateSimplePanel",
-	"CreateChartPanel",
 	"CreateImage",
 	"CreateScrollBar",
 	"CreateSwitch",
@@ -803,15 +809,24 @@ end
 ---@param subOffset number?
 ---@return any
 function DF.table.getfrompath(t, path, subOffset)
+	--Lookup uses explicit `== nil` checks rather than truthiness so that a leaf value of
+	--`false` is returned verbatim instead of being treated as "missing key" and coerced to nil.
+	--The previous `t[key] or t[tonumber(key)]` form discarded legitimate false values, which
+	--corrupted callers that snapshot a value here and replay it later (e.g. editor.lua's
+	--undo/redo snapshot capture for toggles — replaying nil through setfrompath deletes the
+	--key, making the option disappear from the menu on the next rebuild).
 	if (path:match("%.") or path:match("%[")) then
 		local value
 		local offset = 0
 
 		for key in path:gmatch("[%w_]+") do
-			value = t[key] or t[tonumber(key)]
+			value = t[key]
+			if (value == nil) then
+				value = t[tonumber(key)]
+			end
 
-			--check if the value is nil, if it is, the key does not exists in the table
-			if (not value) then
+			--check if the value is nil, if it is, the key does not exist in the table
+			if (value == nil) then
 				return
 			end
 
@@ -826,7 +841,11 @@ function DF.table.getfrompath(t, path, subOffset)
 
 		return value
 	else
-		return t[path] or t[tonumber(path)]
+		local value = t[path]
+		if (value == nil) then
+			value = t[tonumber(path)]
+		end
+		return value
 	end
 end
 
@@ -938,7 +957,7 @@ function DF.table.duplicate(t1, t2)
 	for key, value in pairs(t2) do
 		if (key ~= "__index" and key ~= "__newindex") then
 			--preserve a UIObject passing it to the new table with copying it
-			if (type(value) == "table" and table.GetObjectType and table:GetObjectType()) then
+			if (type(value) == "table" and value.GetObjectType and value:GetObjectType()) then
 				t1[key] = value
 
 			elseif (type(value) == "table") then
@@ -1687,7 +1706,7 @@ function DF:AddClassIconToText(text, playerName, englishClassName, useSpec, icon
 		end
 	end
 
-	if (englishClassName) then
+	if (englishClassName and Details and Details.class_coords and Details.class_coords[englishClassName]) then
 		local classString = ""
 		--Details.class_coords uses english class names as keys and the values are tables containing texture coordinates
 		local L, R, T, B = unpack(Details.class_coords[englishClassName])
@@ -2018,7 +2037,8 @@ function DF:TruncateNumber(number, fractionDigits)
 	if (number >= 0) then
 		truncatedNumber = floor(number * mult + 0.5) / mult
 	else
-		truncatedNumber = ceil(number * mult + 0.5) / mult
+		--for negative numbers, subtract 0.5 before ceiling so that .5 rounds away from zero
+		truncatedNumber = ceil(number * mult - 0.5) / mult
 	end
 
 	return truncatedNumber
@@ -2912,7 +2932,7 @@ end
 
 		--
 		TutorialAlertFrame.label = type(maintext) == "string" and maintext or type(desctext) == "string" and desctext or ""
-		MicroButtonAlert_SetText (TutorialAlertFrame, alert.label)
+		MicroButtonAlert_SetText (TutorialAlertFrame, TutorialAlertFrame.label)
 		--
 
 		TutorialAlertFrame.clickfunc = clickfunc
@@ -5097,7 +5117,7 @@ function DF:GetCurrentSpecId()
 end
 
 local specs_per_class = {
-	["DEMONHUNTER"] = {577, 581, 1480}, --havoc, vengence
+	["DEMONHUNTER"] = {577, 581}, --havoc, vengence
 	["DEATHKNIGHT"] = {250, 251, 252},
 	["WARRIOR"] = {71, 72, 73},
 	["MAGE"] = {62, 63, 64},
@@ -5760,8 +5780,8 @@ local specInformation = {
 	[537] = {specId = 537, name = "Tenacity", specIcon = 132121, role = "TANK", classId = 0, className = "WARRIOR", specIndex = 1, flags = 0x20, primaryStatPriority = 0},
 	[577] = {specId = 577, name = "Havoc", specIcon = 1247264, role = "DAMAGER", classId = 12, className = "DEMONHUNTER", specIndex = 0, flags = 0x44, primaryStatPriority = 3},
 	[581] = {specId = 581, name = "Vengeance", specIcon = 1247265, role = "TANK", classId = 12, className = "DEMONHUNTER", specIndex = 1, flags = 0x4, primaryStatPriority = 3},
-	--[1480] = {specId = 1480, name = "Devourer", specIcon = 7455386, role = "TANK", classId = 12, className = "DEMONHUNTER", specIndex = 1, flags = 0x4, primaryStatPriority = 3},
-	[1480] = {specId = 1480, name = "Devourer", specIcon = 7455385, role = "DAMAGER", classId = 12, className = "DEMONHUNTER", specIndex = 2, flags = 0x3, primaryStatPriority = 3},
+	[1480] = {specId = 1480, name = "Devourer", specIcon = 7455386, role = "TANK", classId = 12, className = "DEMONHUNTER", specIndex = 1, flags = 0x4, primaryStatPriority = 3},
+	--[1480] = {specId = 1480, name = "Devourer", specIcon = 7455385, role = "DAMAGER", classId = 12, className = "DEMONHUNTER", specIndex = 2, flags = 0x3, primaryStatPriority = 3},
 	[1444] = {specId = 1444, name = "Initial", specIcon = 136048, role = "DAMAGER", classId = 7, className = "SHAMAN", specIndex = 4, flags = 0x3, primaryStatPriority = 0},
 	[1446] = {specId = 1446, name = "Initial", specIcon = 132355, role = "DAMAGER", classId = 1, className = "WARRIOR", specIndex = 4, flags = 0x44, primaryStatPriority = 5},
 	[1447] = {specId = 1447, name = "Initial", specIcon = 136096, role = "DAMAGER", classId = 11, className = "DRUID", specIndex = 4, flags = 0x14b, primaryStatPriority = 0},
