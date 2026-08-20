@@ -32,6 +32,11 @@ function addon.CreateRunInfo(mythicPlusOverallSegment)
         return
     end
 
+    if (addon.profile.last_run_data.map_id and addon.profile.last_run_data.map_id ~= completionInfo.mapChallengeModeID) then
+        private.log("MythicPlus Scoreboard M+ completionInfo is for a different dungeon than the tracked run, ignoring")
+        return
+    end
+
     local combatTime = mythicPlusOverallSegment:GetCombatTime()
 
     addon.WipeLikeCache()

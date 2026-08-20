@@ -127,6 +127,14 @@ function addon.InitializeEvents()
             return
         end
 
+        if (addon.profile.is_run_ongoing and addon.profile.last_run_data.challenge_start_time == C_ChallengeMode.GetStartTime()) then
+            --the active challenge is the run already being tracked: the player left and re-entered mid-run
+            private.log("Stashed run start matches the run in progress, resuming")
+            addon.profile.pending_run_start = nil
+            addon.StartParser()
+            return
+        end
+
         addon.OnMythicDungeonStart()
     end
 
@@ -152,6 +160,7 @@ function addon.InitializeEvents()
         addon.profile.last_run_data.start_time = startTime
         addon.profile.last_run_data.time_lost_to_deaths = 0
         addon.profile.last_run_data.map_id = private.Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
+        addon.profile.last_run_data.challenge_start_time = C_ChallengeMode.GetStartTime()
         addon.profile.last_run_data.incombat_timeline = {startTime} --store the first value in the in combat timeline.
         addon.profile.last_run_data.encounter_timeline = {}
         addon.profile.last_run_data.interrupt_spells_cast = {}

@@ -245,6 +245,7 @@
 ---@field standout_outline string
 
 ---@class detailsmythicplus_run_data : table
+---@field challenge_start_time number opaque C_ChallengeMode.GetStartTime() value identifying the tracked run
 ---@field map_id number
 ---@field start_time number
 ---@field end_time number
