@@ -117,7 +117,11 @@ function addon.InitializeEvents()
 
 		addon.profile.last_run_data.player_item_levels = {}
         private.SaveGroupMembersKeystoneAndRatingLevel(function (unitName, itemLevel)
-			addon.profile.last_run_data.player_item_levels[unitName] = itemLevel
+			--INSPECT_READY can arrive after the run ended and last_run_data was reset
+			local playerItemLevels = addon.profile.last_run_data.player_item_levels
+			if (playerItemLevels) then
+				playerItemLevels[unitName] = itemLevel
+			end
         end)
 
         addon.profile.has_last_run = false
