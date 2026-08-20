@@ -47,6 +47,7 @@
 ---@class profile : table
 ---@field has_last_run boolean whether or not there's a last run. This run will be cleared when the next one starts.
 ---@field is_run_ongoing boolean whether or not there's a current run going
+---@field pending_run_start number|nil time() of a CHALLENGE_MODE_START not yet confirmed by combat
 ---@field run_id number the last run id
 ---@field saved_runs_compressed string[] store the compressed saved runs, this is used to save memory and speed up the loading time of the addon
 ---@field saved_runs_compressed_headers table[] store the headers of the saved runs, this is used to show the run history in the dropdown menu
@@ -244,6 +245,7 @@
 ---@field standout_outline string
 
 ---@class detailsmythicplus_run_data : table
+---@field challenge_start_time number opaque C_ChallengeMode.GetStartTime() value identifying the tracked run
 ---@field map_id number
 ---@field start_time number
 ---@field end_time number

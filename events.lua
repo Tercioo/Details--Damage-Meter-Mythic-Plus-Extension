@@ -24,14 +24,16 @@ function addon.InitializeEvents()
             if (event == "PLAYER_REGEN_ENABLED") then
                 addon.OnPlayerLeaveCombat(...)
             elseif (event == "PLAYER_REGEN_DISABLED") then
+                addon.CommitStashedRunStart()
                 addon.OnPlayerEnterCombat(...)
             elseif (event == "ENCOUNTER_START") then
+                addon.CommitStashedRunStart()
                 addon.OnEncounterStart(...)
             elseif (event == "ENCOUNTER_END") then
                 addon.OnEncounterEnd(...)
             elseif (event == "CHALLENGE_MODE_START") then
                 private.log(event)
-                addon.OnMythicDungeonStart(...)
+                addon.StashRunStart()
             elseif (event == "CHALLENGE_MODE_COMPLETED") then
                 private.log(event)
                 addon.OnMythicDungeonEnd(...)
@@ -107,6 +109,35 @@ function addon.InitializeEvents()
         end
     end
 
+    --CHALLENGE_MODE_START also fires when zoning into a dungeon whose challenge is already
+    --active or completed, and at event time the client state is indistinguishable from a
+    --genuine start; committing on the first combat event filters the re-entry case.
+    function addon.StashRunStart()
+        addon.profile.pending_run_start = time()
+    end
+
+    function addon.CommitStashedRunStart()
+        if (not addon.profile.pending_run_start) then
+            return
+        end
+
+        if (not C_ChallengeMode.GetActiveChallengeMapID()) then
+            private.log("Discarding stashed run start: no active challenge")
+            addon.profile.pending_run_start = nil
+            return
+        end
+
+        if (addon.profile.is_run_ongoing and addon.profile.last_run_data.challenge_start_time == C_ChallengeMode.GetStartTime()) then
+            --the active challenge is the run already being tracked: the player left and re-entered mid-run
+            private.log("Stashed run start matches the run in progress, resuming")
+            addon.profile.pending_run_start = nil
+            addon.StartParser()
+            return
+        end
+
+        addon.OnMythicDungeonStart()
+    end
+
     function addon.OnMythicDungeonStart(...) --shared
         if (addon.IsParsing()) then --for midnight, Parsing does nothing
             -- edge case because COMBAT_MYTHICDUNGEON_END is not fired when
@@ -124,13 +155,17 @@ function addon.InitializeEvents()
 			end
         end)
 
+        local startTime = addon.profile.pending_run_start or time()
+        addon.profile.pending_run_start = nil
+
         addon.profile.has_last_run = false
         addon.profile.is_run_ongoing = true
         addon.profile.last_run_data.reloaded = false
-        addon.profile.last_run_data.start_time = time()
+        addon.profile.last_run_data.start_time = startTime
         addon.profile.last_run_data.time_lost_to_deaths = 0
         addon.profile.last_run_data.map_id = private.Details.challengeModeMapId or C_ChallengeMode.GetActiveChallengeMapID()
-        addon.profile.last_run_data.incombat_timeline = {time()} --store the first value in the in combat timeline.
+        addon.profile.last_run_data.challenge_start_time = C_ChallengeMode.GetStartTime()
+        addon.profile.last_run_data.incombat_timeline = {startTime} --store the first value in the in combat timeline.
         addon.profile.last_run_data.encounter_timeline = {}
         addon.profile.last_run_data.interrupt_spells_cast = {}
         addon.profile.last_run_data.interrupt_cast_overlap_done = {}
@@ -147,6 +182,13 @@ function addon.InitializeEvents()
     end
 
     function addon.OnMythicDungeonEnd(...) --shared, apocalypse entry point
+        addon.profile.pending_run_start = nil
+
+        if (not addon.profile.is_run_ongoing) then
+            private.log("OnMythicDungeonEnd with no run in progress, ignoring")
+            return
+        end
+
         addon.profile.is_run_ongoing = false
         addon.profile.last_run_data.end_time = time()
         local combatTimeline = addon.profile.last_run_data.incombat_timeline
