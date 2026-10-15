@@ -139,7 +139,7 @@ end
 ---@diagnostic disable-next-line: undefined-global
 local Enum = Enum
 
-local thisVersion = 2
+local thisVersion = 1
 
 PLAYER_INFO_VERSION = PLAYER_INFO_VERSION or 0
 
@@ -273,7 +273,7 @@ local isTimewalkWoW = function()
 end
 
 local isClassicEra = function()
-    if (buildInfo < 20000) then
+    if (buildInfo < 16000) then
         return true
     end
 end
@@ -449,16 +449,16 @@ local registerComm = function()
             local encodedData = text
 
             --decode
-            local dataDecoded = C_EncodingUtil.DecodeBase64(encodedData)
-            if (not dataDecoded) then
-                print(red("problem decoding base64 from player:"), sender, "data:", text)
+            local okay, dataDecoded = pcall(C_EncodingUtil.DecodeBase64, encodedData)
+            if (not okay) then
+                --print(red("problem decoding base64 from player:"), sender, "data:", text)
                 return nil
             end
 
             --decompress
-            local dataString = C_EncodingUtil.DecompressString(dataDecoded, Enum.CompressionMethod.Deflate)
-            if (not dataString) then
-                print(red("UncompressedRun(dataDecoded): C_EncodingUtil.DecompressString failed"), "from player:", sender, "data:", text)
+            local okay, dataString = pcall(C_EncodingUtil.DecompressString, dataDecoded, Enum.CompressionMethod.Deflate)
+            if (not okay) then
+                --print(red("UncompressedRun(dataDecoded): C_EncodingUtil.DecompressString failed"), "from player:", sender, "data:", text)
                 return nil
             end
 
@@ -835,6 +835,11 @@ local getPlayerInfo = function(playerName)
 
         if (gameVersionHasMythicPlus()) then
             thisPlayerInfo.keystoneInfo = CopyTable(keystoneTablePrototype)
+
+            local summary = C_PlayerInfo.GetPlayerMythicPlusRatingSummary(playerName)
+            if (summary and summary.currentSeasonScore) then
+            	thisPlayerInfo.keystoneInfo.rating = summary.currentSeasonScore
+            end
         end
 
         playerInfoDatabase[playerName] = thisPlayerInfo
@@ -1255,7 +1260,9 @@ end
 local getTalents
 do --> talents
     local getTalentVersion = function()
-        if (gameVersion >= 1 and gameVersion <= 40000) then --vanilla tbc wotlk cataclysm
+        if (gameVersion >= 16000 and gameVersion <= 19999) then --forever
+            return enum.TalentVersion.Dragonflight
+        elseif (gameVersion >= 1 and gameVersion <= 40000) then --vanilla tbc wotlk cataclysm
             return enum.TalentVersion.Vanilla
         elseif (gameVersion >= 50000 and gameVersion <= 69999) then --panda wod
             return enum.TalentVersion.Pandaria
